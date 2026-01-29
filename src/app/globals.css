@@ -1,0 +1,87 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  /* Colors - Aegean Serenity */
+  --color-warm-white: #FAFAF8;
+  --color-sand: #E8DCC4;
+  --color-aegean-blue: #4A90E2;
+  --color-deep-med: #2C5F8D;
+  --color-accent-gold: #C9A961;
+  --color-charcoal: #2F3437;
+  --color-white: #FFFFFF;
+  --color-success: #5F9B7C;
+  --color-error: #D47B6A;
+
+  /* Spacing (Fluid) */
+  --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
+  --space-sm: clamp(0.75rem, 1.5vw, 1rem);
+  --space-md: clamp(1rem, 2vw, 1.5rem);
+  --space-lg: clamp(1.5rem, 3vw, 2.5rem);
+  /* The Luxury Margin */
+  --space-xl: clamp(2rem, 5vw, 4rem);
+  --space-2xl: clamp(3rem, 7vw, 6rem);
+
+  /* Typography (Fluid) */
+  --font-h1: clamp(2rem, 5vw, 3.5rem);
+  --font-h2: clamp(1.5rem, 3.5vw, 2.25rem);
+  --font-body: clamp(0.9375rem, 1.5vw, 1rem);
+
+  /* Radius */
+  --radius-sharp: 2px;
+  --radius-subtle: 4px;
+  --radius-card: 12px;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px rgba(47, 52, 55, 0.06);
+  --shadow-md: 0 2px 8px rgba(47, 52, 55, 0.08);
+  --shadow-lg: 0 4px 16px rgba(47, 52, 55, 0.10);
+  --shadow-hover: 0 6px 20px rgba(74, 144, 226, 0.12);
+
+  /* Animation */
+  --ease-premium: cubic-bezier(0.4, 0, 0.2, 1);
+  --ease-anticipate: cubic-bezier(0.34, 1.56, 0.64, 1);
+
+  /* Defaults */
+  --background: var(--color-warm-white);
+  --foreground: var(--color-charcoal);
+
+  --header-height: 80px;
+  --container-max: 1280px;
+}
+
+body {
+  color: var(--foreground);
+  background: var(--background);
+  font-family: var(--font-inter), sans-serif;
+  overflow-x: hidden;
+  /* Prevent horizontal scroll from animations */
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-montserrat), sans-serif;
+  color: var(--color-charcoal);
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+}
+
+/* Base Styles for Maps */
+.map-tiles-brand {
+  filter: sepia(20%) hue-rotate(190deg) saturate(150%) brightness(90%) contrast(100%);
+}
+
+.leaflet-popup-content-wrapper {
+  border-radius: var(--radius-subtle) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+
+.leaflet-popup-content {
+  margin: 12px !important;
+  font-family: var(--font-inter) !important;
+}
