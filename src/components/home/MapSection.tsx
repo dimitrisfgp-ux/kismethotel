@@ -27,6 +27,7 @@ export function MapSection({ conveniences }: MapSectionProps) {
                 <InteractiveMap
                     conveniences={conveniences}
                     center={[35.33965, 25.13285]}
+                    highlightedTypes={null}
                 />
             </div>
 
