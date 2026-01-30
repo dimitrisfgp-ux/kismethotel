@@ -28,11 +28,14 @@ export function ImageGallery({ images, roomName }: ImageGalleryProps) {
     };
 
     // Helper for rendering an interactive image
-    function GalleryImage({ src, alt, index, onOpen, priority = false, className }: { src: string, alt: string, index: number, onOpen: (i: number) => void, priority?: boolean, className?: string }) {
+    function GalleryImage({ src, alt, index, onOpen, priority = false, className, sizes }: { src: string, alt: string, index: number, onOpen: (i: number) => void, priority?: boolean, className?: string, sizes?: string }) {
         return (
             <div
                 className={cn("relative w-full h-full overflow-hidden cursor-pointer group", className)}
                 onClick={() => onOpen(index)}
+                role="button"
+                tabIndex={0}
+                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpen(index)}
             >
                 <Image
                     src={src}
@@ -40,6 +43,7 @@ export function ImageGallery({ images, roomName }: ImageGalleryProps) {
                     fill
                     className="object-cover transition-transform duration-700 ease-premium group-hover:scale-110"
                     priority={priority}
+                    sizes={sizes || "(max-width: 768px) 100vw, 50vw"}
                 />
                 {/* Overlay hint */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />

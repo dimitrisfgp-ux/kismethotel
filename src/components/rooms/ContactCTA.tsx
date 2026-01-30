@@ -10,10 +10,11 @@ export function ContactCTA() {
                 <p className="font-inter text-lg opacity-80 mb-8 max-w-2xl mx-auto">
                     We are here to help you plan your perfect stay. Reach out to our concierge team.
                 </p>
-                <Link href="/#contact">
-                    <Button variant="outline" className="border-white text-white hover:bg-white hover:text-[var(--color-aegean-blue)]">
-                        Contact Us
-                    </Button>
+                <Link
+                    href="/#contact"
+                    className="inline-flex items-center justify-center font-medium transition-all duration-300 ease-premium rounded-subtle h-11 px-8 text-sm border border-white text-white hover:bg-white hover:text-[var(--color-aegean-blue)]"
+                >
+                    Contact Us
                 </Link>
             </Container>
         </section>

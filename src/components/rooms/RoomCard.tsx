@@ -20,14 +20,21 @@ export function RoomCard({ room, index }: RoomCardProps) {
     const [isActive, setIsActive] = useState(false);
 
     useEffect(() => {
-        // Only enable scroll-trigger on mobile devices (width-based for reliable testing)
-        if (window.innerWidth >= 768) return;
+        // Feature detection: Only run this scroll-effect on devices that likely don't have a mouse
+        // using matchMedia for better accuracy than innerWidth
+        const isTouch = window.matchMedia("(hover: none)").matches || window.innerWidth < 1024;
+
+        if (!isTouch) return;
 
         const observer = new IntersectionObserver(
             ([entry]) => {
+                // Trigger when card is substantially visible
                 setIsActive(entry.isIntersecting);
             },
-            { threshold: 0.5 } // Reduced threshold to ensure it catches easier
+            {
+                threshold: 0.4, // Lower threshold
+                rootMargin: "-5% 0px" // Slight contraction to focus on center
+            }
         );
 
         if (cardRef.current) {
@@ -41,11 +48,10 @@ export function RoomCard({ room, index }: RoomCardProps) {
         <Link
             ref={cardRef}
             href={`/rooms/${room.slug}`}
-            data-active={isActive ? "" : undefined}
-            className="group block relative overflow-hidden aspect-[3/4] md:aspect-[16/9] w-full bg-[var(--color-sand)]"
+            className={`group block relative overflow-hidden aspect-[3/4] md:aspect-[16/9] w-full bg-[var(--color-sand)] ${isActive ? "is-active" : ""}`}
         >
             {/* Image */}
-            <div className="absolute inset-0 transition-transform duration-500 ease-premium group-hover:scale-105 data-[active]:scale-105">
+            <div className="absolute inset-0 transition-transform duration-500 ease-premium group-hover:scale-105 group-[.is-active]:scale-105">
                 <Image
                     src={room.images[0]}
                     alt={room.name}
@@ -56,14 +62,14 @@ export function RoomCard({ room, index }: RoomCardProps) {
             </div>
 
             {/* Overlay Gradient */}
-            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40 group-hover:opacity-70 data-[active]:opacity-70 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40 group-hover:opacity-70 group-[.is-active]:opacity-70 transition-opacity duration-500" />
 
             {/* Content */}
-            <div className="absolute bottom-0 left-0 w-full p-8 text-[var(--color-warm-white)] transition-transform duration-500 ease-premium group-hover:translate-y-0 data-[active]:translate-y-0 translate-y-2">
+            <div className="absolute bottom-0 left-0 w-full p-8 text-[var(--color-warm-white)] transition-transform duration-500 ease-premium group-hover:translate-y-0 group-[.is-active]:translate-y-0 translate-y-2">
                 <div className="flex flex-col items-start">
                     <div className="flex justify-between items-end w-full">
                         <div>
-                            <h3 className="font-montserrat text-2xl font-bold uppercase tracking-widest mb-2 text-[var(--color-warm-white)] group-hover:text-[var(--color-sand)] data-[active]:text-[var(--color-sand)] transition-colors">
+                            <h3 className="font-montserrat text-2xl font-bold uppercase tracking-widest mb-2 text-[var(--color-warm-white)] group-hover:text-[var(--color-sand)] group-[.is-active]:text-[var(--color-sand)] transition-colors">
                                 {room.name}
                             </h3>
                             <div className="flex items-center space-x-4 text-sm font-inter opacity-90">
@@ -77,7 +83,7 @@ export function RoomCard({ room, index }: RoomCardProps) {
                     </div>
 
                     {/* Description Slide (Grid Rows Technique) */}
-                    <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] data-[active]:grid-rows-[1fr] group-hover:opacity-100 data-[active]:opacity-100 transition-all duration-500 ease-premium">
+                    <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-[.is-active]:grid-rows-[1fr] group-hover:opacity-100 group-[.is-active]:opacity-100 transition-all duration-500 ease-premium">
                         <div className="overflow-hidden">
                             <p className="text-sm font-inter text-[var(--color-warm-white)]/90 leading-relaxed border-t border-white/20 pt-4 mt-4">
                                 {room.description}

@@ -66,7 +66,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className={`${montserrat.variable} ${inter.variable}`}>
+    <html lang="en" className={`${montserrat.variable} ${inter.variable}`} data-scroll-behavior="smooth">
       <body className="antialiased bg-[var(--color-warm-white)] text-[var(--color-charcoal)]">
         <UIProvider>
           <DateProvider>

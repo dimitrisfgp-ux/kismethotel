@@ -17,6 +17,17 @@ export function DesktopNav({ dark = false }: DesktopNavProps) {
         dark ? "text-white" : "text-[var(--color-charcoal)]"
     );
 
+    const handleNavClick = (e: React.MouseEvent<HTMLAnchorElement>, href: string) => {
+        if (href.includes("#")) {
+            const id = href.split("#")[1];
+            const element = document.getElementById(id);
+            if (element) {
+                e.preventDefault();
+                element.scrollIntoView({ behavior: "smooth" });
+            }
+        }
+    };
+
     return (
         <nav className="hidden lg:flex items-center space-x-16 h-full">
             {NAV_LINKS.map(link => (
@@ -27,13 +38,22 @@ export function DesktopNav({ dark = false }: DesktopNavProps) {
                         onMouseEnter={() => setIsDropdownOpen(true)}
                         onMouseLeave={() => setIsDropdownOpen(false)}
                     >
-                        <Link href={link.href} className={linkClass}>
+                        <Link
+                            href={link.href}
+                            className={linkClass}
+                            onClick={(e) => handleNavClick(e, link.href)}
+                        >
                             {link.label}
                         </Link>
                         {isDropdownOpen && <RoomsDropdown />}
                     </div>
                 ) : (
-                    <Link key={link.label} href={link.href} className={linkClass}>
+                    <Link
+                        key={link.label}
+                        href={link.href}
+                        className={linkClass}
+                        onClick={(e) => handleNavClick(e, link.href)}
+                    >
                         {link.label}
                     </Link>
                 )
