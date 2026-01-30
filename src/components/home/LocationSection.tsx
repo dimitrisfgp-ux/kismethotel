@@ -25,6 +25,7 @@ const CATEGORIES = [
 ];
 
 // ... imports ...
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useRef, useEffect } from "react";
 import { MapMobileWidget } from "./MapMobileWidget";
 import { useUIContext } from "@/contexts/UIContext";
@@ -34,8 +35,21 @@ import { useUIContext } from "@/contexts/UIContext";
 export function LocationSection({ conveniences }: LocationSectionProps) {
     const [activeCategoryIndex, setActiveCategoryIndex] = useState<number | null>(null);
     const [isMobileWidgetVisible, setIsMobileWidgetVisible] = useState(false);
+    const [hasMapLoaded, setHasMapLoaded] = useState(false);
     const sectionRef = useRef<HTMLElement>(null);
     const { setFloatingWidgetVisible } = useUIContext();
+
+    // Lazy Load Map Trigger (200px before viewport)
+    const isNearViewport = useIntersectionObserver(sectionRef, {
+        rootMargin: "200px",
+        threshold: 0
+    });
+
+    useEffect(() => {
+        if (isNearViewport) {
+            setHasMapLoaded(true);
+        }
+    }, [isNearViewport]);
 
     const handleCategoryClick = (index: number) => {
         // Toggle if same clicked
@@ -83,11 +97,17 @@ export function LocationSection({ conveniences }: LocationSectionProps) {
 
             {/* Main: Interactive Map */}
             <div className="flex-1 relative h-[95vh] md:h-full bg-[var(--color-sand)] overflow-hidden order-2 md:order-1">
-                <InteractiveMap
-                    conveniences={conveniences}
-                    center={[35.33965, 25.13285]}
-                    highlightedTypes={activeTypes}
-                />
+                {hasMapLoaded ? (
+                    <InteractiveMap
+                        conveniences={conveniences}
+                        center={[35.33965, 25.13285]}
+                        highlightedTypes={activeTypes}
+                    />
+                ) : (
+                    <div className="w-full h-full bg-[var(--color-sand)] animate-pulse flex items-center justify-center">
+                        <span className="font-inter text-sm tracking-widest uppercase opacity-40">Loading Map...</span>
+                    </div>
+                )}
             </div>
 
             {/* Sidebar: Conveniences */}

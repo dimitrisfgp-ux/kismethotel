@@ -1,24 +1,17 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 import { DesktopNav } from "./DesktopNav";
 import { MobileMenu } from "./MobileMenu";
 import { BurgerIcon } from "./BurgerIcon";
 import { Container } from "../ui/Container";
+import { useScroll } from "@/hooks/useScroll";
 
 export function Header() {
-    const [isScrolled, setIsScrolled] = useState(false);
+    const { isScrolled } = useScroll({ threshold: 50 });
     const [isMobileOpen, setIsMobileOpen] = useState(false);
-
-    useEffect(() => {
-        const handleScroll = () => {
-            setIsScrolled(window.scrollY > 50);
-        };
-        window.addEventListener("scroll", handleScroll);
-        return () => window.removeEventListener("scroll", handleScroll);
-    }, []);
 
     // Logic: 
     // Top of page (Hero): Transparent bg, White logo/text. (dark prop = true)

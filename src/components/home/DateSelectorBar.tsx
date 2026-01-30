@@ -14,6 +14,19 @@ interface DateSelectorBarProps {
     onFilterClick?: () => void;
 }
 
+// Helper Component for Navigation Buttons
+function NavButton({ onClick, disabled, icon: Icon }: { onClick?: () => void, disabled?: boolean, icon: React.ElementType }) {
+    return (
+        <button
+            onClick={onClick}
+            disabled={disabled}
+            className="p-2 rounded-full hover:bg-[var(--color-sand)] disabled:opacity-20 transition-colors active:scale-95 touch-manipulation"
+        >
+            <Icon className="h-6 w-6 text-[var(--color-charcoal)]" />
+        </button>
+    );
+}
+
 export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClick }: DateSelectorBarProps) {
     const { dateRange, setDateRange, guestCount, setGuestCount } = useDateContext();
 
@@ -23,14 +36,7 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
 
                 {/* DESKTOP LAYOUT (Hidden on Mobile) */}
                 <div className="hidden md:flex items-center justify-center gap-8">
-                    {/* Prev Button */}
-                    <button
-                        onClick={onPrev}
-                        disabled={!canPrev}
-                        className="p-2 rounded-full hover:bg-[var(--color-sand)] disabled:opacity-20 transition-colors"
-                    >
-                        <ChevronLeft className="h-6 w-6 text-[var(--color-charcoal)]" />
-                    </button>
+                    <NavButton onClick={onPrev} disabled={!canPrev} icon={ChevronLeft} />
 
                     {/* Wrapper for inputs */}
                     <div className="flex items-center justify-center gap-6">
@@ -49,23 +55,13 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
                         </div>
                     </div>
 
-                    {/* Next Button */}
-                    <button
-                        onClick={onNext}
-                        disabled={!canNext}
-                        className="p-2 rounded-full hover:bg-[var(--color-sand)] disabled:opacity-20 transition-colors"
-                    >
-                        <ChevronRight className="h-6 w-6 text-[var(--color-charcoal)]" />
-                    </button>
+                    <NavButton onClick={onNext} disabled={!canNext} icon={ChevronRight} />
                 </div>
 
 
                 {/* MOBILE LAYOUT (Flex Row: Arrow | Icon | Icon | Arrow) */}
                 <div className="md:hidden flex items-center justify-between w-full px-2">
-                    {/* Prev */}
-                    <button onClick={onPrev} disabled={!canPrev} className="p-2 disabled:opacity-20">
-                        <ChevronLeft className="h-6 w-6 text-[var(--color-charcoal)]" />
-                    </button>
+                    <NavButton onClick={onPrev} disabled={!canPrev} icon={ChevronLeft} />
 
                     {/* Filter Icons Centered */}
                     <div className="flex items-center gap-6">
@@ -84,10 +80,7 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
                         </button>
                     </div>
 
-                    {/* Next */}
-                    <button onClick={onNext} disabled={!canNext} className="p-2 disabled:opacity-20">
-                        <ChevronRight className="h-6 w-6 text-[var(--color-charcoal)]" />
-                    </button>
+                    <NavButton onClick={onNext} disabled={!canNext} icon={ChevronRight} />
                 </div>
 
             </Container>

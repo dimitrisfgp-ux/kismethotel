@@ -22,7 +22,6 @@ export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev
     // Initial mount check for portal
     useEffect(() => {
         setMounted(true);
-        return () => setMounted(false);
     }, []);
 
     // Handle keyboard navigation

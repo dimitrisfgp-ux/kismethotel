@@ -13,36 +13,22 @@ interface RoomCardProps {
 }
 
 import { useRef, useState, useEffect } from "react";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 // ... imports
 
 export function RoomCard({ room, index }: RoomCardProps) {
     const cardRef = useRef<HTMLAnchorElement>(null);
-    const [isActive, setIsActive] = useState(false);
+    const [isTouch, setIsTouch] = useState(false);
 
     useEffect(() => {
-        // Feature detection: Only run this scroll-effect on devices that likely don't have a mouse
-        // using matchMedia for better accuracy than innerWidth
-        const isTouch = window.matchMedia("(hover: none)").matches || window.innerWidth < 1024;
-
-        if (!isTouch) return;
-
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                // Trigger when card is substantially visible
-                setIsActive(entry.isIntersecting);
-            },
-            {
-                threshold: 0.4, // Lower threshold
-                rootMargin: "-5% 0px" // Slight contraction to focus on center
-            }
-        );
-
-        if (cardRef.current) {
-            observer.observe(cardRef.current);
-        }
-
-        return () => observer.disconnect();
+        setIsTouch(window.matchMedia("(hover: none)").matches || window.innerWidth < 1024);
     }, []);
+
+    const isActive = useIntersectionObserver(cardRef, {
+        threshold: 0.4,
+        rootMargin: "-5% 0px",
+        enabled: isTouch
+    });
 
     return (
         <Link

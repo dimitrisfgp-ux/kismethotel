@@ -2,7 +2,7 @@
 
 import { cn } from "@/lib/utils";
 
-import { useState, useMemo, useEffect } from "react";
+import { useRef, useState, useMemo, useEffect } from "react";
 import { Room, RoomFilters } from "@/types";
 import { RoomCard } from "../rooms/RoomCard";
 import { DateSelectorBar } from "./DateSelectorBar";
@@ -10,6 +10,7 @@ import { FilterWidget } from "./FilterWidget";
 import { FilterPanel } from "./FilterPanel";
 import { useRoomFilters } from "@/hooks/useRoomFilters";
 import { scrollToElement } from "@/lib/utils";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 
 interface RoomsGridProps {
     rooms: Room[];
@@ -67,35 +68,15 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
         setCurrentPage(1); // Reset to page 1 on filter change
     };
 
-    const [isWidgetVisible, setIsWidgetVisible] = useState(false);
-
-    useEffect(() => {
-        const observer = new IntersectionObserver(
-            ([entry]) => {
-                setIsWidgetVisible(entry.isIntersecting);
-            },
-            {
-                threshold: 0,
-                // Strict "Center Focus": Only active when intersecting the middle 10% of screen.
-                // Ensures widget fades out immediately when section is not the primary focus.
-                rootMargin: "-45% 0px -45% 0px"
-            }
-        );
-
-        const section = document.getElementById("rooms");
-        if (section) {
-            observer.observe(section);
-        }
-
-        return () => {
-            if (section) {
-                observer.unobserve(section);
-            }
-        };
-    }, []);
+    const sectionRef = useRef<HTMLElement>(null);
+    const isWidgetVisible = useIntersectionObserver(sectionRef, {
+        threshold: 0,
+        // Strict "Center Focus": Only active when intersecting the middle 10% of screen.
+        rootMargin: "-45% 0px -45% 0px"
+    });
 
     return (
-        <section id="rooms" className="bg-white pb-0 relative min-h-screen">
+        <section ref={sectionRef} id="rooms" className="bg-white pb-0 relative min-h-screen">
             <DateSelectorBar
                 onPrev={() => handlePageChange(currentPage - 1)}
                 onNext={() => handlePageChange(currentPage + 1)}

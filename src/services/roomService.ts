@@ -1,6 +1,6 @@
 import { ROOMS } from "@/data";
 import { Room } from "@/types";
-import { isDateAvailable } from "@/lib/availability";
+
 
 export const roomService = {
     getRooms: async (): Promise<Room[]> => {
@@ -20,7 +20,7 @@ export const roomService = {
     },
 
     // Mock availability check
-    checkAvailability: async (roomId: string, start: Date, end: Date): Promise<boolean> => {
+    checkAvailability: async (_roomId: string, _start: Date, _end: Date): Promise<boolean> => {
         // For prototype, just return true unless it's the specific "unavailable" dates matching a seed
         // We can implement more logic here if needed
         return true;

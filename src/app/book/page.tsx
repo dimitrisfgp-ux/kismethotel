@@ -1,7 +1,7 @@
 "use client";
 
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { addDays } from "date-fns";
 import { useEffect, useState, Suspense } from "react";
 import { useDateContext } from "@/contexts/DateContext";
@@ -16,14 +16,12 @@ function BookContent() {
     const searchParams = useSearchParams();
     const roomId = searchParams.get("roomId");
     const { dateRange } = useDateContext();
-    const router = useRouter();
 
     const [room, setRoom] = useState<Room | null>(null);
     const [loading, setLoading] = useState(true);
 
     useEffect(() => {
         if (!roomId) {
-            // router.push("/#rooms"); 
             // Don't redirect immediately to avoid loops or flash, show empty invalid state
             return;
         }

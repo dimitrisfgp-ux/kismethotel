@@ -7,9 +7,9 @@ import "leaflet/dist/leaflet.css";
 import { Convenience } from "@/types";
 import { renderToStaticMarkup } from "react-dom/server";
 import { MapPin, Home, Plus, Minus } from "lucide-react";
+import { HOTEL_COORDINATES } from "@/config/constants";
 
 // Fix Leaflet's default icon path issues in Next.js
-// We won't use default markers anyway, but good to have
 // (L.Icon.Default.prototype as any)._getIconUrl = null;
 
 interface InteractiveMapProps {
@@ -40,15 +40,15 @@ function BoundsController({ markers, activeTypes }: { markers: Convenience[], ac
         if (activeMarkers.length > 0) {
             const targetBounds = L.latLngBounds(activeMarkers.map(m => [m.lat, m.lng]));
             // Add hotel to bounds too so context is kept
-            targetBounds.extend([35.33965, 25.13285]);
+            targetBounds.extend(HOTEL_COORDINATES);
 
-            // Check if target bounds are already fully visible with some padding
-            const currentBounds = map.getBounds().pad(-0.1); // Shrink current bounds by 10% to ensure "comfortable" fit
+            // Check if target bounds are already fully visible
+            const currentBounds = map.getBounds().pad(-0.1);
 
             if (!currentBounds.contains(targetBounds)) {
-                map.flyToBounds(targetBounds, {
-                    padding: [50, 50],
-                    maxZoom: 16,
+                // User requirement: Transpose map (pan) instead of zooming out.
+                // We maintain the default high zoom execution (17).
+                map.flyTo(targetBounds.getCenter(), 17, {
                     duration: 1.5
                 });
             }
@@ -77,7 +77,6 @@ const createCustomIcon = (type: string, isHotel = false) => {
     };
 
     const color = getColor(type);
-    // User requested equalized size and "easily touchable"
     const size = 48;
     const IconComponent = isHotel ? Home : MapPin;
 
@@ -86,9 +85,9 @@ const createCustomIcon = (type: string, isHotel = false) => {
             <IconComponent
                 size={size}
                 fill={color}
-                className="text-white" // Icon borders/stroke usually white for contrast if fill is colored
+                className="text-white"
                 strokeWidth={2}
-                color="white" // Ensure stroke is white
+                color="white"
             />
             {/* Inner Dot */}
             <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-sm" />
@@ -99,7 +98,7 @@ const createCustomIcon = (type: string, isHotel = false) => {
         html: iconMarkup,
         className: 'bg-transparent',
         iconSize: [size, size],
-        iconAnchor: [size / 2, size / 2], // Center anchor for equalized icon
+        iconAnchor: [size / 2, size / 2],
         popupAnchor: [0, -size / 2],
     });
 };
@@ -149,7 +148,7 @@ function CustomZoomControl() {
 
 export default function InteractiveMap({ conveniences, center, highlightedTypes }: InteractiveMapProps) {
     // Hotel Location (Heraklion Center)
-    const hotelPosition: [number, number] = [35.33965, 25.13285];
+    const hotelPosition = HOTEL_COORDINATES;
 
     // Interaction State
     const [isInteractive, setIsInteractive] = useState(false);
@@ -246,4 +245,3 @@ function ConvenienceMarker({ spot, isDimmed }: { spot: Convenience, isDimmed: bo
         </Marker>
     );
 }
-
