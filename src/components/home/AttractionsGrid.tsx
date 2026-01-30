@@ -35,11 +35,11 @@ export function AttractionsGrid({ attractions }: AttractionsGridProps) {
                         <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40 group-hover:opacity-70 transition-all duration-300" />
 
                         <div className="absolute bottom-0 left-0 w-full p-8 text-[var(--color-warm-white)]">
-                            <div className="flex items-end justify-between w-full mb-0 group-hover:mb-4 transition-all duration-500 ease-premium">
+                            <div className="flex items-baseline justify-start gap-4 w-full mb-0 group-hover:mb-4 transition-all duration-500 ease-premium">
                                 <h3 className="font-montserrat text-xl font-bold uppercase tracking-widest text-[var(--color-warm-white)] leading-none mt-1">
                                     {attraction.name}
                                 </h3>
-                                <div className="ml-4 shrink-0">
+                                <div className="shrink-0">
                                     <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm whitespace-nowrap">
                                         {attraction.distance}
                                     </span>

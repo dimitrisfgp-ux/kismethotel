@@ -44,7 +44,7 @@ export function Hero() {
                     Curated Luxury on the Cretan Coast
                 </p>
                 <div onClick={handleScroll}>
-                    <Button size="lg" className="bg-white/50 backdrop-blur-2xl border border-white/60 text-white hover:bg-[var(--color-sand)] hover:text-[var(--color-charcoal)] hover:translate-y-0 transition-all duration-300">
+                    <Button size="lg" className="min-w-[240px] bg-white/20 backdrop-blur-xl border border-white/50 text-white hover:bg-white/30 hover:text-white hover:translate-y-0 transition-colors duration-300">
                         Explore Collection
                     </Button>
                 </div>
