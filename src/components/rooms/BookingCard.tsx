@@ -6,7 +6,7 @@ import { DayPicker, useNavigation } from "react-day-picker";
 import "react-day-picker/style.css";
 import { Button } from "../ui/Button";
 import { formatCurrency, calculateTotal } from "@/lib/priceCalculator";
-import { differenceInDays, format } from "date-fns";
+import { differenceInDays, format, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -47,14 +47,28 @@ export function BookingCard({ room }: BookingCardProps) {
     const { dateRange, setDateRange } = useDateContext();
     const router = useRouter();
 
-    const nights = dateRange?.from && dateRange?.to ? differenceInDays(dateRange.to, dateRange.from) : 0;
+    // Logic: If 'from' is selected but 'to' is not, consider it 1 night (User selecting just check-in for 1 night stay)
+    const nights = dateRange?.from
+        ? (dateRange.to ? Math.max(1, differenceInDays(dateRange.to, dateRange.from)) : 1)
+        : 0;
+
     const total = calculateTotal(room.pricePerNight, nights);
 
     const handleBookNow = () => {
-        if (!dateRange?.from || !dateRange?.to) {
+        if (!dateRange?.from) {
             alert("Please select dates first."); // Or use Toast
             return;
         }
+
+        // If single day selected, assume 1 night for booking flow
+        // The context in book page will likely need 'to' to be defined, but we pass roomId. 
+        // We might want to set the context 'to' here before navigating? 
+        // Or better, let the book page handle it via URL params if implemented, but here we just push.
+        // Actually, let's update local context to ensure consistency if we rely on it.
+        if (!dateRange.to) {
+            setDateRange({ from: dateRange.from, to: addDays(dateRange.from, 1) });
+        }
+
         // Navigate to booking flow
         router.push(`/book?roomId=${room.id}`);
     };

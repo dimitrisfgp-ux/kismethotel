@@ -22,7 +22,7 @@ export function FAQAccordion({ faqs }: FAQAccordionProps) {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 mt-12 items-start">
                     {faqs.map((faq) => (
-                        <div key={faq.id} className="bg-white border border-[var(--color-sand)] rounded-[var(--radius-subtle)] overflow-hidden h-full">
+                        <div key={faq.id} className="bg-white border border-[var(--color-sand)] rounded-[var(--radius-subtle)] overflow-hidden h-full shadow-md hover:shadow-lg transition-shadow duration-300">
                             <button
                                 onClick={() => setOpenId(openId === faq.id ? null : faq.id)}
                                 className="w-full flex items-center justify-between p-6 text-left hover:bg-[var(--color-warm-white)]/50 transition-colors"
@@ -41,7 +41,7 @@ export function FAQAccordion({ faqs }: FAQAccordionProps) {
                             </button>
 
                             <div className={cn(
-                                "transition-all duration-300 ease-in-out overflow-hidden",
+                                "transition-all duration-700 ease-premium overflow-hidden",
                                 openId === faq.id ? "max-h-96 opacity-100 border-t border-[var(--color-sand)]" : "max-h-0 opacity-0"
                             )}>
                                 <div className="p-6 font-inter text-sm text-[var(--color-charcoal)] opacity-80 leading-relaxed">

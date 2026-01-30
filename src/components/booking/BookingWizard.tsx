@@ -4,12 +4,13 @@ import { useState } from "react";
 import { Room } from "@/types";
 import { DateRange } from "react-day-picker";
 import { Button } from "../ui/Button";
-import { Input } from "../ui/Input";
 import { PaymentMock } from "./PaymentMock";
-import { formatCurrency, calculateTotal } from "@/lib/priceCalculator";
-import { differenceInDays, format } from "date-fns";
+import { calculateTotal } from "@/lib/priceCalculator";
+import { differenceInDays } from "date-fns";
 import { useRouter } from "next/navigation";
-import Image from "next/image";
+import { StepItinerary } from "./steps/StepItinerary";
+import { StepGuestDetails } from "./steps/StepGuestDetails";
+import { BookingSummary } from "./BookingSummary";
 
 interface BookingWizardProps {
     room: Room;
@@ -57,46 +58,9 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
                 <div className="bg-white p-8 border border-[var(--color-sand)] rounded-[var(--radius-subtle)] min-h-[400px]">
                     <h2 className="font-montserrat text-2xl font-bold uppercase tracking-widest mb-8">{steps[step - 1]}</h2>
 
-                    {step === 1 && (
-                        <div className="space-y-6 animate-fade-in">
-                            <div className="flex gap-6">
-                                <div className="relative w-32 h-32 flex-shrink-0">
-                                    <Image src={room.images[0]} alt={room.name} fill className="object-cover rounded-[var(--radius-subtle)]" />
-                                </div>
-                                <div>
-                                    <h3 className="font-bold text-xl mb-2">{room.name}</h3>
-                                    <div className="text-sm opacity-70 space-y-1">
-                                        <p>{format(dateRange.from!, "MMM dd, yyyy")} - {format(dateRange.to!, "MMM dd, yyyy")}</p>
-                                        <p>{nights} Nights</p>
-                                        <p>{room.maxOccupancy} Guests Max</p>
-                                    </div>
-                                </div>
-                            </div>
-                        </div>
-                    )}
+                    {step === 1 && <StepItinerary room={room} dateRange={dateRange} nights={nights} />}
 
-                    {step === 2 && (
-                        <div className="space-y-6 animate-fade-in">
-                            <div className="grid grid-cols-2 gap-4">
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest mb-2 opacity-60">First Name</label>
-                                    <Input placeholder="First Name" />
-                                </div>
-                                <div>
-                                    <label className="block text-xs font-bold uppercase tracking-widest mb-2 opacity-60">Last Name</label>
-                                    <Input placeholder="Last Name" />
-                                </div>
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest mb-2 opacity-60">Email Address</label>
-                                <Input type="email" placeholder="email@example.com" />
-                            </div>
-                            <div>
-                                <label className="block text-xs font-bold uppercase tracking-widest mb-2 opacity-60">Phone Number (Optional)</label>
-                                <Input type="tel" placeholder="+1..." />
-                            </div>
-                        </div>
-                    )}
+                    {step === 2 && <StepGuestDetails />}
 
                     {step === 3 && <PaymentMock />}
 
@@ -114,24 +78,7 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
 
             {/* Order Summary Sidebar */}
             <div>
-                <div className="bg-[var(--color-warm-white)] p-8 rounded-[var(--radius-subtle)] sticky top-28">
-                    <h3 className="font-montserrat text-lg font-bold uppercase tracking-widest mb-6 border-b border-[var(--color-sand)] pb-4">Order Summary</h3>
-
-                    <div className="space-y-4 text-sm font-inter">
-                        <div className="flex justify-between">
-                            <span className="opacity-60">{formatCurrency(room.pricePerNight)} x {nights} nights</span>
-                            <span>{formatCurrency(total)}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="opacity-60">Taxes & Fees</span>
-                            <span>{formatCurrency(0)}</span>
-                        </div>
-                        <div className="flex justify-between pt-4 border-t border-[var(--color-sand)] font-bold text-lg">
-                            <span>Total</span>
-                            <span className="text-[var(--color-aegean-blue)]">{formatCurrency(total)}</span>
-                        </div>
-                    </div>
-                </div>
+                <BookingSummary room={room} nights={nights} total={total} />
             </div>
         </div>
     );

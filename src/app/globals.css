@@ -14,6 +14,11 @@
   --color-success: #5F9B7C;
   --color-error: #D47B6A;
 
+  /* Map Category Colors */
+  --color-map-beach: #38bdf8;
+  --color-map-rental: #f97316;
+  --color-map-dining: #e11d48;
+
   /* Spacing (Fluid) */
   --space-xs: clamp(0.25rem, 0.5vw, 0.5rem);
   --space-sm: clamp(0.75rem, 1.5vw, 1rem);
@@ -49,6 +54,10 @@
 
   --header-height: 80px;
   --container-max: 1280px;
+}
+
+html {
+  scroll-behavior: smooth;
 }
 
 body {

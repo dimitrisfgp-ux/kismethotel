@@ -11,7 +11,7 @@ import { Toast } from "@/components/ui/Toast";
 const montserrat = Montserrat({
   subsets: ["latin"],
   variable: "--font-montserrat",
-  weight: ["600", "700"],
+  weight: ["300", "400", "500", "600", "700"],
   display: "swap",
 });
 
@@ -57,6 +57,9 @@ export const viewport: Viewport = {
   initialScale: 1,
 };
 
+import { ScrollToTop } from "@/components/layout/ScrollToTop";
+
+// ...
 export default function RootLayout({
   children,
 }: Readonly<{
@@ -67,6 +70,7 @@ export default function RootLayout({
       <body className="antialiased bg-[var(--color-warm-white)] text-[var(--color-charcoal)]">
         <UIProvider>
           <DateProvider>
+            <ScrollToTop />
             <Header />
             <main className="min-h-screen">
               {children}

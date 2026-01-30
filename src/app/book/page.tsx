@@ -1,6 +1,8 @@
 "use client";
 
+
 import { useSearchParams, useRouter } from "next/navigation";
+import { addDays } from "date-fns";
 import { useEffect, useState, Suspense } from "react";
 import { useDateContext } from "@/contexts/DateContext";
 import { roomService } from "@/services/roomService";
@@ -55,7 +57,7 @@ function BookContent() {
 
     // If no dates, we could show a blocker or just let them pick?
     // Wizard requires dateRange. 
-    if (!dateRange || !dateRange.from || !dateRange.to) {
+    if (!dateRange || !dateRange.from) {
         return (
             <Container className="py-20 text-center">
                 <p>Please select dates first.</p>
@@ -63,11 +65,13 @@ function BookContent() {
         );
     }
 
+    const effectiveTo = dateRange.to || addDays(dateRange.from, 1);
+
     return (
         <div className="pt-[var(--header-height)] min-h-screen bg-[var(--color-warm-white)] py-12">
             <Container>
                 <SectionHeading title="Confirm Your Stay" subtitle="You are just a few steps away from paradise." />
-                <BookingWizard room={room} dateRange={{ from: dateRange.from!, to: dateRange.to! }} />
+                <BookingWizard room={room} dateRange={{ from: dateRange.from!, to: effectiveTo }} />
             </Container>
         </div>
     );

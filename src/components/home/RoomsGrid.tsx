@@ -8,7 +8,8 @@ import { RoomCard } from "../rooms/RoomCard";
 import { DateSelectorBar } from "./DateSelectorBar";
 import { FilterWidget } from "./FilterWidget";
 import { FilterPanel } from "./FilterPanel";
-import { filterRooms } from "@/lib/filterHelpers";
+import { useRoomFilters } from "@/hooks/useRoomFilters";
+import { scrollToElement } from "@/lib/utils";
 
 interface RoomsGridProps {
     rooms: Room[];
@@ -43,24 +44,7 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
         }
     }, [dateRange, guestCount]);
 
-    const filteredRooms = useMemo(() => {
-        // Override local minOccupancy with context guestCount
-        const activeFilters = { ...filters, minOccupancy: guestCount };
-
-        let results = filterRooms(rooms, activeFilters);
-
-        // Mock Availability Check (filter out room '2' if date range spans more than 3 days, just to show effect)
-        if (dateRange && dateRange.from && dateRange.to) {
-            const duration = dateRange.to.getTime() - dateRange.from.getTime();
-            const days = duration / (1000 * 3600 * 24);
-            // Example: 'Knossos' (id:2) is unavailable for stays > 3 days
-            if (days > 3) {
-                results = results.filter(r => r.id !== "2");
-            }
-        }
-
-        return results;
-    }, [rooms, filters, guestCount, dateRange]);
+    const filteredRooms = useRoomFilters({ rooms, filters, guestCount, dateRange });
 
     const ITEMS_PER_PAGE = 4;
     const totalPages = Math.ceil(filteredRooms.length / ITEMS_PER_PAGE);
@@ -73,7 +57,9 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
 
     const handlePageChange = (page: number) => {
         setCurrentPage(page);
-        document.getElementById("room-grid-start")?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Scroll to grid top with a faster, smoother duration (600ms) to avoid "fighting" feel
+        // Offset 160px (Header ~80px + Sticky DateBar ~80px) to prevent hiding content
+        scrollToElement("room-grid-start", 600, 160);
     };
 
     const handleApplyFilters = (newFilters: RoomFilters) => {
@@ -118,7 +104,7 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
                 onFilterClick={() => setIsFilterOpen(true)}
             />
 
-            <div id="room-grid-start" className="w-full relative min-h-[400px]">
+            <div id="room-grid-start" className="w-full relative min-h-[800px]">
                 {/* Loading Overlay */}
                 <div className={cn(
                     "absolute inset-0 bg-white/80 z-20 flex items-center justify-center transition-opacity duration-300",
@@ -136,13 +122,14 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
                         <button onClick={() => setFilters({ ...filters, priceRange: [0, 1000] })} className="text-[var(--color-aegean-blue)] underline mt-4">Reset Filters</button>
                     </div>
                 ) : (
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white border-y border-white transition-opacity duration-500 ease-in-out">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white border-y border-white">
                         {visibleRooms.map((room, i) => (
-                            <RoomCard
-                                key={room.id}
-                                room={room}
-                                index={(currentPage - 1) * ITEMS_PER_PAGE + i}
-                            />
+                            <div key={room.id} className="animate-[fade-in_600ms_var(--ease-premium)_forwards]">
+                                <RoomCard
+                                    room={room}
+                                    index={(currentPage - 1) * ITEMS_PER_PAGE + i}
+                                />
+                            </div>
                         ))}
                     </div>
                 )}

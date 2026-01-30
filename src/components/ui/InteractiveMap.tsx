@@ -6,7 +6,7 @@ import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Convenience } from "@/types";
 import { renderToStaticMarkup } from "react-dom/server";
-import { MapPin } from "lucide-react";
+import { MapPin, Home, Plus, Minus } from "lucide-react";
 
 // Fix Leaflet's default icon path issues in Next.js
 // We won't use default markers anyway, but good to have
@@ -66,22 +66,24 @@ const createCustomIcon = (type: string, isHotel = false) => {
         switch (t) {
             case 'Supermarket': return "var(--color-accent-gold)";
             case 'Pharmacy': return "var(--color-success)";
-            case 'Beach': return "#38bdf8";
+            case 'Beach': return "var(--color-map-beach)";
             case 'Bus': return "var(--color-deep-med)";
-            case 'Car Rental': return "#f97316";
-            case 'Restaurant': return "#e11d48"; // Rose
-            case 'Cafe': return "#b45309"; // Amber
-            case 'Bar': return "#9333ea"; // Purple
+            case 'Car Rental': return "var(--color-map-rental)";
+            case 'Restaurant':
+            case 'Cafe':
+            case 'Bar': return "var(--color-map-dining)"; // Rose (Dining Category)
             default: return "var(--color-charcoal)";
         }
     };
 
     const color = getColor(type);
-    const size = isHotel ? 52 : 36;
+    // User requested equalized size and "easily touchable"
+    const size = 48;
+    const IconComponent = isHotel ? Home : MapPin;
 
     const iconMarkup = renderToStaticMarkup(
-        <div className="relative flex items-center justify-center drop-shadow-xl w-full h-full">
-            <MapPin
+        <div className="relative flex items-center justify-center drop-shadow-xl w-full h-full transition-transform hover:scale-110 duration-200">
+            <IconComponent
                 size={size}
                 fill={color}
                 className="text-white" // Icon borders/stroke usually white for contrast if fill is colored
@@ -89,7 +91,7 @@ const createCustomIcon = (type: string, isHotel = false) => {
                 color="white" // Ensure stroke is white
             />
             {/* Inner Dot */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-3/4 w-2 h-2 bg-white rounded-full" />
+            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-sm" />
         </div>
     );
 
@@ -97,56 +99,128 @@ const createCustomIcon = (type: string, isHotel = false) => {
         html: iconMarkup,
         className: 'bg-transparent',
         iconSize: [size, size],
-        iconAnchor: [size / 2, size],
-        popupAnchor: [0, -size],
+        iconAnchor: [size / 2, size / 2], // Center anchor for equalized icon
+        popupAnchor: [0, -size / 2],
     });
 };
+
+// Component to manage map interaction state
+function MapInteractionController({ isInteractive }: { isInteractive: boolean }) {
+    const map = useMap();
+    useEffect(() => {
+        if (isInteractive) {
+            map.dragging.enable();
+            map.touchZoom.enable();
+            map.doubleClickZoom.enable();
+            map.scrollWheelZoom.enable();
+        } else {
+            map.dragging.disable();
+            map.touchZoom.disable();
+            map.doubleClickZoom.disable();
+            map.scrollWheelZoom.disable();
+        }
+    }, [isInteractive, map]);
+    return null;
+}
+
+// Custom Zoom Control Component
+function CustomZoomControl() {
+    const map = useMap();
+
+    return (
+        <div className="absolute bottom-6 right-6 z-[400] flex flex-col bg-white shadow-xl rounded-lg">
+            <button
+                onClick={() => map.zoomIn()}
+                className="p-2 text-[var(--color-aegean-blue)] hover:bg-[var(--color-sand)] rounded-t-lg transition-colors duration-300 ease-premium focus:outline-none border-b border-[var(--color-sand)]/30"
+                aria-label="Zoom In"
+            >
+                <Plus className="w-5 h-5" />
+            </button>
+            <button
+                onClick={() => map.zoomOut()}
+                className="p-2 text-[var(--color-aegean-blue)] hover:bg-[var(--color-sand)] rounded-b-lg transition-colors duration-300 ease-premium focus:outline-none"
+                aria-label="Zoom Out"
+            >
+                <Minus className="w-5 h-5" />
+            </button>
+        </div>
+    );
+}
 
 export default function InteractiveMap({ conveniences, center, highlightedTypes }: InteractiveMapProps) {
     // Hotel Location (Heraklion Center)
     const hotelPosition: [number, number] = [35.33965, 25.13285];
 
+    // Interaction State
+    const [isInteractive, setIsInteractive] = useState(false);
+
+    // Enable interaction by default on desktop, disable on mobile
+    useEffect(() => {
+        if (window.innerWidth >= 768) {
+            setIsInteractive(true);
+        }
+    }, []);
+
     return (
-        <MapContainer
-            center={hotelPosition}
-            zoom={17}
-            scrollWheelZoom={false}
-            className="w-full h-full z-0"
-            style={{ background: 'var(--color-sand)' }} // Fallback
-        >
-            {/* Brand Styled Tiles */}
-            <TileLayer
-                attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
-                url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-                className="map-tiles-brand"
-            />
+        <div className="relative w-full h-full group">
+            <MapContainer
+                center={hotelPosition}
+                zoom={17}
+                scrollWheelZoom={false} // Default false, controller manages it
+                zoomControl={false}   // Disable default top-left controls
+                dragging={false}      // Default false
+                touchZoom={false}     // Default false
+                doubleClickZoom={false}
+                className="w-full h-full z-0"
+                style={{ background: 'var(--color-sand)' }}
+            >
+                {/* Brand Styled Tiles */}
+                <TileLayer
+                    attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+                    url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
+                    className="map-tiles-brand"
+                />
 
-            <MapController center={center} />
-            <BoundsController markers={conveniences} activeTypes={highlightedTypes} />
+                <MapController center={center} />
+                <BoundsController markers={conveniences} activeTypes={highlightedTypes} />
+                <MapInteractionController isInteractive={isInteractive} />
+                <CustomZoomControl />
 
-            {/* Hotel Marker (Always Visible) */}
-            <Marker position={hotelPosition} icon={createCustomIcon("hotel", true)}>
-                <Popup className="font-montserrat text-sm text-[var(--color-deep-med)]">
-                    <strong>Kismet Hotel</strong><br />
-                    Heart of Heraklion
-                </Popup>
-            </Marker>
+                {/* Hotel Marker (Always Visible) */}
+                <Marker position={hotelPosition} icon={createCustomIcon("hotel", true)}>
+                    <Popup className="font-montserrat text-sm text-[var(--color-deep-med)]">
+                        <strong>Kismet Hotel</strong><br />
+                        Heart of Heraklion
+                    </Popup>
+                </Marker>
 
-            {/* Convenience Markers */}
-            {conveniences.map(spot => {
-                // Determine if dimmed. If no highlighting is active, nothing is dimmed.
-                // If highlighting IS active, only dim if NOT in the list.
-                const isDimmed = highlightedTypes !== null && highlightedTypes.length > 0 && !highlightedTypes.includes(spot.type);
+                {/* Convenience Markers */}
+                {conveniences.map(spot => {
+                    const isDimmed = highlightedTypes !== null && highlightedTypes.length > 0 && !highlightedTypes.includes(spot.type);
+                    return (
+                        <ConvenienceMarker
+                            key={spot.id}
+                            spot={spot}
+                            isDimmed={isDimmed}
+                        />
+                    );
+                })}
+            </MapContainer>
 
-                return (
-                    <ConvenienceMarker
-                        key={spot.id}
-                        spot={spot}
-                        isDimmed={isDimmed}
-                    />
-                );
-            })}
-        </MapContainer>
+            {/* Interaction Overlay (Mobile Only) */}
+            {!isInteractive && (
+                <div
+                    onClick={() => setIsInteractive(true)}
+                    className="absolute inset-0 z-[400] bg-black/5 flex items-center justify-center cursor-pointer transition-opacity duration-300 md:hidden hover:bg-black/10"
+                >
+                    <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-[var(--color-sand)]">
+                        <span className="font-montserrat text-xs font-bold uppercase tracking-widest text-[var(--color-deep-med)]">
+                            Tap to Explore
+                        </span>
+                    </div>
+                </div>
+            )}
+        </div>
     );
 }
 

@@ -1,11 +1,13 @@
 "use client";
 
+import { createPortal } from "react-dom";
+import { useState, useEffect } from "react";
 import { RoomFilters, RoomSizeCategory } from "@/types";
 import { Button } from "../ui/Button";
-import { X, Users } from "lucide-react";
-import { useState } from "react";
+import { X } from "lucide-react";
 import { useDateContext } from "@/contexts/DateContext";
 import { DatePickerWithRange } from "../booking/DateRangePicker";
+import { GuestSelector } from "../ui/GuestSelector";
 
 interface FilterPanelProps {
     isOpen: boolean;
@@ -17,11 +19,22 @@ interface FilterPanelProps {
 export function FilterPanel({ isOpen, onClose, currentFilters, onApply }: FilterPanelProps) {
     const [localFilters, setLocalFilters] = useState<RoomFilters>(currentFilters);
     const { dateRange, setDateRange, guestCount, setGuestCount } = useDateContext();
+    const [mounted, setMounted] = useState(false);
 
-    if (!isOpen) return null;
+    useEffect(() => {
+        setMounted(true);
+        return () => setMounted(false);
+    }, []);
 
-    return (
-        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm flex justify-end animate-fade-in">
+    // Also synch local filters if props change, though usually panel re-opens with new state
+    useEffect(() => {
+        setLocalFilters(currentFilters);
+    }, [currentFilters]);
+
+    if (!isOpen || !mounted) return null;
+
+    return createPortal(
+        <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-end animate-fade-in">
             <div className="w-full max-w-md bg-white h-full shadow-2xl p-6 md:p-8 overflow-y-auto animate-slide-up">
                 <div className="flex justify-between items-center mb-6">
                     <h2 className="font-montserrat text-xl font-bold uppercase tracking-widest text-[var(--color-aegean-blue)]">Filter Rooms</h2>
@@ -46,18 +59,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply }: Filter
                         {/* Guest Count */}
                         <div>
                             <label className="block text-xs font-semibold uppercase tracking-widest text-[var(--color-charcoal)]/60 mb-2">Guests</label>
-                            <div className="flex items-center gap-4 bg-white p-2 rounded-[var(--radius-subtle)] border border-[var(--color-sand)]">
-                                <Users className="h-5 w-5 text-[var(--color-aegean-blue)] ml-2" />
-                                <select
-                                    value={guestCount}
-                                    onChange={(e) => setGuestCount(Number(e.target.value))}
-                                    className="w-full bg-transparent border-none text-sm font-inter focus:ring-0 cursor-pointer"
-                                >
-                                    {[1, 2, 3, 4, 5, 6].map(num => (
-                                        <option key={num} value={num}>{num} Guest{num > 1 ? 's' : ''}</option>
-                                    ))}
-                                </select>
-                            </div>
+                            <GuestSelector value={guestCount} onChange={setGuestCount} />
                         </div>
                     </div>
 
@@ -136,6 +138,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply }: Filter
                     </Button>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }

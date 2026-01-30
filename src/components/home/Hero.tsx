@@ -3,17 +3,13 @@
 import { PLACEHOLDER_HERO } from "@/lib/placeholders";
 import { Button } from "../ui/Button";
 import { ChevronDown } from "lucide-react";
-import Link from "next/link";
+import { scrollToElement } from "@/lib/utils";
 import Image from "next/image";
 
 export function Hero() {
-    const scrollToRooms = () => {
-        const element = document.getElementById("search-bar");
-        if (element) {
-            // Offset for sticky header
-            const y = element.getBoundingClientRect().top + window.scrollY - 100;
-            window.scrollTo({ top: y, behavior: 'smooth' });
-        }
+    const handleScroll = (e: React.MouseEvent) => {
+        e.preventDefault();
+        scrollToElement("search-bar"); // Or 'rooms' if preferred, preserving 'search-bar' targeting
     };
 
     return (
@@ -28,32 +24,33 @@ export function Hero() {
                     className="absolute inset-0 w-full h-full object-cover"
                     poster={PLACEHOLDER_HERO}
                 >
-                    <source src="/Videos/desktop/hero_desktop.mp4" type="video/mp4" />
+                    <source src="/Videos/desktop/hero-desktop.mp4" type="video/mp4" />
                     Your browser does not support the video tag.
                 </video>
             </div>
 
             {/* Overlay */}
-            <div className="absolute inset-0 bg-black/20 z-10" />
+            <div className="absolute inset-0 bg-[var(--color-aegean-blue)]/20 z-10" />
 
             {/* Content */}
             <div className="relative z-20 text-center text-white px-4 animate-fade-in">
-                <h1 className="font-montserrat font-bold text-[clamp(2.5rem,6vw,5rem)] tracking-[0.2em] mb-4 drop-shadow-md">
+                <h1 className="font-montserrat font-light text-[clamp(2.5rem,6vw,5rem)] tracking-[0.2em] mb-4 drop-shadow-lg text-[var(--color-sand)]">
                     Your Destiny Awaits
                 </h1>
+                <div className="w-full max-w-lg h-[1px] bg-gradient-to-r from-transparent via-[var(--color-sand)] to-transparent mx-auto mb-6 shadow-sm" />
                 <p className="font-inter text-lg md:text-xl tracking-widest uppercase opacity-90 mb-10 max-w-2xl mx-auto drop-shadow-sm">
                     Curated Luxury on the Cretan Coast
                 </p>
-                <Link href="/#rooms">
-                    <Button size="lg" className="bg-white text-[var(--color-charcoal)] hover:bg-[var(--color-warm-white)]">
+                <div onClick={handleScroll}>
+                    <Button size="lg" className="bg-white/50 backdrop-blur-2xl border border-white/60 text-white hover:bg-[var(--color-sand)] hover:text-[var(--color-charcoal)] transition-all duration-300">
                         Explore Collection
                     </Button>
-                </Link>
+                </div>
             </div>
 
             {/* Scroll Indicator */}
             <button
-                onClick={scrollToRooms}
+                onClick={() => scrollToElement("search-bar")}
                 className="absolute bottom-10 z-20 animate-bounce text-white/80 hover:text-white transition-colors"
             >
                 <ChevronDown className="h-10 w-10" />

@@ -32,12 +32,16 @@ export function AttractionsGrid({ attractions }: AttractionsGridProps) {
                                     : "(max-width: 768px) 100vw, 33vw"
                             }
                         />
-                        <div className="absolute inset-0 bg-black/30 group-hover:bg-black/50 transition-colors duration-300" />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-40 group-hover:opacity-70 transition-all duration-300" />
 
                         <div className="absolute bottom-0 left-0 p-8 text-[var(--color-warm-white)] w-full transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300 drop-shadow-md">
                             <h3 className="font-montserrat text-xl font-bold uppercase tracking-widest mb-2 text-[var(--color-warm-white)]">{attraction.name}</h3>
                             <p className="font-inter text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 delay-100">{attraction.description}</p>
-                            <p className="font-inter text-xs mt-2 text-[var(--color-sand)]">{attraction.distance}</p>
+                            <div className="mt-3 inline-block">
+                                <span className="inline-flex items-center px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/20 text-white shadow-sm">
+                                    {attraction.distance}
+                                </span>
+                            </div>
                         </div>
                     </div>
                 ))}

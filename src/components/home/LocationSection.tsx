@@ -70,7 +70,7 @@ export function LocationSection({ conveniences }: LocationSectionProps) {
     const activeTypes = activeCategoryIndex !== null ? CATEGORIES[activeCategoryIndex].types : null;
 
     return (
-        <section ref={sectionRef} className="flex flex-col md:flex-row w-full h-[85vh] min-h-[600px] border-y border-[var(--color-sand)] relative">
+        <section ref={sectionRef} className="flex flex-col md:flex-row w-full h-[95vh] min-h-[600px] border-y border-[var(--color-sand)] relative">
 
             {/* Mobile-Only Heading */}
             <div className="md:hidden w-full bg-[var(--color-warm-white)] py-8 px-4 text-center border-b border-[var(--color-sand)]">
@@ -82,7 +82,7 @@ export function LocationSection({ conveniences }: LocationSectionProps) {
             </div>
 
             {/* Main: Interactive Map */}
-            <div className="flex-1 relative h-[85vh] md:h-full bg-[var(--color-sand)] overflow-hidden order-2 md:order-1">
+            <div className="flex-1 relative h-[95vh] md:h-full bg-[var(--color-sand)] overflow-hidden order-2 md:order-1">
                 <InteractiveMap
                     conveniences={conveniences}
                     center={[35.33965, 25.13285]}
@@ -94,10 +94,10 @@ export function LocationSection({ conveniences }: LocationSectionProps) {
             <div className="w-full md:w-80 lg:w-96 bg-[var(--color-warm-white)]/95 backdrop-blur h-auto md:h-full border-l border-[var(--color-sand)] overflow-y-auto order-1 md:order-2 z-10 shadow-lg md:shadow-none hidden md:block">
                 <div className="p-8 h-full flex flex-col">
                     <div className="mb-8">
-                        <h2 className="font-montserrat text-xl font-bold uppercase tracking-widest text-[var(--color-charcoal)] mb-2">Easy Access to Essentials & Conveniences</h2>
+                        <h2 className="font-montserrat text-xl font-bold uppercase tracking-widest text-[var(--color-charcoal)] mb-2">EASY ACCESS TO CONVENIENCES</h2>
                         <div className="w-12 h-1 bg-[var(--color-aegean-blue)] mb-4" />
                         <p className="font-inter text-sm text-[var(--color-charcoal)] opacity-70">
-                            Discover the vibrant local life, just steps from your door. Click a category to locate.
+                            Discover local essentials just steps away.
                         </p>
                     </div>
 

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useState } from "react";
 import { RoomsDropdown } from "./RoomsDropdown";
 import { cn } from "@/lib/utils";
+import { NAV_LINKS } from "@/config/navigation";
 
 interface DesktopNavProps {
     dark?: boolean;
@@ -18,22 +19,25 @@ export function DesktopNav({ dark = false }: DesktopNavProps) {
 
     return (
         <nav className="hidden lg:flex items-center space-x-16 h-full">
-            <Link href="/" className={linkClass}>Home</Link>
-
-            <div
-                className="relative h-full flex items-center"
-                onMouseEnter={() => setIsDropdownOpen(true)}
-                onMouseLeave={() => setIsDropdownOpen(false)}
-            >
-                <Link href="/#rooms" className={linkClass}>
-                    Rooms
-                </Link>
-                {isDropdownOpen && <RoomsDropdown />}
-            </div>
-
-            <Link href="/#contact" className={linkClass}>Contact</Link>
-
-
+            {NAV_LINKS.map(link => (
+                link.hasDropdown ? (
+                    <div
+                        key={link.label}
+                        className="relative h-full flex items-center"
+                        onMouseEnter={() => setIsDropdownOpen(true)}
+                        onMouseLeave={() => setIsDropdownOpen(false)}
+                    >
+                        <Link href={link.href} className={linkClass}>
+                            {link.label}
+                        </Link>
+                        {isDropdownOpen && <RoomsDropdown />}
+                    </div>
+                ) : (
+                    <Link key={link.label} href={link.href} className={linkClass}>
+                        {link.label}
+                    </Link>
+                )
+            ))}
         </nav>
     );
 }
