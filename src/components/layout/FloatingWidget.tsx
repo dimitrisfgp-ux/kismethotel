@@ -24,6 +24,7 @@ export function FloatingWidget() {
             {/* Main FAB */}
             <button
                 onClick={() => setIsOpen(!isOpen)}
+                aria-label="Toggle Contact Options"
                 className={cn(
                     "relative z-10 flex items-center justify-center w-14 h-14 rounded-full shadow-[var(--shadow-hover)] transition-all duration-300",
                     isOpen ? "bg-[var(--color-charcoal)] rotate-90" : "bg-[var(--color-aegean-blue)] hover:bg-[var(--color-deep-med)]"

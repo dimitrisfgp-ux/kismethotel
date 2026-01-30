@@ -15,7 +15,7 @@ export function BurgerIcon({ isOpen, onClick, dark = false }: BurgerIconProps) {
     );
 
     return (
-        <button onClick={onClick} className="flex flex-col justify-center items-center w-10 h-10 space-y-1.5 focus:outline-none z-50 relative">
+        <button onClick={onClick} aria-label={isOpen ? "Close Menu" : "Open Menu"} className="flex flex-col justify-center items-center w-10 h-10 space-y-1.5 focus:outline-none z-50 relative">
             <span className={cn(lineClass, isOpen && "rotate-45 translate-y-2")} />
             <span className={cn(lineClass, isOpen && "opacity-0")} />
             <span className={cn(lineClass, isOpen && "-rotate-45 -translate-y-2")} />

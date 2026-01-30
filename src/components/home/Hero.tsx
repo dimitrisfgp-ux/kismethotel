@@ -53,6 +53,7 @@ export function Hero() {
             {/* Scroll Indicator */}
             <button
                 onClick={() => scrollToElement("search-bar")}
+                aria-label="Scroll to Content"
                 className="absolute bottom-10 z-20 animate-bounce text-white/80 hover:text-white transition-colors"
             >
                 <ChevronDown className="h-10 w-10" />

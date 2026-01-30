@@ -77,6 +77,7 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
 
     return (
         <section ref={sectionRef} id="rooms" className="bg-white pb-0 relative min-h-screen">
+            <h2 className="sr-only">Our Rooms</h2>
             <DateSelectorBar
                 onPrev={() => handlePageChange(currentPage - 1)}
                 onNext={() => handlePageChange(currentPage + 1)}

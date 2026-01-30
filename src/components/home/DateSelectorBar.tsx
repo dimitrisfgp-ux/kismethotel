@@ -15,11 +15,12 @@ interface DateSelectorBarProps {
 }
 
 // Helper Component for Navigation Buttons
-function NavButton({ onClick, disabled, icon: Icon }: { onClick?: () => void, disabled?: boolean, icon: React.ElementType }) {
+function NavButton({ onClick, disabled, icon: Icon, ariaLabel }: { onClick?: () => void, disabled?: boolean, icon: React.ElementType, ariaLabel: string }) {
     return (
         <button
             onClick={onClick}
             disabled={disabled}
+            aria-label={ariaLabel}
             className="p-2 rounded-full hover:bg-[var(--color-sand)] disabled:opacity-20 transition-colors active:scale-95 touch-manipulation"
         >
             <Icon className="h-6 w-6 text-[var(--color-charcoal)]" />
@@ -36,7 +37,7 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
 
                 {/* DESKTOP LAYOUT (Hidden on Mobile) */}
                 <div className="hidden md:flex items-center justify-center gap-8">
-                    <NavButton onClick={onPrev} disabled={!canPrev} icon={ChevronLeft} />
+                    <NavButton onClick={onPrev} disabled={!canPrev} icon={ChevronLeft} ariaLabel="Previous Date" />
 
                     {/* Wrapper for inputs */}
                     <div className="flex items-center justify-center gap-6">
@@ -55,18 +56,19 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
                         </div>
                     </div>
 
-                    <NavButton onClick={onNext} disabled={!canNext} icon={ChevronRight} />
+                    <NavButton onClick={onNext} disabled={!canNext} icon={ChevronRight} ariaLabel="Next Date" />
                 </div>
 
 
                 {/* MOBILE LAYOUT (Flex Row: Arrow | Icon | Icon | Arrow) */}
                 <div className="md:hidden flex items-center justify-between w-full px-2">
-                    <NavButton onClick={onPrev} disabled={!canPrev} icon={ChevronLeft} />
+                    <NavButton onClick={onPrev} disabled={!canPrev} icon={ChevronLeft} ariaLabel="Previous Date Mobile" />
 
                     {/* Filter Icons Centered */}
                     <div className="flex items-center gap-6">
                         <button
                             onClick={onFilterClick}
+                            aria-label="Filter Dates"
                             className="p-3 bg-white border-2 border-[var(--color-accent-gold)] rounded-full text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)] hover:text-white transition-all duration-300 active:scale-95 shadow-sm"
                         >
                             <CalendarIcon className="h-6 w-6" />
@@ -74,13 +76,14 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
 
                         <button
                             onClick={onFilterClick}
+                            aria-label="Filter Guests"
                             className="p-3 bg-white border-2 border-[var(--color-accent-gold)] rounded-full text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)] hover:text-white transition-all duration-300 active:scale-95 shadow-sm"
                         >
                             <BedDouble className="h-6 w-6" />
                         </button>
                     </div>
 
-                    <NavButton onClick={onNext} disabled={!canNext} icon={ChevronRight} />
+                    <NavButton onClick={onNext} disabled={!canNext} icon={ChevronRight} ariaLabel="Next Date Mobile" />
                 </div>
 
             </Container>
