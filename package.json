@@ -2,6 +2,13 @@
   "name": "temp_app",
   "version": "0.1.0",
   "private": true,
+  "browserslist": [
+    "chrome >= 90",
+    "firefox >= 90",
+    "safari >= 15",
+    "edge >= 90",
+    "not ie 11"
+  ],
   "scripts": {
     "dev": "next dev",
     "build": "next build",
