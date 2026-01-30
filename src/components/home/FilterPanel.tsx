@@ -1,37 +1,125 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useState, useEffect } from "react";
-import { RoomFilters, RoomSizeCategory } from "@/types";
+import { useState, useEffect, useMemo } from "react";
+import { RoomFilters, Room } from "@/types";
+import { AMENITIES } from "@/data/amenities";
 import { Button } from "../ui/Button";
-import { X } from "lucide-react";
+import { X, Users, BedDouble, Bed, Layers, Sparkles, Maximize, Euro, Wind, Wifi, Tv, ChefHat, Waves, Sun, CloudRain, Coffee, Car } from "lucide-react";
 import { useDateContext } from "@/contexts/DateContext";
-import { DatePickerWithRange } from "../booking/DateRangePicker";
 import { GuestSelector } from "../ui/GuestSelector";
+import { Calendar } from "../ui/Calendar";
+
+const iconMap: Record<string, React.ComponentType<any>> = {
+    Wind, Wifi, Tv, ChefHat, Waves, Sun, CloudRain, Coffee, BedDouble, Car
+};
 
 interface FilterPanelProps {
     isOpen: boolean;
     onClose: () => void;
     currentFilters: RoomFilters;
     onApply: (filters: RoomFilters) => void;
+    rooms: Room[];
 }
 
-export function FilterPanel({ isOpen, onClose, currentFilters, onApply }: FilterPanelProps) {
+export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }: FilterPanelProps) {
     const [localFilters, setLocalFilters] = useState<RoomFilters>(currentFilters);
-    const { dateRange, setDateRange, guestCount, setGuestCount } = useDateContext();
+    const { dateRange, setDateRange } = useDateContext();
     const [mounted, setMounted] = useState(false);
+
+    // Dynamic Data Derivation for Faceted Search
+    const derivedOptions = useMemo(() => {
+        if (!rooms.length) return null;
+
+        // Helper to get rooms filtered by everything EXCEPT the specified keys
+        const getRoomsFilteredBy = (ignoredKeys: (keyof RoomFilters)[]) => {
+            return rooms.filter(room => {
+                // Check all filters except the ignored ones
+                const checkPrice = ignoredKeys.includes('priceRange') || (room.pricePerNight >= localFilters.priceRange[0] && room.pricePerNight <= localFilters.priceRange[1]);
+                const checkOccupancy = ignoredKeys.includes('occupancy') || (!localFilters.occupancy || room.maxOccupancy === localFilters.occupancy); // Exact match logic from helper
+                const checkSize = ignoredKeys.includes('size') || (!localFilters.size || room.sizeSqm === localFilters.size);
+
+                const checkFloors = ignoredKeys.includes('floors') || (localFilters.floors.length === 0 || localFilters.floors.includes(room.floor));
+
+                // Amenities - complicated because it's an array. Usually we want to see amenities compatible with OTHER current filters + OTHER current amenities?
+                // For simplicity: Show amenities available in rooms matching ALL other filters (Price, Beds, Floor, Size).
+                // We do NOT ignore 'amenityIds' here usually, unless we want to see amenities compatible with the *current set* of amenities?
+                // Let's ignore 'amenityIds' to see ALL valid amenities for the current room set defined by other parameters.
+                const checkAmenities = ignoredKeys.includes('amenityIds') || (localFilters.amenityIds.length === 0 || localFilters.amenityIds.every(id => room.layout.flatMap(c => c.amenities).some(a => a.id === id)));
+
+                const checkDoubleBeds = ignoredKeys.includes('doubleBeds') || (!localFilters.doubleBeds || (room.beds?.find(b => b.type === 'double')?.count || 0) === localFilters.doubleBeds);
+                const checkSingleBeds = ignoredKeys.includes('singleBeds') || (!localFilters.singleBeds || (room.beds?.find(b => b.type === 'single')?.count || 0) === localFilters.singleBeds);
+
+                // For faceted search, we usually allow the 'ignored' key to vary.
+                return checkPrice && checkOccupancy && checkSize && checkFloors && checkAmenities && checkDoubleBeds && checkSingleBeds;
+            });
+        };
+
+        // 1. Available Floors: Filter by everything EXCEPT 'floors'
+        const roomsForFloors = getRoomsFilteredBy(['floors']);
+        const availableFloors = Array.from(new Set(roomsForFloors.map(r => r.floor))).sort((a, b) => a - b);
+
+        // 2. Available Sizes: Filter by everything EXCEPT 'size'
+        const roomsForSizes = getRoomsFilteredBy(['size']);
+        const availableSizes = Array.from(new Set(roomsForSizes.map(r => r.sizeSqm))).sort((a, b) => a - b);
+
+        // 3. Available Amenities: Filter by everything EXCEPT 'amenityIds' 
+        // (So we see amenities that *could* be selected given the other constraints)
+        const roomsForAmenities = getRoomsFilteredBy(['amenityIds']);
+        const usedAmenityIds = new Set<number>();
+        roomsForAmenities.forEach(r => {
+            r.layout.forEach(cat => cat.amenities.forEach(a => usedAmenityIds.add(a.id)));
+        });
+        const availableAmenities = AMENITIES.filter(a => usedAmenityIds.has(a.id));
+
+        // 4. Available Bed Counts: Filter by everything EXCEPT the specific bed type
+        const roomsForDoubleBeds = getRoomsFilteredBy(['doubleBeds']);
+        const maxDoubleBeds = Math.max(0, ...roomsForDoubleBeds.map(r => r.beds?.find(b => b.type === 'double')?.count || 0));
+
+        const roomsForSingleBeds = getRoomsFilteredBy(['singleBeds']);
+        const maxSingleBeds = Math.max(0, ...roomsForSingleBeds.map(r => r.beds?.find(b => b.type === 'single')?.count || 0));
+
+        // 5. Global Ranges (for sliders/limits that shouldn't disappear entirely, but maybe gray out?
+        // Actually, let's keep min/max price static based on *all* rooms so the slider doesn't jump around confusingly
+        const allPrices = rooms.map(r => r.pricePerNight);
+        const minPrice = Math.min(...allPrices);
+        const maxPrice = Math.max(...allPrices);
+
+        // Occupancy should also be dynamic to prevent selecting 4 guests if only 2-person rooms match other filters
+        const roomsForOccupancy = getRoomsFilteredBy(['occupancy']);
+        const maxTotalOccupancy = Math.max(0, ...roomsForOccupancy.map(r => r.maxOccupancy));
+
+        return {
+            minPrice, maxPrice,
+            floors: availableFloors,
+            sizes: availableSizes,
+            availableAmenities,
+            maxTotalOccupancy,
+            maxDoubleBeds,
+            maxSingleBeds
+        };
+    }, [rooms, localFilters]); // Re-run when filters change
 
     useEffect(() => {
         setMounted(true);
         return () => setMounted(false);
     }, []);
 
-    // Also synch local filters if props change, though usually panel re-opens with new state
+    // Also sync local filters if props change
+    // BE CAREFUL: If we sync strictly, we might reset user work. 
+    // But typically 'currentFilters' prop updating implies external change.
     useEffect(() => {
         setLocalFilters(currentFilters);
     }, [currentFilters]);
 
-    if (!isOpen || !mounted) return null;
+    if (!isOpen || !mounted || !derivedOptions) return null;
+
+    const { minPrice, maxPrice, floors, sizes, availableAmenities, maxTotalOccupancy, maxDoubleBeds, maxSingleBeds } = derivedOptions;
+
+    // Use localFilters for guests, preserve date context for global availability check
+    // Actually, user might want to filter dates just locally until applied? 
+    // Current design uses global context for dates everywhere. Let's stick to that for dates.
+    // For Guests, we bind to localFilters.occupancy.
 
     return createPortal(
         <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-end animate-fade-in">
@@ -46,70 +134,200 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply }: Filter
                     <div className="bg-[var(--color-sand)]/20 p-4 rounded-[var(--radius-subtle)] space-y-4 border border-[var(--color-sand)]">
                         <h3 className="font-montserrat text-sm font-bold uppercase tracking-wider text-[var(--color-charcoal)] mb-2">My Stay</h3>
 
-                        {/* Date Picker */}
-                        <div>
-                            <label className="block text-xs font-semibold uppercase tracking-widest text-[var(--color-charcoal)]/60 mb-2">Dates</label>
-                            <DatePickerWithRange
-                                date={dateRange}
-                                setDate={setDateRange}
-                                className="w-full"
-                            />
-                        </div>
+                        {/* Date Picker - INLINE CALENDAR */}
+                        <label className="block text-xs font-semibold uppercase tracking-widest text-[var(--color-charcoal)]/60 mb-2">Dates</label>
+                        <Calendar
+                            mode="range"
+                            selected={dateRange}
+                            onSelect={setDateRange}
+                            numberOfMonths={1}
+                            className="w-full flex justify-center pb-2 bg-white rounded-[var(--radius-subtle)] border border-[var(--color-sand)]"
+                        />
 
-                        {/* Guest Count */}
-                        <div>
-                            <label className="block text-xs font-semibold uppercase tracking-widest text-[var(--color-charcoal)]/60 mb-2">Guests</label>
-                            <GuestSelector value={guestCount} onChange={setGuestCount} />
-                        </div>
                     </div>
 
                     <div className="h-px bg-[var(--color-sand)] w-full" />
 
                     {/* Price */}
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest mb-4">Price Range (€{localFilters.priceRange[0]} - €{localFilters.priceRange[1]})</label>
+                        <div className="flex justify-between mb-4">
+                            <label className="block text-xs font-bold uppercase tracking-widest flex items-center gap-2"><Euro className="w-4 h-4" /> Price Range</label>
+                            <span className="text-xs font-inter opacity-60">€{localFilters.priceRange[0]} - €{localFilters.priceRange[1]}</span>
+                        </div>
                         <input
-                            type="range" min="50" max="1000" step="50"
+                            type="range"
+                            min={minPrice}
+                            max={maxPrice}
+                            step="10"
                             value={localFilters.priceRange[1]}
                             onChange={(e) => setLocalFilters({ ...localFilters, priceRange: [localFilters.priceRange[0], Number(e.target.value)] })}
                             className="w-full accent-[var(--color-aegean-blue)]"
                         />
                     </div>
 
-                    {/* Occupancy */}
+                    {/* Occupancy - REMOVED (Redundant) */}
+
+
+                    {/* Bed Configuration */}
+                    <div className="space-y-4">
+                        <label className="block text-xs font-bold uppercase tracking-widest flex items-center gap-2"><BedDouble className="w-4 h-4" /> Bed Configuration</label>
+
+                        {/* Bed Configuration - Separated */}
+                        <div className="grid grid-cols-2 gap-4">
+                            {/* Double Beds */}
+                            <div>
+                                <span className="text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-2 block flex items-center gap-1"><BedDouble className="w-3 h-3" /> Double Beds</span>
+                                <div className="flex gap-2">
+                                    {Array.from({ length: maxDoubleBeds + 1 }, (_, i) => i).map(num => (
+                                        <button
+                                            key={num}
+                                            onClick={() => setLocalFilters({ ...localFilters, doubleBeds: num })}
+                                            className={`w-10 h-10 rounded-full border text-sm ${localFilters.doubleBeds === num ? 'bg-[var(--color-aegean-blue)] text-white border-[var(--color-aegean-blue)]' : 'border-[var(--color-sand)] hover:border-[var(--color-aegean-blue)]'}`}
+                                        >
+                                            {num === 0 ? "Any" : num}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+
+                            {/* Single Beds */}
+                            <div>
+                                <span className="text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-2 block flex items-center gap-1"><Bed className="w-3 h-3" /> Single Beds</span>
+                                <div className="flex gap-2">
+                                    {Array.from({ length: maxSingleBeds + 1 }, (_, i) => i).map(num => (
+                                        <button
+                                            key={num}
+                                            onClick={() => setLocalFilters({ ...localFilters, singleBeds: num })}
+                                            className={`w-10 h-10 rounded-full border text-sm ${localFilters.singleBeds === num ? 'bg-[var(--color-aegean-blue)] text-white border-[var(--color-aegean-blue)]' : 'border-[var(--color-sand)] hover:border-[var(--color-aegean-blue)]'}`}
+                                        >
+                                            {num === 0 ? "Any" : num}
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Floors - Dynamic */}
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest mb-4">Min Guests</label>
-                        <div className="flex gap-4">
-                            {[1, 2, 3, 4, 5, 6].map(num => (
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2"><Layers className="w-4 h-4" /> Floor Preference</label>
+                        <div className="flex gap-3 flex-wrap">
+                            {floors.map(floor => (
                                 <button
-                                    key={num}
-                                    onClick={() => setLocalFilters({ ...localFilters, minOccupancy: num })}
-                                    className={`w-10 h-10 rounded-full border ${localFilters.minOccupancy === num ? 'bg-[var(--color-aegean-blue)] text-white border-[var(--color-aegean-blue)]' : 'border-[var(--color-sand)] hover:border-[var(--color-aegean-blue)]'}`}
+                                    key={floor}
+                                    onClick={() => {
+                                        // Single Select Logic:
+                                        // If already selected, deselect (empty array). 
+                                        // If not, replace entire array with just this floor.
+                                        const newFloors = localFilters.floors.includes(floor)
+                                            ? []
+                                            : [floor];
+                                        setLocalFilters({ ...localFilters, floors: newFloors });
+                                    }}
+                                    className={`px-4 py-2 rounded-[var(--radius-subtle)] border text-sm uppercase ${localFilters.floors.includes(floor) ? 'bg-[var(--color-aegean-blue)] text-white' : 'border-[var(--color-sand)]'}`}
                                 >
-                                    {num}
+                                    {floor === 0 ? "Ground" : `${floor}th Floor`}
                                 </button>
                             ))}
                         </div>
                     </div>
 
-                    {/* Size */}
+                    {/* Amenities - Dynamic */}
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest mb-4">Room Size</label>
-                        <div className="flex gap-2 flex-wrap">
-                            {(['small', 'medium', 'large'] as RoomSizeCategory[]).map(size => (
-                                <button
-                                    key={size}
-                                    onClick={() => {
-                                        const newSizes = localFilters.sizeCategories.includes(size)
-                                            ? localFilters.sizeCategories.filter(s => s !== size)
-                                            : [...localFilters.sizeCategories, size];
-                                        setLocalFilters({ ...localFilters, sizeCategories: newSizes });
-                                    }}
-                                    className={`px-4 py-2 rounded-[var(--radius-subtle)] border text-sm uppercase ${localFilters.sizeCategories.includes(size) ? 'bg-[var(--color-aegean-blue)] text-white' : 'border-[var(--color-sand)]'}`}
-                                >
-                                    {size}
-                                </button>
-                            ))}
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2"><Sparkles className="w-4 h-4" /> Amenities</label>
+                        <div className="grid grid-cols-2 gap-3">
+                            {availableAmenities.map(amenity => {
+                                const Icon = iconMap[amenity.iconName as keyof typeof iconMap] || Sparkles;
+                                return (
+                                    <button
+                                        key={amenity.id}
+                                        onClick={() => {
+                                            const newIds = localFilters.amenityIds.includes(amenity.id)
+                                                ? localFilters.amenityIds.filter(id => id !== amenity.id)
+                                                : [...localFilters.amenityIds, amenity.id];
+                                            setLocalFilters({ ...localFilters, amenityIds: newIds });
+                                        }}
+                                        className={`text-left px-3 py-2 rounded-[var(--radius-subtle)] border text-xs font-inter transition-all flex items-center gap-2 ${localFilters.amenityIds.includes(amenity.id) ? 'bg-[var(--color-aegean-blue)] text-white border-[var(--color-aegean-blue)]' : 'border-[var(--color-sand)] hover:bg-[var(--color-sand)]/20'}`}
+                                    >
+                                        <Icon className="w-3 h-3 opacity-70" />
+                                        {amenity.name}
+                                    </button>
+                                );
+                            })}
+                        </div>
+                    </div>
+
+                    {/* Size - Dynamic Slider */}
+                    <div>
+                        <div className="flex justify-between mb-6">
+                            <label className="block text-xs font-bold uppercase tracking-widest text-[var(--color-charcoal)] flex items-center gap-2"><Maximize className="w-4 h-4" /> Room Size</label>
+                            <span className="text-sm font-inter font-bold text-[var(--color-aegean-blue)]">
+                                {localFilters.size > 0 ? `${localFilters.size} m²` : `${sizes[0]} m²`}
+                            </span>
+                        </div>
+
+                        <div className="relative h-8 flex items-center">
+                            {/* Visual Track Line */}
+                            <div className="absolute w-full h-[3px] bg-[var(--color-sand)] rounded-full z-0 top-1/2 -translate-y-1/2" />
+
+                            {/* Active Track (Fill) */}
+                            <div
+                                className="absolute h-[3px] bg-[var(--color-aegean-blue)] rounded-full z-0 top-1/2 -translate-y-1/2 left-0 transition-all duration-75 ease-out origin-left pointer-events-none"
+                                style={{
+                                    width: `${(((localFilters.size || sizes[0]) - sizes[0]) / (sizes[sizes.length - 1] - sizes[0])) * 100}%`
+                                }}
+                            />
+
+                            {/* Track Points */}
+                            <div className="absolute w-full top-1/2 -translate-y-1/2 z-10 pointer-events-none">
+                                {sizes.map(size => {
+                                    const min = sizes[0];
+                                    const max = sizes[sizes.length - 1];
+                                    const percent = ((size - min) / (max - min)) * 100;
+                                    const isActive = size <= (localFilters.size || min);
+
+                                    return (
+                                        <div
+                                            key={size}
+                                            className={`absolute w-2.5 h-2.5 rounded-full top-1/2 -translate-y-1/2 -translate-x-1/2 transition-colors duration-300 ${isActive ? 'bg-[var(--color-aegean-blue)]' : 'bg-[var(--color-sand)]'}`}
+                                            style={{ left: `${percent}%` }}
+                                        />
+                                    );
+                                })}
+                            </div>
+
+                            {/* The Input - Overlay for interaction */}
+                            <input
+                                type="range"
+                                min={sizes.length > 0 ? sizes[0] : 0}
+                                max={sizes.length > 0 ? sizes[sizes.length - 1] : 100}
+                                step="any"
+                                value={localFilters.size ?? (sizes.length > 0 ? sizes[0] : 0)}
+                                onChange={(e) => {
+                                    const val = Number(e.target.value);
+                                    const closest = sizes.reduce((prev, curr) =>
+                                        Math.abs(curr - val) < Math.abs(prev - val) ? curr : prev
+                                    );
+                                    setLocalFilters({ ...localFilters, size: closest });
+                                }}
+                                className="appearance-none w-full absolute z-30 opacity-0 cursor-pointer h-full inset-0 m-0 p-0"
+                                aria-label="Room Size"
+                            />
+
+                            {/* Custom Thumb (Visual Only) */}
+                            <div
+                                className="absolute h-5 w-5 bg-[var(--color-aegean-blue)] rounded-full shadow-lg border-2 border-white pointer-events-none z-20 transition-all duration-75 ease-out top-1/2 -translate-y-1/2 -translate-x-1/2 transform hover:scale-110"
+                                style={{
+                                    left: `${sizes.length > 1
+                                        ? (((localFilters.size ?? sizes[0]) - sizes[0]) / (sizes[sizes.length - 1] - sizes[0])) * 100
+                                        : 0}%`
+                                }}
+                            />
+                        </div>
+
+                        <div className="flex justify-between text-[10px] text-[var(--color-charcoal)]/40 mt-2 font-mono uppercase tracking-wider">
+                            <span>{sizes[0]} m²</span>
+                            <span>{sizes[sizes.length - 1]} m²</span>
                         </div>
                     </div>
                 </div>
@@ -119,11 +337,12 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply }: Filter
                         variant="ghost"
                         onClick={() => setLocalFilters({
                             priceRange: [0, 1000],
-                            minOccupancy: 1,
-                            sizeCategories: [],
+                            occupancy: 0,
+                            size: 0,
                             floors: [],
-                            minBedrooms: 0,
-                            bedTypes: [],
+                            bedrooms: 0,
+                            doubleBeds: 0,
+                            singleBeds: 0,
                             amenityIds: []
                         })}
                         className="flex-1"

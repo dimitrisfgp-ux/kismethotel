@@ -7,9 +7,11 @@ interface GuestSelectorProps {
     value: number;
     onChange: (val: number) => void;
     customTrigger?: React.ReactNode;
+    type?: 'guests' | 'beds';
+    maxGuests?: number;
 }
 
-export function GuestSelector({ value, onChange, customTrigger }: GuestSelectorProps) {
+export function GuestSelector({ value, onChange, customTrigger, type = 'guests', maxGuests = 6 }: GuestSelectorProps) {
     const [isOpen, setIsOpen] = useState(false);
     const containerRef = useRef<HTMLDivElement>(null);
 
@@ -24,16 +26,13 @@ export function GuestSelector({ value, onChange, customTrigger }: GuestSelectorP
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    const options = [
-        { value: 1, label: "1 Guest, 1 Bed" },
-        { value: 2, label: "2 Guests, 1 Bed" },
-        { value: 3, label: "3 Guests, 2 Beds" },
-        { value: 4, label: "4 Guests, 2 Beds" },
-        { value: 5, label: "5 Guests, 3 Beds" },
-        { value: 6, label: "6 Guests, 3 Beds" },
-    ];
+    const label = type === 'guests' ? 'Guest' : 'Bed';
+    const options = Array.from({ length: maxGuests }, (_, i) => i + 1).map(num => ({
+        value: num,
+        label: `${num} ${label}${num > 1 ? 's' : ''}`
+    }));
 
-    const currentLabel = options.find(o => o.value === value)?.label || `${value} Guests`;
+    const currentLabel = options.find(o => o.value === value)?.label || `${value} ${label}s`;
 
     return (
         <div className="relative" ref={containerRef}>

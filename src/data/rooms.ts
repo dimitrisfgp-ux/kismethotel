@@ -17,6 +17,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 1/angle1-room1.jpeg",
             "/images/Room Imagery/Room 1/angle2-room1.jpeg"
         ],
+        beds: [{ type: 'double', count: 1 }, { type: 'double', count: 1 }], // King + Sofa Bed inferred from Max 4
         layout: [
             {
                 type: 'bedroom',
@@ -47,6 +48,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 2/angle1-room2.jpeg",
             "/images/Room Imagery/Room 2/angle2-room2.jpeg"
         ],
+        beds: [{ type: 'double', count: 1 }, { type: 'single', count: 1 }], // Queen + Daybed/Rollaway inferred from Max 3
         layout: [
             {
                 type: 'bedroom',
@@ -77,6 +79,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 3/angle1-room3.jpeg",
             "/images/Room Imagery/Room 3/angle2-room3.jpeg"
         ],
+        beds: [{ type: 'double', count: 1 }],
         layout: [
             {
                 type: 'bedroom',
@@ -107,6 +110,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 4/angle1-room4.jpeg",
             "/images/Room Imagery/Room 4/angle2-room4.jpeg"
         ],
+        beds: [{ type: 'double', count: 1 }],
         layout: [
             {
                 type: 'bedroom',
@@ -137,6 +141,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 5/angle1-room5.jpeg",
             "/images/Room Imagery/Room 5/angle2-room5.jpeg"
         ],
+        beds: [{ type: 'double', count: 1 }, { type: 'single', count: 1 }],
         layout: [
             {
                 type: 'bedroom',
@@ -167,6 +172,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 6/angle1-room6.jpeg",
             "/images/Room Imagery/Room 6/angle2-room6.jpeg"
         ],
+        beds: [{ type: 'double', count: 1 }],
         layout: [
             {
                 type: 'bedroom',
@@ -191,6 +197,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 7/angle1-room7.jpeg",
             "/images/Room Imagery/Room 7/angle2-room7.jpeg"
         ],
+        beds: [{ type: 'double', count: 1 }],
         layout: [
             {
                 type: 'bedroom',
@@ -215,6 +222,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 8/angle1-room8.jpeg",
             "/images/Room Imagery/Room 8/angle2-room8.jpeg"
         ],
+        beds: [{ type: 'double', count: 2 }], // 1 Bed + 1 Convertible Sofa
         layout: [
             {
                 type: 'bedroom',
@@ -246,6 +254,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/3rd Floor-SuiteB/livingroom-angle3.jpeg",
             "/images/Room Imagery/3rd Floor-SuiteB/bedroom.jpeg"
         ],
+        beds: [{ type: 'double', count: 2 }], // King + Queen
         layout: [
             {
                 type: 'living_room',
@@ -284,6 +293,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/3rd Floor-SuiteA/bedroom-angle1.jpeg",
             "/images/Room Imagery/3rd Floor-SuiteA/bedroom-angle2.jpeg"
         ],
+        beds: [{ type: 'double', count: 1 }],
         layout: [
             {
                 type: 'living_room',

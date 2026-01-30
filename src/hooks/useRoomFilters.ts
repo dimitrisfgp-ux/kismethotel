@@ -6,14 +6,12 @@ import { filterRooms } from "@/lib/filterHelpers";
 interface UseRoomFiltersProps {
     rooms: Room[];
     filters: RoomFilters;
-    guestCount: number;
     dateRange?: DateRange;
 }
 
-export function useRoomFilters({ rooms, filters, guestCount, dateRange }: UseRoomFiltersProps) {
+export function useRoomFilters({ rooms, filters, dateRange }: UseRoomFiltersProps) {
     const filteredRooms = useMemo(() => {
-        // Override local minOccupancy with context guestCount to ensure consistency
-        const activeFilters = { ...filters, minOccupancy: guestCount };
+        const activeFilters = { ...filters };
 
         let results = filterRooms(rooms, activeFilters);
 
@@ -30,7 +28,7 @@ export function useRoomFilters({ rooms, filters, guestCount, dateRange }: UseRoo
         }
 
         return results;
-    }, [rooms, filters, guestCount, dateRange]);
+    }, [rooms, filters, dateRange]);
 
     return filteredRooms;
 }

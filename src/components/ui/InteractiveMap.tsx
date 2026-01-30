@@ -1,12 +1,12 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { MapContainer, TileLayer, Marker, Popup, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
 import { Convenience } from "@/types";
 import { renderToStaticMarkup } from "react-dom/server";
-import { MapPin, Home, Plus, Minus } from "lucide-react";
+import { MapPin, Home, Plus, Minus, Waves, Utensils, Bus, Car, ShoppingBasket, Pill, Coffee, Wine } from "lucide-react";
 import { HOTEL_COORDINATES } from "@/config/constants";
 
 // Fix Leaflet's default icon path issues in Next.js
@@ -46,10 +46,21 @@ function BoundsController({ markers, activeTypes }: { markers: Convenience[], ac
             const currentBounds = map.getBounds().pad(-0.1);
 
             if (!currentBounds.contains(targetBounds)) {
-                // User requirement: Transpose map (pan) instead of zooming out.
-                // We maintain the default high zoom execution (17).
-                map.flyTo(targetBounds.getCenter(), 17, {
-                    duration: 1.5
+                // User requirement: Zoom out to fit if locations are far
+                map.flyToBounds(targetBounds, {
+                    padding: [50, 50], // Add padding so markers aren't on the edge
+                    duration: 1.5,
+                    maxZoom: 17 // Don't zoom in closer than our default
+                });
+            } else {
+                // If they fit but we are zoomed way out, maybe zoom in? 
+                // For now, let's strictly respect the user's request to "zoom-out to fit if too far".
+                // If we are already fitting them, we might not need to do anything, or we could recenter nicely.
+                // Let's ensure we focus nicely even if they are visible but off-center
+                map.flyToBounds(targetBounds, {
+                    padding: [50, 50],
+                    duration: 1.5,
+                    maxZoom: 17
                 });
             }
         }
@@ -62,35 +73,57 @@ function BoundsController({ markers, activeTypes }: { markers: Convenience[], ac
 const createCustomIcon = (type: string, isHotel = false) => {
     // Determine color based on type
     const getColor = (t: string) => {
-        if (isHotel) return "var(--color-aegean-blue)";
+        if (isHotel) return "var(--color-deep-med)"; // Primary Brand Color
         switch (t) {
             case 'Supermarket': return "var(--color-accent-gold)";
             case 'Pharmacy': return "var(--color-success)";
             case 'Beach': return "var(--color-map-beach)";
-            case 'Bus': return "var(--color-deep-med)";
+            case 'Bus': return "var(--color-deep-med)"; // Bus can share this or be slightly lighter
             case 'Car Rental': return "var(--color-map-rental)";
             case 'Restaurant':
             case 'Cafe':
-            case 'Bar': return "var(--color-map-dining)"; // Rose (Dining Category)
+            case 'Bar': return "var(--color-map-dining)";
             default: return "var(--color-charcoal)";
         }
     };
 
+    const getInnerIcon = (t: string) => {
+        if (isHotel) return Home;
+        switch (t) {
+            case 'Supermarket': return ShoppingBasket;
+            case 'Pharmacy': return Pill;
+            case 'Beach': return Waves;
+            case 'Bus': return Bus;
+            case 'Car Rental': return Car;
+            case 'Restaurant': return Utensils;
+            case 'Cafe': return Coffee;
+            case 'Bar': return Wine;
+            default: return MapPin; // Fallback to generic pin icon
+        }
+    }
+
     const color = getColor(type);
-    const size = 48;
-    const IconComponent = isHotel ? Home : MapPin;
+    const size = isHotel ? 56 : 44; // Hotel is larger
+    const InnerIcon = getInnerIcon(type);
+
+    // Hotel specific styling props
+    const borderStyle = isHotel ? "border-4 border-white ring-2 ring-[var(--color-accent-gold)]" : "border-2 border-white";
+    const iconColor = isHotel ? "var(--color-accent-gold)" : "white";
 
     const iconMarkup = renderToStaticMarkup(
-        <div className="relative flex items-center justify-center drop-shadow-xl w-full h-full transition-transform hover:scale-110 duration-200">
-            <IconComponent
-                size={size}
-                fill={color}
-                className="text-white"
-                strokeWidth={2}
-                color="white"
+        <div
+            className={`flex items-center justify-center rounded-full shadow-2xl transform transition-transform duration-200 hover:scale-110 ${borderStyle}`}
+            style={{
+                backgroundColor: color,
+                width: `${size}px`,
+                height: `${size}px`,
+            }}
+        >
+            <InnerIcon
+                size={isHotel ? 28 : 20}
+                color={iconColor}
+                strokeWidth={isHotel ? 2.5 : 2}
             />
-            {/* Inner Dot */}
-            <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full shadow-sm" />
         </div>
     );
 
@@ -98,31 +131,12 @@ const createCustomIcon = (type: string, isHotel = false) => {
         html: iconMarkup,
         className: 'bg-transparent',
         iconSize: [size, size],
-        iconAnchor: [size / 2, size / 2],
-        popupAnchor: [0, -size / 2],
+        iconAnchor: [size / 2, size / 2], // Centered anchor for circle
+        popupAnchor: [0, -size / 2 - 5], // Popup slightly above
     });
 };
 
-// Component to manage map interaction state
-function MapInteractionController({ isInteractive }: { isInteractive: boolean }) {
-    const map = useMap();
-    useEffect(() => {
-        if (isInteractive) {
-            map.dragging.enable();
-            map.touchZoom.enable();
-            map.doubleClickZoom.enable();
-            map.scrollWheelZoom.enable();
-        } else {
-            map.dragging.disable();
-            map.touchZoom.disable();
-            map.doubleClickZoom.disable();
-            map.scrollWheelZoom.disable();
-        }
-    }, [isInteractive, map]);
-    return null;
-}
-
-// Custom Zoom Control Component
+// Restore CustomZoomControl
 function CustomZoomControl() {
     const map = useMap();
 
@@ -146,19 +160,78 @@ function CustomZoomControl() {
     );
 }
 
+// Component to handle Two-Finger Pan Logic (Cooperative Gesture)
+function GestureController() {
+    const map = useMap();
+    const [showWarning, setShowWarning] = useState(false);
+    const timeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+    useEffect(() => {
+        const container = map.getContainer();
+
+        // 1. Ensure page can scroll vertically when touching map (1 finger)
+        container.style.touchAction = "pan-y";
+
+        const handleTouchStart = (e: TouchEvent) => {
+            if (e.touches.length > 1) {
+                map.dragging.enable();
+                setShowWarning(false);
+            } else {
+                map.dragging.disable();
+            }
+        };
+
+        const handleTouchMove = (e: TouchEvent) => {
+            if (e.touches.length === 1) {
+                // User is trying to pan with 1 finger -> Warn them
+                if (!showWarning) {
+                    setShowWarning(true);
+
+                    // Auto-hide after 2s
+                    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+                    timeoutRef.current = setTimeout(() => setShowWarning(false), 2000);
+                }
+            } else if (e.touches.length > 1) {
+                setShowWarning(false);
+            }
+        };
+
+        const handleTouchEnd = () => {
+            map.dragging.disable(); // Reset to safe state
+            // Don't hide warning immediately so user sees it, let timeout handle it
+        };
+
+        // Add non-capturing listeners to allow scrolling
+        container.addEventListener("touchstart", handleTouchStart, { passive: true });
+        container.addEventListener("touchmove", handleTouchMove, { passive: true });
+        container.addEventListener("touchend", handleTouchEnd, { passive: true });
+
+        // Initial State: Disable drag to allow scroll
+        map.dragging.disable();
+        if ((map as any).tap) (map as any).tap.disable(); // Fix type error
+
+        return () => {
+            container.removeEventListener("touchstart", handleTouchStart);
+            container.removeEventListener("touchmove", handleTouchMove);
+            container.removeEventListener("touchend", handleTouchEnd);
+            if (timeoutRef.current) clearTimeout(timeoutRef.current);
+        };
+    }, [map]);
+
+    if (!showWarning) return null;
+
+    return (
+        <div className="absolute inset-0 z-[500] pointer-events-none flex items-center justify-center bg-black/40 transition-opacity duration-300">
+            <div className="bg-transparent text-white font-montserrat font-bold text-lg text-center px-6">
+                Use two fingers to move the map
+            </div>
+        </div>
+    );
+}
+
 export default function InteractiveMap({ conveniences, center, highlightedTypes }: InteractiveMapProps) {
     // Hotel Location (Heraklion Center)
     const hotelPosition = HOTEL_COORDINATES;
-
-    // Interaction State
-    const [isInteractive, setIsInteractive] = useState(false);
-
-    // Enable interaction by default on desktop, disable on mobile
-    useEffect(() => {
-        if (window.innerWidth >= 768) {
-            setIsInteractive(true);
-        }
-    }, []);
 
     return (
         <div className="relative w-full h-full group">
@@ -167,9 +240,15 @@ export default function InteractiveMap({ conveniences, center, highlightedTypes 
                 zoom={17}
                 scrollWheelZoom={false} // Default false, controller manages it
                 zoomControl={false}   // Disable default top-left controls
-                dragging={false}      // Default false
-                touchZoom={false}     // Default false
+                dragging={false}      // Default false, GestureController manages it
+                touchZoom={true}      // Allow touch zoom (2 fingers)
                 doubleClickZoom={false}
+                maxBounds={[
+                    [35.3000, 25.0800], // Southwest (Inland)
+                    [35.3600, 25.1900]  // Northeast (Sea/Amnissos)
+                ]}
+                maxBoundsViscosity={1.0} // Sticky bounds (hard stop)
+                minZoom={13} // Prevent zooming out to see the whole world
                 className="w-full h-full z-0"
                 style={{ background: 'var(--color-sand)' }}
             >
@@ -182,7 +261,7 @@ export default function InteractiveMap({ conveniences, center, highlightedTypes 
 
                 <MapController center={center} />
                 <BoundsController markers={conveniences} activeTypes={highlightedTypes} />
-                <MapInteractionController isInteractive={isInteractive} />
+                <GestureController />
                 <CustomZoomControl />
 
                 {/* Hotel Marker (Always Visible) */}
@@ -205,20 +284,6 @@ export default function InteractiveMap({ conveniences, center, highlightedTypes 
                     );
                 })}
             </MapContainer>
-
-            {/* Interaction Overlay (Mobile Only) */}
-            {!isInteractive && (
-                <div
-                    onClick={() => setIsInteractive(true)}
-                    className="absolute inset-0 z-[400] bg-black/5 flex items-center justify-center cursor-pointer transition-opacity duration-300 md:hidden hover:bg-black/10"
-                >
-                    <div className="bg-white/90 backdrop-blur-sm px-4 py-2 rounded-full shadow-lg border border-[var(--color-sand)]">
-                        <span className="font-montserrat text-xs font-bold uppercase tracking-widest text-[var(--color-deep-med)]">
-                            Tap to Explore
-                        </span>
-                    </div>
-                </div>
-            )}
         </div>
     );
 }
@@ -235,7 +300,7 @@ function ConvenienceMarker({ spot, isDimmed }: { spot: Convenience, isDimmed: bo
         <Marker
             position={[spot.lat, spot.lng]}
             icon={icon}
-            opacity={isDimmed ? 0.3 : 1}
+            opacity={isDimmed ? 0.15 : 1}
             zIndexOffset={isDimmed ? -100 : 100}
         >
             <Popup className="font-inter text-xs">

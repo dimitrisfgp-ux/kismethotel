@@ -45,7 +45,7 @@ export function RoomInfo({ room }: { room: Room }) {
                         <span className="text-xs uppercase tracking-widest">Beds</span>
                     </div>
                     <span className="font-inter text-lg font-medium capitalize">
-                        {Array.from(new Set(room.layout.filter(c => c.type === 'bedroom').flatMap(c => c.details.filter(d => d.includes('Bed'))))).join(", ") || "Double Bed"}
+                        {room.beds?.map(b => `${b.count} ${b.type}`).join(", ") || "Double"}
                     </span>
                 </div>
                 <div>

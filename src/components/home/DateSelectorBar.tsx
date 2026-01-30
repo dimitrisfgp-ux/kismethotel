@@ -4,7 +4,7 @@ import { DatePickerWithRange } from "../booking/DateRangePicker";
 import { Container } from "../ui/Container";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, BedDouble } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { GuestSelector } from "../ui/GuestSelector";
+import { BedSelector } from "../ui/BedSelector";
 
 interface DateSelectorBarProps {
     onPrev?: () => void;
@@ -12,6 +12,8 @@ interface DateSelectorBarProps {
     canPrev?: boolean;
     canNext?: boolean;
     onFilterClick?: () => void;
+    maxDoubleBeds?: number;
+    maxSingleBeds?: number;
 }
 
 // Helper Component for Navigation Buttons
@@ -28,8 +30,8 @@ function NavButton({ onClick, disabled, icon: Icon, ariaLabel }: { onClick?: () 
     );
 }
 
-export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClick }: DateSelectorBarProps) {
-    const { dateRange, setDateRange, guestCount, setGuestCount } = useDateContext();
+export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClick, maxDoubleBeds, maxSingleBeds }: DateSelectorBarProps) {
+    const { dateRange, setDateRange, doubleBeds, setDoubleBeds, singleBeds, setSingleBeds } = useDateContext();
 
     return (
         <div className="sticky top-16 md:top-[var(--header-height)] z-40 bg-white/95 backdrop-blur-sm border-y border-[var(--color-sand)] shadow-sm py-3 md:py-4 transition-all duration-300">
@@ -49,10 +51,17 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
 
                         <div className="h-10 w-[1px] bg-[var(--color-sand)]" />
 
-                        {/* Guests */}
-                        <div className="flex flex-col min-w-[120px]">
-                            <span className="text-[10px] uppercase tracking-widest text-[var(--color-charcoal)] opacity-60 font-semibold mb-1 text-center">Guests & Beds</span>
-                            <GuestSelector value={guestCount} onChange={setGuestCount} />
+                        {/* Beds */}
+                        <div className="flex flex-col min-w-[140px]">
+                            <span className="text-[10px] uppercase tracking-widest text-[var(--color-charcoal)] opacity-60 font-semibold mb-1 text-center">Beds</span>
+                            <BedSelector
+                                doubleBeds={doubleBeds}
+                                setDoubleBeds={setDoubleBeds}
+                                singleBeds={singleBeds}
+                                setSingleBeds={setSingleBeds}
+                                maxDoubleBeds={maxDoubleBeds}
+                                maxSingleBeds={maxSingleBeds}
+                            />
                         </div>
                     </div>
 

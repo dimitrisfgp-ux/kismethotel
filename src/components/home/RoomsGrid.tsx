@@ -11,16 +11,14 @@ import { FilterPanel } from "./FilterPanel";
 import { useRoomFilters } from "@/hooks/useRoomFilters";
 import { scrollToElement } from "@/lib/utils";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { useDateContext } from "@/contexts/DateContext";
 
 interface RoomsGridProps {
     rooms: Room[];
 }
 
-import { useDateContext } from "@/contexts/DateContext";
-
-// ... inside component
 export function RoomsGrid({ rooms }: RoomsGridProps) {
-    const { dateRange, guestCount } = useDateContext(); // Consume context
+    const { dateRange, doubleBeds, singleBeds } = useDateContext(); // Consume context
     const [currentPage, setCurrentPage] = useState(1);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSearching, setIsSearching] = useState(false); // For loading effect
@@ -28,24 +26,36 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
     // Sync context guestCount with local filters or just use it in calculation
     const [filters, setFilters] = useState<RoomFilters>({
         priceRange: [0, 1000],
-        minOccupancy: 1,
-        sizeCategories: [],
+        occupancy: 0,
+        size: 0,
         floors: [],
-        minBedrooms: 0,
-        bedTypes: [],
+        bedrooms: 0,
+        doubleBeds: 0,
+        singleBeds: 0,
         amenityIds: []
     });
 
-    // Simulate search loading when dates change
+    // Derive max bed counts for the Sticky Bar Selector
+    const maxDoubleBeds = useMemo(() => Math.max(0, ...rooms.map(r => r.beds?.find(b => b.type === 'double')?.count || 0)), [rooms]);
+    const maxSingleBeds = useMemo(() => Math.max(0, ...rooms.map(r => r.beds?.find(b => b.type === 'single')?.count || 0)), [rooms]);
+
+    // Simulate search loading when dates or beds change
     useEffect(() => {
-        if (dateRange) {
+        if (dateRange || doubleBeds > 0 || singleBeds > 0) {
             setIsSearching(true);
             const timer = setTimeout(() => setIsSearching(false), 600);
             return () => clearTimeout(timer);
         }
-    }, [dateRange, guestCount]);
+    }, [dateRange, doubleBeds, singleBeds]);
 
-    const filteredRooms = useRoomFilters({ rooms, filters, guestCount, dateRange });
+    // Merge Context Filters with Local Filters
+    const effectiveFilters = useMemo(() => ({
+        ...filters,
+        doubleBeds: filters.doubleBeds > 0 ? filters.doubleBeds : doubleBeds,
+        singleBeds: filters.singleBeds > 0 ? filters.singleBeds : singleBeds
+    }), [filters, doubleBeds, singleBeds]);
+
+    const filteredRooms = useRoomFilters({ rooms, filters: effectiveFilters, dateRange });
 
     const ITEMS_PER_PAGE = 4;
     const totalPages = Math.ceil(filteredRooms.length / ITEMS_PER_PAGE);
@@ -84,6 +94,8 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
                 canPrev={currentPage > 1}
                 canNext={currentPage < totalPages}
                 onFilterClick={() => setIsFilterOpen(true)}
+                maxDoubleBeds={maxDoubleBeds}
+                maxSingleBeds={maxSingleBeds}
             />
 
             <div id="room-grid-start" className="w-full relative min-h-[800px]">
@@ -123,6 +135,7 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
                 onClose={() => setIsFilterOpen(false)}
                 currentFilters={filters}
                 onApply={handleApplyFilters}
+                rooms={rooms}
             />
         </section>
     );

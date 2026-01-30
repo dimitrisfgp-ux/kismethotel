@@ -2,45 +2,14 @@
 
 import { Room } from "@/types";
 import { useDateContext } from "@/contexts/DateContext";
-import { DayPicker, useNavigation } from "react-day-picker";
-import "react-day-picker/style.css";
+import { Calendar } from "../ui/Calendar";
 import { Button } from "../ui/Button";
 import { formatCurrency, calculateTotal } from "@/lib/priceCalculator";
-import { differenceInDays, format, addDays } from "date-fns";
+import { differenceInDays, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
-import { ChevronLeft, ChevronRight } from "lucide-react";
 
 interface BookingCardProps {
     room: Room;
-}
-
-function CustomCaption(props: { calendarMonth: { date: Date } }) {
-    const { goToMonth, nextMonth, previousMonth } = useNavigation();
-    return (
-        <div className="flex items-center justify-center gap-4 pb-4 pt-2 relative">
-            <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 hover:bg-transparent text-[var(--color-aegean-blue)] hover:text-[var(--color-deep-med)]"
-                onClick={() => previousMonth && goToMonth(previousMonth)}
-                disabled={!previousMonth}
-            >
-                <ChevronLeft className="h-4 w-4" />
-            </Button>
-            <span className="font-montserrat font-bold text-sm text-[var(--color-charcoal)] uppercase tracking-widest min-w-[140px] text-center">
-                {format(props.calendarMonth.date, 'MMMM yyyy')}
-            </span>
-            <Button
-                variant="ghost"
-                size="sm"
-                className="h-7 w-7 p-0 hover:bg-transparent text-[var(--color-aegean-blue)] hover:text-[var(--color-deep-med)]"
-                onClick={() => nextMonth && goToMonth(nextMonth)}
-                disabled={!nextMonth}
-            >
-                <ChevronRight className="h-4 w-4" />
-            </Button>
-        </div>
-    );
 }
 
 export function BookingCard({ room }: BookingCardProps) {
@@ -84,29 +53,15 @@ export function BookingCard({ room }: BookingCardProps) {
             <div className="p-6 space-y-6">
                 {/* Inline Calendar */}
                 <div className="flex justify-center">
-                    <DayPicker
+                    <Calendar
                         mode="range"
                         selected={dateRange}
                         onSelect={setDateRange}
                         numberOfMonths={1}
-                        showOutsideDays={false}
-                        hideNavigation
-                        components={{
-                            MonthCaption: CustomCaption
-                        }}
-                        modifiersClassNames={{
-                            selected: "bg-[var(--color-aegean-blue)] text-white hover:bg-[var(--color-deep-med)] rounded-full",
-                            range_start: "bg-[var(--color-aegean-blue)] text-white rounded-l-full rounded-r-none",
-                            range_end: "bg-[var(--color-aegean-blue)] text-white rounded-l-none rounded-r-full",
-                            range_middle: "!bg-[var(--color-aegean-blue)]/10 !text-[var(--color-charcoal)] rounded-none",
-                            today: "text-[var(--color-aegean-blue)] font-bold"
-                        }}
-                        styles={{
-                            head_cell: { color: 'var(--color-charcoal)', opacity: 0.6, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' },
-                            day: { transition: 'background-color 0.2s', fontFamily: 'var(--font-inter)' }
-                        }}
+                    // showOutsideDays={false} // Default in Calendar
                     />
                 </div>
+
 
                 {/* Totals & Action */}
                 <div className="space-y-4">

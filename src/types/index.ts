@@ -35,7 +35,7 @@ export interface Room {
     maxOccupancy: number;
     pricePerNight: number;
     images: string[];
-    // Deprecated: beds: RoomBed[];
+    beds: RoomBed[];
     // Deprecated: sections: RoomSection[];
     // Deprecated: amenityIds: number[];
     layout: RoomLayoutCategory[];
@@ -84,11 +84,12 @@ export interface FAQ {
 
 export interface RoomFilters {
     priceRange: [number, number]; // [min, max]
-    minOccupancy: number;
-    sizeCategories: RoomSizeCategory[];
+    occupancy: number;
+    size: number; // Sqm
     floors: number[]; // [0, 1, 2]
-    minBedrooms: number;
-    bedTypes: BedType[];
+    bedrooms: number;
+    doubleBeds: number;
+    singleBeds: number;
     amenityIds: number[];
 }
 

@@ -59,7 +59,11 @@ export function RoomCard({ room, index }: RoomCardProps) {
                                 {room.name}
                             </h3>
                             <div className="flex items-center space-x-4 text-sm font-inter opacity-90">
-                                <span>{room.maxOccupancy} Guests</span>
+                                <span>
+                                    {room.beds?.map(b => `${b.count} ${b.type === 'double' ? 'Double' : 'Single'}`).join(", ")} Bed{room.beds?.reduce((acc, b) => acc + b.count, 0) > 1 ? 's' : ''}
+                                </span>
+                                <span>•</span>
+                                <span>Max {room.maxOccupancy} Guests</span>
                                 <span>•</span>
                                 <span>{room.sizeSqm}m²</span>
                                 <span>•</span>

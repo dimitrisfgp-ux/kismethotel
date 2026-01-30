@@ -5,17 +5,13 @@ export function matchesPrice(room: Room, range: [number, number]): boolean {
 }
 
 export function matchesOccupancy(room: Room, guests: number): boolean {
-    return room.maxOccupancy >= guests;
+    if (!guests || guests === 0) return true;
+    return room.maxOccupancy === guests;
 }
 
-export function matchesSize(room: Room, categories: string[]): boolean {
-    if (categories.length === 0) return true;
-    // Map size to category
-    let category = 'medium';
-    if (room.sizeSqm < 40) category = 'small';
-    else if (room.sizeSqm > 70) category = 'large';
-
-    return categories.includes(category);
+export function matchesSize(room: Room, minSize: number): boolean {
+    if (!minSize || minSize === 0) return true;
+    return room.sizeSqm === minSize;
 }
 
 export function matchesFloor(room: Room, floors: number[]): boolean {
@@ -30,24 +26,26 @@ export function matchesAmenities(room: Room, amenityIds: number[]): boolean {
     return amenityIds.every(id => roomAmenityIds.includes(id));
 }
 
-export function matchesBedType(room: Room, bedTypes: string[]): boolean {
-    if (bedTypes.length === 0) return true;
-    // Check if any layout category details contain the bed type string (simple check for now)
-    // e.g. "King Bed" contains "King"
-    return room.layout.some(cat =>
-        cat.details.some(detail =>
-            bedTypes.some(type => detail.toLowerCase().includes(type.toLowerCase()))
-        )
-    );
+export function matchesDoubleBeds(room: Room, count: number): boolean {
+    if (!count || count === 0) return true;
+    const doubleBeds = room.beds?.find(b => b.type === 'double')?.count || 0;
+    return doubleBeds === count;
+}
+
+export function matchesSingleBeds(room: Room, count: number): boolean {
+    if (!count || count === 0) return true;
+    const singleBeds = room.beds?.find(b => b.type === 'single')?.count || 0;
+    return singleBeds === count;
 }
 
 export function filterRooms(rooms: Room[], filters: RoomFilters): Room[] {
     return rooms.filter(room => {
         return matchesPrice(room, filters.priceRange) &&
-            matchesOccupancy(room, filters.minOccupancy) &&
-            matchesSize(room, filters.sizeCategories) &&
+            matchesOccupancy(room, filters.occupancy) &&
+            matchesSize(room, filters.size) &&
             matchesFloor(room, filters.floors) &&
             matchesAmenities(room, filters.amenityIds) &&
-            matchesBedType(room, filters.bedTypes);
+            matchesDoubleBeds(room, filters.doubleBeds) &&
+            matchesSingleBeds(room, filters.singleBeds);
     });
 }
