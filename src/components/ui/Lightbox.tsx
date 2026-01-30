@@ -18,6 +18,12 @@ interface LightboxProps {
 
 export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev }: LightboxProps) {
     const [mounted, setMounted] = useState(false);
+    const [isLoading, setIsLoading] = useState(true);
+
+    // Reset loading state when index changes (new image)
+    useEffect(() => {
+        setIsLoading(true);
+    }, [currentIndex]);
 
     // Initial mount check for portal
     useEffect(() => {
@@ -95,20 +101,47 @@ export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev
             )}
 
             {/* Image Container */}
+            {/* Image Container */}
             <div
                 className="relative w-full h-full p-4 md:p-10 flex items-center justify-center"
                 onClick={(e) => e.stopPropagation()}
             >
-                <div className="relative w-full h-full max-w-7xl max-h-[90vh]">
-                    <Image
-                        src={currentImage}
-                        alt="Gallery Image"
-                        fill
-                        className="object-contain"
-                        quality={100}
-                        priority
-                    />
+                <div className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center">
+                    {/* Main Image */}
+                    <div className={cn("relative w-full h-full transition-opacity duration-300", isLoading ? "opacity-0" : "opacity-100")}>
+                        <Image
+                            src={currentImage}
+                            alt={`Gallery Image ${currentIndex + 1}`}
+                            fill
+                            className="object-contain" // object-contain ensures full image is seen.
+                            quality={90}
+                            priority
+                            onLoad={() => setIsLoading(false)}
+                            onLoadStart={() => setIsLoading(true)}
+                        />
+                    </div>
+
+                    {/* Loading Spinner (Centered behind image or on top) */}
+                    {isLoading && (
+                        <div className="absolute inset-0 flex items-center justify-center z-[-1]">
+                            <div className="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                        </div>
+                    )}
                 </div>
+            </div>
+
+            {/* Preload Next/Prev Images (Hidden) */}
+            <div className="hidden">
+                {(() => {
+                    const nextIndex = (currentIndex + 1) % images.length;
+                    const prevIndex = (currentIndex - 1 + images.length) % images.length;
+                    return (
+                        <>
+                            <Image src={images[nextIndex]} alt="" width={1} height={1} priority />
+                            <Image src={images[prevIndex]} alt="" width={1} height={1} priority />
+                        </>
+                    );
+                })()}
             </div>
 
             {/* Counter */}
