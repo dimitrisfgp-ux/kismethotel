@@ -21,6 +21,7 @@ export function FilterWidget({ onOpen, visible = true }: FilterWidgetProps) {
     return (
         <button
             onClick={onOpen}
+            aria-label="Filter Rooms"
             className={cn(
                 "fixed bottom-24 right-6 z-40 flex items-center justify-center w-14 h-14 rounded-full bg-white text-[var(--color-accent-gold)] border-2 border-[var(--color-accent-gold)] shadow-[var(--shadow-hover)] hover:bg-[var(--color-accent-gold)] hover:text-white hover:scale-105 transition-all duration-500 ease-premium",
                 visible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"

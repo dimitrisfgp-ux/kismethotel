@@ -105,7 +105,7 @@ export function LocationSection({ conveniences }: LocationSectionProps) {
                     />
                 ) : (
                     <div className="w-full h-full bg-[var(--color-sand)] animate-pulse flex items-center justify-center">
-                        <span className="font-inter text-sm tracking-widest uppercase opacity-40">Loading Map...</span>
+                        <span className="font-inter text-sm tracking-widest uppercase opacity-70 text-[var(--color-charcoal)]">Loading Map...</span>
                     </div>
                 )}
             </div>
