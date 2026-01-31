@@ -1,6 +1,5 @@
-import { Room, Amenity } from "@/types";
+import { Room } from "@/types";
 import { AmenityIcon } from "./AmenityIcon";
-import { SectionHeading } from "../ui/SectionHeading";
 import { BedDouble, Utensils, Armchair, Bath, LayoutGrid, Users, Maximize, Layers } from "lucide-react";
 
 const getCategoryIcon = (type: string) => {

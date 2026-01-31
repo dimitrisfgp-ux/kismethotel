@@ -47,10 +47,10 @@ export function LocationSection({ conveniences }: LocationSectionProps) {
     });
 
     useEffect(() => {
-        if (isNearViewport) {
+        if (isNearViewport && !hasMapLoaded) {
             setHasMapLoaded(true);
         }
-    }, [isNearViewport]);
+    }, [isNearViewport, hasMapLoaded]);
 
     const handleCategoryClick = (index: number) => {
         // Toggle if same clicked

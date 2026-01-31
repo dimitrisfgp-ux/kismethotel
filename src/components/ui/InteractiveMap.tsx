@@ -265,7 +265,7 @@ function GestureController() {
             container.removeEventListener("touchend", handleTouchEnd);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [map, hasLearned]);
+    }, [map, hasLearned, showWarning]);
 
     if (!showWarning) return null;
 

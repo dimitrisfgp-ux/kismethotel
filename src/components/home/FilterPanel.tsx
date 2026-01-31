@@ -113,7 +113,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
 
     if (!isOpen || !mounted || !derivedOptions) return null;
 
-    const { minPrice, maxPrice, floors, sizes, availableAmenities, maxTotalOccupancy, maxDoubleBeds, maxSingleBeds } = derivedOptions;
+    const { minPrice, maxPrice, floors, sizes, availableAmenities, maxDoubleBeds, maxSingleBeds } = derivedOptions;
 
     // Use localFilters for guests, preserve date context for global availability check
     // Actually, user might want to filter dates just locally until applied? 

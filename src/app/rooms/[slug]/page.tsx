@@ -1,6 +1,5 @@
 import { notFound } from "next/navigation";
 import { roomService } from "@/services/roomService";
-import { contentService } from "@/services/contentService";
 import { Container } from "@/components/ui/Container";
 import { ImageGallery } from "@/components/rooms/ImageGallery";
 import { RoomInfo } from "@/components/rooms/RoomInfo";

@@ -21,6 +21,7 @@ export function RoomCard({ room, index }: RoomCardProps) {
 
     useEffect(() => {
         setIsTouch(window.matchMedia("(hover: none)").matches || window.innerWidth < 1024);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     const isActive = useIntersectionObserver(cardRef, {
