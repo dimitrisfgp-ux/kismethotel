@@ -32,7 +32,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
     return createPortal(
         <div
             className={cn(
-                "fixed inset-0 z-[49] bg-[#2F3437] backdrop-blur-md transition-transform duration-500 ease-premium transform",
+                "fixed inset-0 z-[49] bg-[var(--color-aegean-blue)] backdrop-blur-md transition-transform duration-500 ease-premium transform",
                 isOpen ? "translate-x-0" : "translate-x-full"
             )}
         >

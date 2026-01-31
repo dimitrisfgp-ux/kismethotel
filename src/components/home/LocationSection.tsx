@@ -17,12 +17,12 @@ interface LocationSectionProps {
 }
 
 const CATEGORIES = [
-    { label: "Ktel & Transport", types: ["Bus"], icon: <Bus className="h-6 w-6" />, color: "var(--color-deep-med)" },
-    { label: "Car Rentals", types: ["Car Rental"], icon: <Car className="h-6 w-6" />, color: "var(--color-map-rental)" },
-    { label: "SuperMarkets", types: ["Supermarket"], icon: <ShoppingCart className="h-6 w-6" />, color: "var(--color-accent-gold)" },
-    { label: "Pharmacies", types: ["Pharmacy"], icon: <Pill className="h-6 w-6" />, color: "var(--color-success)" },
-    { label: "Dining & Drinks", types: ["Restaurant", "Cafe", "Bar"], icon: <Utensils className="h-6 w-6" />, color: "var(--color-map-dining)" },
-    { label: "Beaches", types: ["Beach"], icon: <Waves className="h-6 w-6" />, color: "var(--color-map-beach)" },
+    { label: "Ktel & Transport", types: ["Bus"], icon: <Bus className="h-6 w-6" />, color: "#837DA4" },
+    { label: "Car Rentals", types: ["Car Rental"], icon: <Car className="h-6 w-6" />, color: "#C9A961" },
+    { label: "SuperMarkets", types: ["Supermarket"], icon: <ShoppingCart className="h-6 w-6" />, color: "#7DAC8F" },
+    { label: "Pharmacies", types: ["Pharmacy"], icon: <Pill className="h-6 w-6" />, color: "#7394AC" },
+    { label: "Dining & Drinks", types: ["Restaurant", "Cafe", "Bar"], icon: <Utensils className="h-6 w-6" />, color: "#A86869" },
+    { label: "Beaches", types: ["Beach"], icon: <Waves className="h-6 w-6" />, color: "#D7BAD5" },
 ];
 
 // ... imports ...

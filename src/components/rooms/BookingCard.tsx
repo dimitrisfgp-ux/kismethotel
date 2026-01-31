@@ -58,6 +58,13 @@ export function BookingCard({ room }: BookingCardProps) {
                         selected={dateRange}
                         onSelect={setDateRange}
                         numberOfMonths={1}
+                        classNames={{
+                            selected: "bg-[var(--color-deep-med)] !text-white hover:bg-[var(--color-deep-med)]/90 rounded-full",
+                            range_start: "bg-[var(--color-deep-med)] !text-white rounded-l-full rounded-r-none",
+                            range_end: "bg-[var(--color-deep-med)] !text-white rounded-l-none rounded-r-full",
+                            range_middle: "bg-[var(--color-deep-med)]/10 text-[var(--color-deep-med)] rounded-none",
+                            today: "text-[var(--color-deep-med)] font-bold"
+                        }}
                     // showOutsideDays={false} // Default in Calendar
                     />
                 </div>

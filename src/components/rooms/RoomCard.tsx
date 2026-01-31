@@ -3,9 +3,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import { Room } from "@/types";
-import { Badge } from "../ui/Badge";
 import { formatCurrency } from "@/lib/priceCalculator";
-import { ArrowRight } from "lucide-react";
+import { ArrowRight, BedSingle, BedDouble, Users } from "lucide-react";
 
 interface RoomCardProps {
     room: Room;
@@ -52,36 +51,49 @@ export function RoomCard({ room, index }: RoomCardProps) {
 
             {/* Content */}
             <div className="absolute bottom-0 left-0 w-full p-8 text-[var(--color-warm-white)] transition-transform duration-500 ease-premium group-hover:translate-y-0 group-[.is-active]:translate-y-0 translate-y-2">
-                <div className="flex flex-col items-start">
+                <div className="flex flex-col items-start w-full">
                     <div className="flex justify-between items-end w-full">
-                        <div>
+                        <div className="w-full">
                             <h3 className="font-montserrat text-2xl font-bold uppercase tracking-widest mb-2 text-[var(--color-warm-white)] group-hover:text-[var(--color-sand)] group-[.is-active]:text-[var(--color-sand)] transition-colors">
                                 {room.name}
                             </h3>
-                            <div className="flex items-center space-x-4 text-sm font-inter opacity-90">
-                                <span>
-                                    {room.beds?.map(b => `${b.count} ${b.type === 'double' ? 'Double' : 'Single'}`).join(", ")} Bed{room.beds?.reduce((acc, b) => acc + b.count, 0) > 1 ? 's' : ''}
-                                </span>
-                                <span>•</span>
-                                <span>Max {room.maxOccupancy} Guests</span>
-                                <span>•</span>
+                            <div className="flex flex-wrap items-center gap-x-4 gap-y-2 text-sm font-inter opacity-90">
+                                {/* Amenities Group */}
+                                <div className="flex items-center gap-4">
+                                    <div className="flex items-center gap-3">
+                                        {/* Beds */}
+                                        {room.beds?.map((bed, i) => (
+                                            <div key={i} className="flex items-center gap-1.5" title={`${bed.count} ${bed.type === 'double' ? 'Double' : 'Single'} Bed${bed.count > 1 ? 's' : ''}`}>
+                                                {bed.type === 'double' ? <BedDouble className="w-4 h-4" /> : <BedSingle className="w-4 h-4" />}
+                                                <span>{bed.count}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <div className="w-px h-3 bg-white/40" />
+                                    {/* Occupancy */}
+                                    <div className="flex items-center gap-1.5" title={`Max ${room.maxOccupancy} Guests`}>
+                                        <Users className="w-4 h-4" />
+                                        <span>{room.maxOccupancy}</span>
+                                    </div>
+                                </div>
+                                <span className="hidden sm:inline">•</span>
                                 <span>{room.sizeSqm}m²</span>
-                                <span>•</span>
+                                <span className="hidden sm:inline">•</span>
                                 <span>{formatCurrency(room.pricePerNight)} / night</span>
                             </div>
                         </div>
                     </div>
 
                     {/* Description Slide (Grid Rows Technique) */}
-                    <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-[.is-active]:grid-rows-[1fr] group-hover:opacity-100 group-[.is-active]:opacity-100 transition-all duration-500 ease-premium">
+                    <div className="grid grid-rows-[0fr] opacity-0 group-hover:grid-rows-[1fr] group-[.is-active]:grid-rows-[1fr] group-hover:opacity-100 group-[.is-active]:opacity-100 transition-all duration-500 ease-premium w-full">
                         <div className="overflow-hidden">
-                            <p className="text-sm font-inter text-[var(--color-warm-white)]/90 leading-relaxed border-t border-white/20 pt-4 mt-4">
+                            <p className="text-sm font-inter text-[var(--color-warm-white)]/90 leading-relaxed border-t border-white/20 pt-4 mt-4 line-clamp-3">
                                 {room.description}
                             </p>
                         </div>
                     </div>
                 </div>
             </div>
-        </Link>
+        </Link >
     );
 }

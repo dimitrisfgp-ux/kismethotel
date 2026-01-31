@@ -7,7 +7,6 @@ import { AMENITIES } from "@/data/amenities";
 import { Button } from "../ui/Button";
 import { X, Users, BedDouble, Bed, Layers, Sparkles, Maximize, Euro, Wind, Wifi, Tv, ChefHat, Waves, Sun, CloudRain, Coffee, Car } from "lucide-react";
 import { useDateContext } from "@/contexts/DateContext";
-import { GuestSelector } from "../ui/GuestSelector";
 import { Calendar } from "../ui/Calendar";
 
 const iconMap: Record<string, React.ComponentType<any>> = {
@@ -123,36 +122,49 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
 
     return createPortal(
         <div className="fixed inset-0 z-[60] bg-black/50 backdrop-blur-sm flex justify-end animate-fade-in">
-            <div className="w-full max-w-md bg-white h-full shadow-2xl p-6 md:p-8 overflow-y-auto animate-slide-up">
+            <div className="w-full max-w-md bg-[var(--color-aegean-blue)] h-full shadow-2xl p-6 md:p-8 overflow-y-auto animate-slide-up border-l border-[var(--color-accent-gold)]/30">
                 <div className="flex justify-between items-center mb-6">
-                    <h2 className="font-montserrat text-xl font-bold uppercase tracking-widest text-[var(--color-aegean-blue)]">Filter Rooms</h2>
-                    <button onClick={onClose} className="p-2 hover:bg-slate-100 rounded-full"><X className="h-6 w-6 text-[var(--color-charcoal)]" /></button>
+                    <h2 className="font-montserrat text-xl font-bold uppercase tracking-widest text-white">Filter Rooms</h2>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors"><X className="h-6 w-6 text-white" /></button>
                 </div>
 
                 <div className="space-y-8">
                     {/* Primary Filters (Date & Guests) - Added for unified mobile view */}
-                    <div className="bg-[var(--color-sand)]/20 p-4 rounded-[var(--radius-subtle)] space-y-4 border border-[var(--color-sand)]">
-                        <h3 className="font-montserrat text-sm font-bold uppercase tracking-wider text-[var(--color-charcoal)] mb-2">My Stay</h3>
+                    <div className="bg-white/5 p-4 rounded-[var(--radius-subtle)] space-y-4 border border-white/10">
+                        <h3 className="font-montserrat text-sm font-bold uppercase tracking-wider text-white mb-2">My Stay</h3>
 
                         {/* Date Picker - INLINE CALENDAR */}
-                        <label className="block text-xs font-semibold uppercase tracking-widest text-[var(--color-charcoal)]/60 mb-2">Dates</label>
+                        <label className="block text-xs font-semibold uppercase tracking-widest text-white/80 mb-2">Dates</label>
                         <Calendar
                             mode="range"
                             selected={dateRange}
                             onSelect={setDateRange}
                             numberOfMonths={1}
-                            className="w-full flex justify-center pb-2 bg-white rounded-[var(--radius-subtle)] border border-[var(--color-sand)]"
+                            style={{
+                                '--cal-nav-color': 'white',
+                                '--cal-label-color': 'white'
+                            } as React.CSSProperties}
+                            className="w-full flex justify-center pb-2 bg-white/5 rounded-[var(--radius-subtle)] border border-white/10 text-white"
+                            classNames={{
+                                selected: "bg-[var(--color-accent-gold)] text-white hover:bg-[var(--color-accent-gold)]/90 rounded-full",
+                                range_start: "bg-[var(--color-accent-gold)] text-white rounded-l-full rounded-r-none",
+                                range_end: "bg-[var(--color-accent-gold)] text-white rounded-l-none rounded-r-full",
+                                range_middle: "bg-white/10 text-white rounded-none",
+                                today: "text-[var(--color-accent-gold)] font-bold",
+                                head_cell: "text-white/60 font-medium text-[0.7rem] uppercase tracking-wider",
+                                caption_label: "text-white font-bold font-montserrat tracking-widest uppercase"
+                            }}
                         />
 
                     </div>
 
-                    <div className="h-px bg-[var(--color-sand)] w-full" />
+                    <div className="h-px bg-white/10 w-full" />
 
                     {/* Price */}
                     <div>
                         <div className="flex justify-between mb-4">
-                            <label className="block text-xs font-bold uppercase tracking-widest flex items-center gap-2"><Euro className="w-4 h-4" /> Price Range</label>
-                            <span className="text-xs font-inter opacity-60">€{localFilters.priceRange[0]} - €{localFilters.priceRange[1]}</span>
+                            <label className="block text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-white"><Euro className="w-4 h-4 text-[var(--color-accent-gold)]" /> Price Range</label>
+                            <span className="text-xs font-inter text-white">€{localFilters.priceRange[0]} - €{localFilters.priceRange[1]}</span>
                         </div>
                         <input
                             type="range"
@@ -161,28 +173,25 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
                             step="10"
                             value={localFilters.priceRange[1]}
                             onChange={(e) => setLocalFilters({ ...localFilters, priceRange: [localFilters.priceRange[0], Number(e.target.value)] })}
-                            className="w-full accent-[var(--color-aegean-blue)]"
+                            className="w-full accent-[var(--color-accent-gold)]"
                         />
                     </div>
 
-                    {/* Occupancy - REMOVED (Redundant) */}
-
-
                     {/* Bed Configuration */}
                     <div className="space-y-4">
-                        <label className="block text-xs font-bold uppercase tracking-widest flex items-center gap-2"><BedDouble className="w-4 h-4" /> Bed Configuration</label>
+                        <label className="block text-xs font-bold uppercase tracking-widest flex items-center gap-2 text-white"><BedDouble className="w-4 h-4 text-[var(--color-accent-gold)]" /> Bed Configuration</label>
 
                         {/* Bed Configuration - Separated */}
                         <div className="grid grid-cols-2 gap-4">
                             {/* Double Beds */}
                             <div>
-                                <span className="text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-2 block flex items-center gap-1"><BedDouble className="w-3 h-3" /> Double Beds</span>
+                                <span className="text-[10px] uppercase tracking-wider text-white/60 font-semibold mb-2 block flex items-center gap-1"><BedDouble className="w-3 h-3" /> Double Beds</span>
                                 <div className="flex gap-2">
                                     {Array.from({ length: maxDoubleBeds + 1 }, (_, i) => i).map(num => (
                                         <button
                                             key={num}
                                             onClick={() => setLocalFilters({ ...localFilters, doubleBeds: num })}
-                                            className={`w-10 h-10 rounded-full border text-sm ${localFilters.doubleBeds === num ? 'bg-[var(--color-aegean-blue)] text-white border-[var(--color-aegean-blue)]' : 'border-[var(--color-sand)] hover:border-[var(--color-aegean-blue)]'}`}
+                                            className={`w-10 h-10 rounded-full border text-sm transition-all ${localFilters.doubleBeds === num ? 'bg-[var(--color-accent-gold)] text-white border-[var(--color-accent-gold)]' : 'border-white/20 text-white hover:border-[var(--color-accent-gold)]'}`}
                                         >
                                             {num === 0 ? "Any" : num}
                                         </button>
@@ -192,13 +201,13 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
 
                             {/* Single Beds */}
                             <div>
-                                <span className="text-[10px] uppercase tracking-wider opacity-60 font-semibold mb-2 block flex items-center gap-1"><Bed className="w-3 h-3" /> Single Beds</span>
+                                <span className="text-[10px] uppercase tracking-wider text-white/60 font-semibold mb-2 block flex items-center gap-1"><Bed className="w-3 h-3" /> Single Beds</span>
                                 <div className="flex gap-2">
                                     {Array.from({ length: maxSingleBeds + 1 }, (_, i) => i).map(num => (
                                         <button
                                             key={num}
                                             onClick={() => setLocalFilters({ ...localFilters, singleBeds: num })}
-                                            className={`w-10 h-10 rounded-full border text-sm ${localFilters.singleBeds === num ? 'bg-[var(--color-aegean-blue)] text-white border-[var(--color-aegean-blue)]' : 'border-[var(--color-sand)] hover:border-[var(--color-aegean-blue)]'}`}
+                                            className={`w-10 h-10 rounded-full border text-sm transition-all ${localFilters.singleBeds === num ? 'bg-[var(--color-accent-gold)] text-white border-[var(--color-accent-gold)]' : 'border-white/20 text-white hover:border-[var(--color-accent-gold)]'}`}
                                         >
                                             {num === 0 ? "Any" : num}
                                         </button>
@@ -210,21 +219,18 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
 
                     {/* Floors - Dynamic */}
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2"><Layers className="w-4 h-4" /> Floor Preference</label>
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 text-white"><Layers className="w-4 h-4 text-[var(--color-accent-gold)]" /> Floor Preference</label>
                         <div className="flex gap-3 flex-wrap">
                             {floors.map(floor => (
                                 <button
                                     key={floor}
                                     onClick={() => {
-                                        // Single Select Logic:
-                                        // If already selected, deselect (empty array). 
-                                        // If not, replace entire array with just this floor.
                                         const newFloors = localFilters.floors.includes(floor)
                                             ? []
                                             : [floor];
                                         setLocalFilters({ ...localFilters, floors: newFloors });
                                     }}
-                                    className={`px-4 py-2 rounded-[var(--radius-subtle)] border text-sm uppercase ${localFilters.floors.includes(floor) ? 'bg-[var(--color-aegean-blue)] text-white' : 'border-[var(--color-sand)]'}`}
+                                    className={`px-4 py-2 rounded-[var(--radius-subtle)] border text-sm uppercase transition-all ${localFilters.floors.includes(floor) ? 'bg-[var(--color-accent-gold)] text-white border-[var(--color-accent-gold)]' : 'border-white/20 text-white hover:border-[var(--color-accent-gold)]'}`}
                                 >
                                     {floor === 0 ? "Ground" : `${floor}th Floor`}
                                 </button>
@@ -234,7 +240,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
 
                     {/* Amenities - Dynamic */}
                     <div>
-                        <label className="block text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2"><Sparkles className="w-4 h-4" /> Amenities</label>
+                        <label className="block text-xs font-bold uppercase tracking-widest mb-4 flex items-center gap-2 text-white"><Sparkles className="w-4 h-4 text-[var(--color-accent-gold)]" /> Amenities</label>
                         <div className="grid grid-cols-2 gap-3">
                             {availableAmenities.map(amenity => {
                                 const Icon = iconMap[amenity.iconName as keyof typeof iconMap] || Sparkles;
@@ -247,7 +253,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
                                                 : [...localFilters.amenityIds, amenity.id];
                                             setLocalFilters({ ...localFilters, amenityIds: newIds });
                                         }}
-                                        className={`text-left px-3 py-2 rounded-[var(--radius-subtle)] border text-xs font-inter transition-all flex items-center gap-2 ${localFilters.amenityIds.includes(amenity.id) ? 'bg-[var(--color-aegean-blue)] text-white border-[var(--color-aegean-blue)]' : 'border-[var(--color-sand)] hover:bg-[var(--color-sand)]/20'}`}
+                                        className={`text-left px-3 py-2 rounded-[var(--radius-subtle)] border text-xs font-inter transition-all flex items-center gap-2 ${localFilters.amenityIds.includes(amenity.id) ? 'bg-[var(--color-accent-gold)] text-white border-[var(--color-accent-gold)]' : 'border-white/20 text-white hover:bg-white/5'}`}
                                     >
                                         <Icon className="w-3 h-3 opacity-70" />
                                         {amenity.name}
@@ -260,19 +266,19 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
                     {/* Size - Dynamic Slider */}
                     <div>
                         <div className="flex justify-between mb-6">
-                            <label className="block text-xs font-bold uppercase tracking-widest text-[var(--color-charcoal)] flex items-center gap-2"><Maximize className="w-4 h-4" /> Room Size</label>
-                            <span className="text-sm font-inter font-bold text-[var(--color-aegean-blue)]">
+                            <label className="block text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2"><Maximize className="w-4 h-4 text-[var(--color-accent-gold)]" /> Room Size</label>
+                            <span className="text-sm font-inter font-bold text-white">
                                 {localFilters.size > 0 ? `${localFilters.size} m²` : `${sizes[0]} m²`}
                             </span>
                         </div>
 
                         <div className="relative h-8 flex items-center">
                             {/* Visual Track Line */}
-                            <div className="absolute w-full h-[3px] bg-[var(--color-sand)] rounded-full z-0 top-1/2 -translate-y-1/2" />
+                            <div className="absolute w-full h-[3px] bg-white/20 rounded-full z-0 top-1/2 -translate-y-1/2" />
 
                             {/* Active Track (Fill) */}
                             <div
-                                className="absolute h-[3px] bg-[var(--color-aegean-blue)] rounded-full z-0 top-1/2 -translate-y-1/2 left-0 transition-all duration-75 ease-out origin-left pointer-events-none"
+                                className="absolute h-[3px] bg-[var(--color-accent-gold)] rounded-full z-0 top-1/2 -translate-y-1/2 left-0 transition-all duration-75 ease-out origin-left pointer-events-none"
                                 style={{
                                     width: `${(((localFilters.size || sizes[0]) - sizes[0]) / (sizes[sizes.length - 1] - sizes[0])) * 100}%`
                                 }}
@@ -289,7 +295,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
                                     return (
                                         <div
                                             key={size}
-                                            className={`absolute w-2.5 h-2.5 rounded-full top-1/2 -translate-y-1/2 -translate-x-1/2 transition-colors duration-300 ${isActive ? 'bg-[var(--color-aegean-blue)]' : 'bg-[var(--color-sand)]'}`}
+                                            className={`absolute w-2.5 h-2.5 rounded-full top-1/2 -translate-y-1/2 -translate-x-1/2 transition-colors duration-300 ${isActive ? 'bg-[var(--color-accent-gold)]' : 'bg-white/20'}`}
                                             style={{ left: `${percent}%` }}
                                         />
                                     );
@@ -316,7 +322,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
 
                             {/* Custom Thumb (Visual Only) */}
                             <div
-                                className="absolute h-5 w-5 bg-[var(--color-aegean-blue)] rounded-full shadow-lg border-2 border-white pointer-events-none z-20 transition-all duration-75 ease-out top-1/2 -translate-y-1/2 -translate-x-1/2 transform hover:scale-110"
+                                className="absolute h-5 w-5 bg-[var(--color-accent-gold)] rounded-full shadow-lg border-2 border-white pointer-events-none z-20 transition-all duration-75 ease-out top-1/2 -translate-y-1/2 -translate-x-1/2 transform hover:scale-110"
                                 style={{
                                     left: `${sizes.length > 1
                                         ? (((localFilters.size ?? sizes[0]) - sizes[0]) / (sizes[sizes.length - 1] - sizes[0])) * 100
@@ -325,7 +331,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
                             />
                         </div>
 
-                        <div className="flex justify-between text-[10px] text-[var(--color-charcoal)]/40 mt-2 font-mono uppercase tracking-wider">
+                        <div className="flex justify-between text-[10px] text-white/40 mt-2 font-mono uppercase tracking-wider">
                             <span>{sizes[0]} m²</span>
                             <span>{sizes[sizes.length - 1]} m²</span>
                         </div>
@@ -345,13 +351,13 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
                             singleBeds: 0,
                             amenityIds: []
                         })}
-                        className="flex-1"
+                        className="flex-1 text-white hover:bg-white/10 hover:text-white"
                     >
                         Reset
                     </Button>
                     <Button
                         onClick={() => { onApply(localFilters); onClose(); }}
-                        className="flex-1 bg-[var(--color-aegean-blue)] text-white"
+                        className="flex-1 bg-[var(--color-accent-gold)] text-white hover:bg-[var(--color-accent-gold)]/90"
                     >
                         Apply Filters
                     </Button>

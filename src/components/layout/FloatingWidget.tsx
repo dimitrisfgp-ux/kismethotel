@@ -26,8 +26,8 @@ export function FloatingWidget() {
                 onClick={() => setIsOpen(!isOpen)}
                 aria-label="Toggle Contact Options"
                 className={cn(
-                    "relative z-10 flex items-center justify-center w-14 h-14 rounded-full shadow-[var(--shadow-hover)] transition-all duration-300",
-                    isOpen ? "bg-[var(--color-charcoal)] rotate-90" : "bg-[var(--color-aegean-blue)] hover:bg-[var(--color-deep-med)]"
+                    "relative z-10 flex items-center justify-center w-14 h-14 rounded-full shadow-[var(--shadow-hover)] transition-all duration-300 border border-[var(--color-accent-gold)]",
+                    isOpen ? "bg-[var(--color-deep-med)] rotate-90" : "bg-[var(--color-deep-med)] hover:bg-[var(--color-deep-med)]/90"
                 )}
             >
                 {isOpen ? <X className="h-6 w-6 text-white" /> : <Phone className="h-6 w-6 text-white" />}
@@ -35,8 +35,8 @@ export function FloatingWidget() {
 
             {/* Expanded Options Bar */}
             <div className={cn(
-                "flex items-center gap-3 bg-[var(--color-aegean-blue)] rounded-full transition-all duration-500 ease-premium overflow-hidden shadow-lg",
-                isOpen ? "w-[170px] px-3 py-2 opacity-100 translate-x-0" : "w-0 px-0 opacity-0 translate-x-8 pointer-events-none"
+                "flex items-center gap-3 bg-[var(--color-deep-med)] border border-[var(--color-accent-gold)] rounded-full transition-all duration-500 ease-premium overflow-hidden shadow-lg h-14",
+                isOpen ? "w-[170px] px-3 opacity-100 translate-x-0" : "w-0 px-0 opacity-0 translate-x-8 pointer-events-none"
             )}>
                 {/* WhatsApp */}
                 <a href="https://wa.me/30123456789" target="_blank" rel="noopener noreferrer"

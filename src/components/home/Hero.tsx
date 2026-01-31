@@ -4,7 +4,6 @@ import { PLACEHOLDER_HERO } from "@/lib/placeholders";
 import { Button } from "../ui/Button";
 import { ChevronDown } from "lucide-react";
 import { scrollToElement } from "@/lib/utils";
-import Image from "next/image";
 
 export function Hero() {
     const handleScroll = (e: React.MouseEvent) => {
