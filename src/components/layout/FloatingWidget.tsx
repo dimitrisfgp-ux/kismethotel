@@ -10,8 +10,7 @@ import { cn } from "@/lib/utils";
 import { useUIContext } from "@/contexts/UIContext";
 
 export function FloatingWidget() {
-    const [isOpen, setIsOpen] = useState(false);
-    const { isFloatingWidgetVisible } = useUIContext();
+    const { isFloatingWidgetVisible, isFloatingWidgetOpen, setFloatingWidgetOpen } = useUIContext();
 
     // Close only if visibly hidden? 
     // If hidden, isOpen state doesn't matter much but let's keep logic simple.
@@ -23,20 +22,20 @@ export function FloatingWidget() {
         )}>
             {/* Main FAB */}
             <button
-                onClick={() => setIsOpen(!isOpen)}
+                onClick={() => setFloatingWidgetOpen(!isFloatingWidgetOpen)}
                 aria-label="Toggle Contact Options"
                 className={cn(
                     "relative z-10 flex items-center justify-center w-14 h-14 rounded-full shadow-[var(--shadow-hover)] transition-all duration-300 border border-[var(--color-accent-gold)]",
-                    isOpen ? "bg-[var(--color-deep-med)] rotate-90" : "bg-[var(--color-deep-med)] hover:bg-[var(--color-deep-med)]/90"
+                    isFloatingWidgetOpen ? "bg-[var(--color-deep-med)] rotate-90" : "bg-[var(--color-deep-med)] hover:bg-[var(--color-deep-med)]/90"
                 )}
             >
-                {isOpen ? <X className="h-6 w-6 text-white" /> : <Phone className="h-6 w-6 text-white" />}
+                {isFloatingWidgetOpen ? <X className="h-6 w-6 text-white" /> : <Phone className="h-6 w-6 text-white" />}
             </button>
 
             {/* Expanded Options Bar */}
             <div className={cn(
                 "flex items-center gap-3 bg-[var(--color-deep-med)] border border-[var(--color-accent-gold)] rounded-full transition-all duration-500 ease-premium overflow-hidden shadow-lg h-14",
-                isOpen ? "w-[170px] px-3 opacity-100 translate-x-0" : "w-0 px-0 opacity-0 translate-x-8 pointer-events-none"
+                isFloatingWidgetOpen ? "w-[170px] px-3 opacity-100 translate-x-0" : "w-0 px-0 opacity-0 translate-x-8 pointer-events-none"
             )}>
                 {/* WhatsApp */}
                 <a href="https://wa.me/30123456789" target="_blank" rel="noopener noreferrer"
@@ -75,7 +74,7 @@ export function FloatingWidget() {
                             const contactSection = document.getElementById('contact');
                             if (contactSection) {
                                 contactSection.scrollIntoView({ behavior: 'smooth' });
-                                setIsOpen(false);
+                                setFloatingWidgetOpen(false);
                             }
                         }
                     }}

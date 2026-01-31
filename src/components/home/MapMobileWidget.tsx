@@ -42,7 +42,7 @@ export function MapMobileWidget({ isVisible, categories, activeCategoryIndex, on
                                 className={cn(
                                     "flex-shrink-0 p-2 rounded-full transition-all duration-300 relative border shadow-sm",
                                     isActive
-                                        ? "shadow-md scale-110"
+                                        ? "shadow-md"
                                         : "hover:bg-[var(--color-sand)]/20"
                                 )}
                                 aria-label={cat.label}

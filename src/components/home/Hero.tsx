@@ -20,6 +20,7 @@ export function Hero() {
                     loop
                     muted
                     playsInline
+                    preload="auto"
                     className="absolute inset-0 w-full h-full object-cover"
                     poster={PLACEHOLDER_HERO}
                 >
