@@ -164,9 +164,14 @@ function CustomZoomControl() {
 function GestureController() {
     const map = useMap();
     const [showWarning, setShowWarning] = useState(false);
+    const [hasLearned, setHasLearned] = useState(false);
     const timeoutRef = useRef<NodeJS.Timeout | null>(null);
 
     useEffect(() => {
+        // Check session storage on mount
+        const learned = sessionStorage.getItem("hasLearnedMapGesture") === "true";
+        setHasLearned(learned);
+
         const container = map.getContainer();
 
         // 1. Ensure page can scroll vertically when touching map (1 finger)
@@ -176,6 +181,12 @@ function GestureController() {
             if (e.touches.length > 1) {
                 map.dragging.enable();
                 setShowWarning(false);
+
+                // User has "used the functionality correctly" -> Mark as learned
+                if (!hasLearned) {
+                    sessionStorage.setItem("hasLearnedMapGesture", "true");
+                    setHasLearned(true);
+                }
             } else {
                 map.dragging.disable();
             }
@@ -183,8 +194,8 @@ function GestureController() {
 
         const handleTouchMove = (e: TouchEvent) => {
             if (e.touches.length === 1) {
-                // User is trying to pan with 1 finger -> Warn them
-                if (!showWarning) {
+                // User is trying to pan with 1 finger -> Warn them ONLY if not learned
+                if (!showWarning && !hasLearned && sessionStorage.getItem("hasLearnedMapGesture") !== "true") {
                     setShowWarning(true);
 
                     // Auto-hide after 2s
@@ -197,7 +208,7 @@ function GestureController() {
         };
 
         const handleTouchEnd = () => {
-            map.dragging.disable(); // Reset to safe state
+            map.dragging.disable();
             // Don't hide warning immediately so user sees it, let timeout handle it
         };
 
@@ -208,7 +219,7 @@ function GestureController() {
 
         // Initial State: Disable drag to allow scroll
         map.dragging.disable();
-        if ((map as any).tap) (map as any).tap.disable(); // Fix type error
+        if ((map as any).tap) (map as any).tap.disable();
 
         return () => {
             container.removeEventListener("touchstart", handleTouchStart);
@@ -216,14 +227,36 @@ function GestureController() {
             container.removeEventListener("touchend", handleTouchEnd);
             if (timeoutRef.current) clearTimeout(timeoutRef.current);
         };
-    }, [map]);
+    }, [map, hasLearned]);
 
     if (!showWarning) return null;
 
     return (
-        <div className="absolute inset-0 z-[500] pointer-events-none flex items-center justify-center bg-black/40 transition-opacity duration-300">
-            <div className="bg-transparent text-white font-montserrat font-bold text-lg text-center px-6">
-                Use two fingers to move the map
+        <div className="absolute inset-0 z-[500] pointer-events-none flex items-center justify-center bg-black/20 backdrop-blur-[1px] transition-opacity duration-300">
+            <style jsx>{`
+                @keyframes swipe-up {
+                    0% { transform: translateY(20px); opacity: 0; }
+                    20% { opacity: 1; }
+                    80% { opacity: 1; }
+                    100% { transform: translateY(-30px); opacity: 0; }
+                }
+            `}</style>
+            <div style={{ animation: 'swipe-up 1.5s ease-in-out infinite' }}>
+                <svg
+                    width="80"
+                    height="80"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    className="drop-shadow-2xl opacity-90"
+                >
+                    <g stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        {/* User Uploaded Icon Paths */}
+                        <path d="M12,12.94V7.28A1.84,1.84,0,0,0,11.44,6a1.8,1.8,0,0,0-1.5-.55,2,2,0,0,0-1.72,2v8.4l-1.3-1.31a2,2,0,0,0-1.42-.58,2,2,0,0,0-1.41,3.42l5.08,5.08" />
+                        <path d="M12,12.94V6.44a2,2,0,0,1,1.42-1.93,1.89,1.89,0,0,1,2.36,1.82v6.21l3.09.26a1.79,1.79,0,0,1,1.63,1.78h0a17.16,17.16,0,0,1-1.8,7.64l-.09.17" />
+                        <path d="M8.22,11.6a4.19,4.19,0,0,1-1.45-1,4.72,4.72,0,0,1,4.18-8,4.73,4.73,0,0,1,6.28,7.05,4.48,4.48,0,0,1-1.45,1" />
+                    </g>
+                </svg>
             </div>
         </div>
     );

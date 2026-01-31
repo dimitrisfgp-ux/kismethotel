@@ -6,7 +6,7 @@ import { UIProvider } from "@/contexts/UIContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWidget } from "@/components/layout/FloatingWidget";
-import { Toast } from "@/components/ui/Toast";
+
 
 const montserrat = Montserrat({
   subsets: ["latin"],
