@@ -141,7 +141,7 @@ function CustomZoomControl() {
     const map = useMap();
 
     return (
-        <div className="absolute bottom-6 right-6 z-[400] flex flex-col bg-white shadow-xl rounded-lg">
+        <div className="absolute bottom-6 left-6 md:left-auto md:right-6 z-[400] flex flex-col bg-white shadow-xl rounded-lg">
             <button
                 onClick={() => map.zoomIn()}
                 className="p-2 text-[var(--color-aegean-blue)] hover:bg-[var(--color-sand)] rounded-t-lg transition-colors duration-300 ease-premium focus:outline-none border-b border-[var(--color-sand)]/30"
@@ -217,9 +217,13 @@ function GestureController() {
         container.addEventListener("touchmove", handleTouchMove, { passive: true });
         container.addEventListener("touchend", handleTouchEnd, { passive: true });
 
-        // Initial State: Disable drag to allow scroll
-        map.dragging.disable();
-        if ((map as any).tap) (map as any).tap.disable();
+        // Initial State: Disable drag ONLY on mobile devices to allow scroll
+        if (L.Browser.mobile) {
+            map.dragging.disable();
+            if ((map as any).tap) (map as any).tap.disable();
+        } else {
+            map.dragging.enable();
+        }
 
         return () => {
             container.removeEventListener("touchstart", handleTouchStart);
@@ -273,7 +277,7 @@ export default function InteractiveMap({ conveniences, center, highlightedTypes 
                 zoom={17}
                 scrollWheelZoom={false} // Default false, controller manages it
                 zoomControl={false}   // Disable default top-left controls
-                dragging={false}      // Default false, GestureController manages it
+                dragging={true}       // Default true, GestureController disables it for Touch devices
                 touchZoom={true}      // Allow touch zoom (2 fingers)
                 doubleClickZoom={false}
                 maxBounds={[

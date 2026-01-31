@@ -82,7 +82,7 @@ h6 {
 
 /* Base Styles for Maps */
 .map-tiles-brand {
-  filter: sepia(20%) hue-rotate(190deg) saturate(150%) brightness(90%) contrast(100%);
+  filter: hue-rotate(10deg);
 }
 
 .leaflet-popup-content-wrapper {
