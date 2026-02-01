@@ -3,7 +3,13 @@
 import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Lightbox } from "../ui/Lightbox";
+import dynamic from "next/dynamic";
+
+// Dynamic import for Lightbox - only loads when user clicks to open gallery
+const Lightbox = dynamic(() => import("../ui/Lightbox").then(m => m.Lightbox), {
+    ssr: false,
+    loading: () => null
+});
 
 interface ImageGalleryProps {
     images: string[];

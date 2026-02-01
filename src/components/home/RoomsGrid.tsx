@@ -1,17 +1,23 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
 
 import { useRef, useState, useMemo, useEffect } from "react";
 import { Room, RoomFilters } from "@/types";
 import { RoomCard } from "../rooms/RoomCard";
 import { DateSelectorBar } from "./DateSelectorBar";
 import { FilterWidget } from "./FilterWidget";
-import { FilterPanel } from "./FilterPanel";
 import { useRoomFilters } from "@/hooks/useRoomFilters";
 import { scrollToElement } from "@/lib/utils";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useDateContext } from "@/contexts/DateContext";
+
+// Dynamic import for FilterPanel - only loads when filter drawer is opened
+const FilterPanel = dynamic(() => import("./FilterPanel").then(m => m.FilterPanel), {
+    ssr: false,
+    loading: () => null // Invisible loading state
+});
 
 interface RoomsGridProps {
     rooms: Room[];

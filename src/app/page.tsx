@@ -3,7 +3,6 @@ import { RoomsGrid } from "@/components/home/RoomsGrid";
 import { LocationSection } from "@/components/home/LocationSection";
 import { AttractionsGrid } from "@/components/home/AttractionsGrid";
 import { FAQAccordion } from "@/components/home/FAQAccordion";
-
 import { roomService } from "@/services/roomService";
 import { contentService } from "@/services/contentService";
 
