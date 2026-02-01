@@ -20,13 +20,12 @@ export function Hero() {
                     loop
                     muted
                     playsInline
-                    preload="auto"
                     className="absolute inset-0 w-full h-full object-cover"
                     poster={PLACEHOLDER_HERO}
                 >
                     <source src="/Videos/ios/hero-ios.mp4" type='video/mp4; codecs="hvc1"' media="(max-width: 768px)" />
                     <source src="/Videos/android/hero-android.mp4" type="video/mp4" media="(max-width: 768px)" />
-                    <source src="/Videos/desktop/hero-desktop.mp4" type="video/mp4" />
+                    <source src="/Videos/desktop/hero-desktop.mp4" type="video/mp4" media="(min-width: 769px)" />
                     Your browser does not support the video tag.
                 </video>
             </div>
