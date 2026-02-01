@@ -54,6 +54,15 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
         }
     }, [dateRange, doubleBeds, singleBeds]);
 
+    // Predictive Preload for FilterPanel (Mobile & Desktop Drawer)
+    // Loads the heavy FilterPanel + Calendar chunk 2.5s after mount (Idle time)
+    useEffect(() => {
+        const timer = setTimeout(() => {
+            import("./FilterPanel");
+        }, 2500);
+        return () => clearTimeout(timer);
+    }, []);
+
     // Merge Context Filters with Local Filters
     const effectiveFilters = useMemo(() => ({
         ...filters,
