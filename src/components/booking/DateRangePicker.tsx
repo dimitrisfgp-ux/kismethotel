@@ -11,7 +11,7 @@ import dynamic from "next/dynamic";
 // Only loads when the popover is opened
 const Calendar = dynamic(() => import("../ui/Calendar").then(m => m.Calendar), {
     ssr: false,
-    loading: () => <div className="h-[350px] w-[320px] bg-[var(--color-warm-white)] animate-pulse rounded-card" />
+    loading: () => <div className="h-[310px] w-full bg-[var(--color-warm-white)] animate-pulse rounded-card" />
 });
 
 interface DatePickerWithRangeProps {
@@ -83,7 +83,7 @@ export function DatePickerWithRange({
 
                     {/* Content Container */}
                     <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none md:absolute md:inset-auto md:top-12 md:left-0 md:block">
-                        <div className="pointer-events-auto bg-white border border-[var(--color-sand)] shadow-2xl rounded-card p-4 md:p-4 animate-slide-up md:animate-slide-up w-auto max-w-[90vw] md:max-w-none overflow-hidden min-h-[350px] min-w-[320px]">
+                        <div className="pointer-events-auto bg-white border border-[var(--color-sand)] shadow-2xl rounded-card p-4 md:p-4 animate-slide-up md:animate-slide-up w-auto max-w-[90vw] md:max-w-none overflow-hidden min-h-[340px] min-w-[300px]">
                             {/* Mobile Header (Optional close button) */}
                             <div className="flex md:hidden justify-between items-center mb-4 pb-2 border-b border-[var(--color-sand)]">
                                 <span className="font-montserrat font-bold text-[var(--color-aegean-blue)]">Select Dates</span>
