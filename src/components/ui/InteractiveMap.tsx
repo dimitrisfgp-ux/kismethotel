@@ -73,17 +73,17 @@ function BoundsController({ markers, activeTypes }: { markers: Convenience[], ac
 const createCustomIcon = (type: string, isHotel = false) => {
     // Determine color based on type
     const getColor = (t: string) => {
-        if (isHotel) return "#2C5F8D"; // Deep Med Blue
+        if (isHotel) return "var(--color-deep-med)"; // Deep Med Blue
         switch (t) {
-            case 'Supermarket': return "#7DAC8F";
-            case 'Pharmacy': return "#7394AC";
-            case 'Beach': return "#D7BAD5";
-            case 'Bus': return "#837DA4";
-            case 'Car Rental': return "#C9A961";
+            case 'Supermarket': return "var(--color-map-supermarket)";
+            case 'Pharmacy': return "var(--color-map-pharmacy)";
+            case 'Beach': return "var(--color-map-beach)";
+            case 'Bus': return "var(--color-map-transport)";
+            case 'Car Rental': return "var(--color-map-rental)";
             case 'Restaurant':
             case 'Cafe':
-            case 'Bar': return "#A86869";
-            default: return "#4A4A4A"; // Charcoal
+            case 'Bar': return "var(--color-map-dining)";
+            default: return "var(--color-charcoal)";
         }
     };
 
@@ -175,7 +175,7 @@ function CustomZoomControl() {
     const map = useMap();
 
     return (
-        <div className="absolute bottom-6 left-6 md:left-auto md:right-6 z-[400] flex flex-col bg-[var(--color-deep-med)] border border-[var(--color-accent-gold)] shadow-xl rounded-lg overflow-hidden">
+        <div className="hidden md:flex absolute bottom-6 left-6 md:left-auto md:right-6 z-[400] flex-col bg-[var(--color-deep-med)] border border-[var(--color-accent-gold)] shadow-xl rounded-lg overflow-hidden">
             <button
                 onClick={() => map.zoomIn()}
                 className="p-2 text-white hover:bg-white/10 transition-colors duration-300 ease-premium focus:outline-none border-b border-[var(--color-accent-gold)]"

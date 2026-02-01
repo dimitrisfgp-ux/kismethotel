@@ -24,7 +24,7 @@ export function MapMobileWidget({ isVisible, categories, activeCategoryIndex, on
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"
             )}
         >
-            <div className="bg-white/90 backdrop-blur-md border border-[var(--color-sand)] rounded-full shadow-lg py-2 px-2">
+            <div className="bg-white/95 backdrop-blur-md border border-[var(--color-sand)] rounded-full shadow-2xl drop-shadow-lg py-2 px-2">
                 <div className="flex items-center justify-center w-full gap-2 overflow-x-auto overflow-y-hidden no-scrollbar px-1">
                     {categories.map((cat, index) => {
                         const isActive = activeCategoryIndex === index;
