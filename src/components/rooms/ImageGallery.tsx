@@ -33,12 +33,18 @@ export function ImageGallery({ images, roomName }: ImageGalleryProps) {
         setPhotoIndex((prev) => (prev + images.length - 1) % images.length);
     };
 
+    // Predictive Preload: Fetch Lightbox code on hover
+    const preloadLightbox = () => {
+        import("../ui/Lightbox");
+    };
+
     // Helper for rendering an interactive image
     function GalleryImage({ src, alt, index, onOpen, priority = false, className, sizes }: { src: string, alt: string, index: number, onOpen: (i: number) => void, priority?: boolean, className?: string, sizes?: string }) {
         return (
             <div
                 className={cn("relative w-full h-full overflow-hidden cursor-pointer group", className)}
                 onClick={() => onOpen(index)}
+                onMouseEnter={preloadLightbox}
                 role="button"
                 tabIndex={0}
                 onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpen(index)}

@@ -29,19 +29,34 @@ export function DatePickerWithRange({
 }: DatePickerWithRangeProps) {
     const [isOpen, setIsOpen] = React.useState(false);
 
+    // Predictive Preload Strategy
+    const preloadCalendar = () => {
+        // Manually trigger the dynamic import to prime the cache
+        import("../ui/Calendar");
+    };
+
+    // 1. Idle Preload (Wait 2s then load - helps mobile/fast path)
+    React.useEffect(() => {
+        const timer = setTimeout(preloadCalendar, 2000);
+        return () => clearTimeout(timer);
+    }, []);
+
     return (
-        <div className={cn("relative grid gap-2", className)}>
+        <div className={cn("relative grid gap-2", className)} onMouseEnter={preloadCalendar}>
             {customTrigger ? (
                 <div onClick={() => setIsOpen(!isOpen)}>{customTrigger}</div>
             ) : (
                 <button
                     id="date"
                     onClick={() => setIsOpen(!isOpen)}
+                    onMouseEnter={preloadCalendar}
+                    onFocus={preloadCalendar}
                     className={cn(
                         "w-auto min-w-[220px] justify-center text-center font-normal flex items-center px-4 py-2 border border-[var(--color-sand)] rounded-[var(--radius-subtle)] bg-white hover:bg-[var(--color-warm-white)] transition-colors",
                         !date && "text-muted-foreground"
                     )}
                 >
+
                     <CalendarIcon className="mr-2 h-4 w-4" />
                     {date?.from ? (
                         date.to ? (
