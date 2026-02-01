@@ -5,7 +5,14 @@ import { format } from "date-fns";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
-import { Calendar } from "../ui/Calendar";
+import dynamic from "next/dynamic";
+
+// Dynamic import for Calendar to avoid initial bundle weight & CSS blocking
+// Only loads when the popover is opened
+const Calendar = dynamic(() => import("../ui/Calendar").then(m => m.Calendar), {
+    ssr: false,
+    loading: () => <div className="h-[300px] w-full bg-[var(--color-warm-white)] animate-pulse rounded-card" />
+});
 
 interface DatePickerWithRangeProps {
     className?: string;
