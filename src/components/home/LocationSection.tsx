@@ -105,8 +105,12 @@ export function LocationSection({ conveniences }: LocationSectionProps) {
                         highlightedTypes={activeTypes}
                     />
                 ) : (
-                    <div className="w-full h-full bg-[var(--color-sand)] animate-pulse flex items-center justify-center">
-                        <span className="font-inter text-sm tracking-widest uppercase text-[var(--color-charcoal)]">Loading Map...</span>
+                    <div className="relative w-full h-full bg-[var(--color-sand)] flex items-center justify-center">
+                        {/* Pulsing Background */}
+                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
+
+                        {/* Static Text - High Contrast Always */}
+                        <span className="relative z-10 font-inter text-sm tracking-widest uppercase text-[var(--color-charcoal)] font-bold opacity-80">Loading Map...</span>
                     </div>
                 )}
             </div>
