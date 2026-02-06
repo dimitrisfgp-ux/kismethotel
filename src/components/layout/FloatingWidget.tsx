@@ -5,11 +5,16 @@ import Image from "next/image";
 import { useState } from "react";
 import { MessageCircle, Phone, X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { HotelSettings } from "@/types";
 
 // ... imports
 import { useUIContext } from "@/contexts/UIContext";
 
-export function FloatingWidget() {
+interface FloatingWidgetProps {
+    settings: HotelSettings;
+}
+
+export function FloatingWidget({ settings }: FloatingWidgetProps) {
     const { isFloatingWidgetVisible, isFloatingWidgetOpen, setFloatingWidgetOpen } = useUIContext();
 
     // Close only if visibly hidden? 
@@ -38,7 +43,7 @@ export function FloatingWidget() {
                 isFloatingWidgetOpen ? "w-[170px] px-3 opacity-100 translate-x-0" : "w-0 px-0 opacity-0 translate-x-8 pointer-events-none"
             )}>
                 {/* WhatsApp */}
-                <a href="https://wa.me/30123456789" target="_blank" rel="noopener noreferrer"
+                <a href={settings.socials.whatsapp} target="_blank" rel="noopener noreferrer"
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 transition-colors flex-shrink-0 shadow-sm"
                     title="WhatsApp"
                 >
@@ -52,7 +57,7 @@ export function FloatingWidget() {
                 </a>
 
                 {/* Viber */}
-                <a href="viber://chat?number=%2B30123456789"
+                <a href={settings.socials.viber}
                     className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 transition-colors flex-shrink-0 shadow-sm"
                     title="Viber"
                 >
@@ -66,7 +71,7 @@ export function FloatingWidget() {
                 </a>
 
                 {/* Phone */}
-                <a href="tel:+302810123456"
+                <a href={`tel:${settings.contact.phone.replace(/\s/g, '')}`}
                     onClick={(e) => {
                         // On desktop, scroll to footer contact section
                         if (window.innerWidth >= 1024) {

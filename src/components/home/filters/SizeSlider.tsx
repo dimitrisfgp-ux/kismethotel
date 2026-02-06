@@ -2,6 +2,7 @@
 
 import { Maximize } from "lucide-react";
 import { RoomFilters } from "@/types";
+import { FilterSectionHeader } from "./FilterSectionHeader";
 
 interface SizeSliderProps {
     localFilters: RoomFilters;
@@ -19,14 +20,12 @@ export function SizeSlider({ localFilters, setLocalFilters, sizes }: SizeSliderP
 
     return (
         <div>
-            <div className="flex justify-between mb-6">
-                <label className="block text-xs font-bold uppercase tracking-widest text-white flex items-center gap-2">
-                    <Maximize className="w-4 h-4 text-[var(--color-accent-gold)]" /> Room Size
-                </label>
-                <span className="text-sm font-inter font-bold text-white">
-                    {localFilters.size > 0 ? `${localFilters.size} m²` : `${min} m²`}
-                </span>
-            </div>
+            <FilterSectionHeader
+                icon={Maximize}
+                title="Room Size"
+            >
+                {localFilters.size > 0 ? `${localFilters.size} m²` : `${min} m²`}
+            </FilterSectionHeader>
 
             <div className="relative h-8 flex items-center">
                 {/* Visual Track Line */}

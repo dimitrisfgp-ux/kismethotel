@@ -1,11 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { format } from "date-fns";
+import { formatDate } from "@/lib/dateUtils";
 import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 // Dynamic import for Calendar to avoid initial bundle weight & CSS blocking
 // Only loads when the popover is opened
@@ -28,6 +29,7 @@ export function DatePickerWithRange({
     customTrigger,
 }: DatePickerWithRangeProps) {
     const [isOpen, setIsOpen] = React.useState(false);
+    const containerRef = React.useRef<HTMLDivElement>(null);
 
     // Predictive Preload Strategy
     const preloadCalendar = () => {
@@ -41,8 +43,10 @@ export function DatePickerWithRange({
         return () => clearTimeout(timer);
     }, []);
 
+    useClickOutside(containerRef, () => setIsOpen(false));
+
     return (
-        <div className={cn("relative grid gap-2", className)} onMouseEnter={preloadCalendar}>
+        <div ref={containerRef} className={cn("relative grid gap-2", className)} onMouseEnter={preloadCalendar}>
             {customTrigger ? (
                 <div onClick={() => setIsOpen(!isOpen)}>{customTrigger}</div>
             ) : (
@@ -61,11 +65,11 @@ export function DatePickerWithRange({
                     {date?.from ? (
                         date.to ? (
                             <>
-                                {format(date.from, "MM/dd/yy")} -{" "}
-                                {format(date.to, "MM/dd/yy")}
+                                {formatDate(date.from)} -{" "}
+                                {formatDate(date.to)}
                             </>
                         ) : (
-                            format(date.from, "MM/dd/yy")
+                            formatDate(date.from)
                         )
                     ) : (
                         <span>Pick your dates</span>
@@ -74,36 +78,27 @@ export function DatePickerWithRange({
             )}
 
             {isOpen && (
-                <>
-                    {/* Backdrop / Overlay - Mobile Fixed, Desktop Transparent click-off */}
-                    <div
-                        className="fixed inset-0 z-40 bg-black/40 backdrop-blur-sm md:bg-transparent md:backdrop-blur-none"
-                        onClick={() => setIsOpen(false)}
-                    />
-
-                    {/* Content Container */}
-                    <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none md:absolute md:inset-auto md:top-12 md:left-0 md:block">
-                        <div className="pointer-events-auto bg-white border border-[var(--color-sand)] shadow-2xl rounded-card p-4 md:p-4 animate-slide-up md:animate-slide-up w-auto max-w-[90vw] md:max-w-none overflow-hidden min-h-[340px] min-w-[300px]">
-                            {/* Mobile Header (Optional close button) */}
-                            <div className="flex md:hidden justify-between items-center mb-4 pb-2 border-b border-[var(--color-sand)]">
-                                <span className="font-montserrat font-bold text-[var(--color-aegean-blue)]">Select Dates</span>
-                                <button onClick={() => setIsOpen(false)} className="p-1 rounded-full hover:bg-[var(--color-sand)]">
-                                    <span className="sr-only">Close</span>
-                                    <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
-                                </button>
-                            </div>
-
-                            <Calendar
-                                mode="range"
-                                defaultMonth={date?.from}
-                                selected={date}
-                                onSelect={setDate}
-                                numberOfMonths={1}
-                            // showOutsideDays={false}
-                            />
+                <div className="fixed inset-0 z-[60] flex items-center justify-center pointer-events-none md:absolute md:inset-auto md:top-12 md:left-0 md:block">
+                    <div className="pointer-events-auto bg-white border border-[var(--color-sand)] shadow-2xl rounded-card p-4 md:p-4 animate-slide-up md:animate-slide-up w-auto max-w-[90vw] md:max-w-none overflow-hidden min-h-[340px] min-w-[300px]">
+                        {/* Mobile Header (Optional close button) */}
+                        <div className="flex md:hidden justify-between items-center mb-4 pb-2 border-b border-[var(--color-sand)]">
+                            <span className="font-montserrat font-bold text-[var(--color-aegean-blue)]">Select Dates</span>
+                            <button onClick={() => setIsOpen(false)} className="p-1 rounded-full hover:bg-[var(--color-sand)]">
+                                <span className="sr-only">Close</span>
+                                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M18 6 6 18" /><path d="m6 6 12 12" /></svg>
+                            </button>
                         </div>
+
+                        <Calendar
+                            mode="range"
+                            defaultMonth={date?.from}
+                            selected={date}
+                            onSelect={setDate}
+                            numberOfMonths={1}
+                        // showOutsideDays={false}
+                        />
                     </div>
-                </>
+                </div>
             )}
         </div>
     );

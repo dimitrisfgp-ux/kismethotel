@@ -99,3 +99,33 @@ export interface RoomFilters {
 //    from: Date | undefined;
 //    to: Date | undefined;
 // }
+
+export interface HotelSettings {
+    name: string;
+    description: string;
+    contact: {
+        address: string;
+        phone: string;
+        email: string;
+    };
+    socials: {
+        whatsapp: string;
+        viber: string;
+        instagram: string;
+        facebook: string;
+    };
+}
+
+export interface PageContent {
+    hero: {
+        title: string;
+        subtitle: string;
+        ctaText: string;
+    };
+    sections: {
+        rooms: { title: string; subtitle: string; };
+        location: { title: string; subtitle: string; };
+        attractions: { title: string; subtitle: string; };
+        faq: { title: string; subtitle: string; };
+    };
+}

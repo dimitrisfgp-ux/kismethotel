@@ -1,5 +1,6 @@
 import { AMENITIES, ATTRACTIONS, CONVENIENCES, FAQS } from "@/data";
-import { Amenity, Attraction, Convenience, FAQ } from "@/types";
+import { HOTEL_SETTINGS, HOME_PAGE_CONTENT } from "@/data/settings";
+import { Amenity, Attraction, Convenience, FAQ, HotelSettings, PageContent } from "@/types";
 
 export const contentService = {
     getAmenities: async (): Promise<Amenity[]> => {
@@ -16,5 +17,13 @@ export const contentService = {
 
     getFAQs: async (): Promise<FAQ[]> => {
         return FAQS;
+    },
+
+    getSettings: async (): Promise<HotelSettings> => {
+        return HOTEL_SETTINGS;
+    },
+
+    getPageContent: async (): Promise<PageContent> => {
+        return HOME_PAGE_CONTENT;
     }
 };

@@ -1,7 +1,8 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef } from "react";
 import { cn } from "@/lib/utils";
+import { useClickOutside } from "@/hooks/useClickOutside";
 
 interface GuestSelectorProps {
     value: number;
@@ -16,15 +17,7 @@ export function GuestSelector({ value, onChange, customTrigger, type = 'guests',
     const containerRef = useRef<HTMLDivElement>(null);
 
     // Close on click outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (containerRef.current && !containerRef.current.contains(event.target as Node)) {
-                setIsOpen(false);
-            }
-        };
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    useClickOutside(containerRef, () => setIsOpen(false));
 
     const label = type === 'guests' ? 'Guest' : 'Bed';
     const options = Array.from({ length: maxGuests }, (_, i) => i + 1).map(num => ({

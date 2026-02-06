@@ -3,10 +3,10 @@
 import { createPortal } from "react-dom";
 import { useState, useEffect, useMemo } from "react";
 import { RoomFilters, Room } from "@/types";
-import { AMENITIES } from "@/data/amenities";
 import { Button } from "../ui/Button";
 import { X } from "lucide-react";
 import { useDateContext } from "@/contexts/DateContext";
+import { useFacetedOptions } from "@/hooks/useFacetedOptions";
 import { Calendar } from "../ui/Calendar";
 import {
     PriceRangeSlider,
@@ -30,57 +30,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
     const [mounted, setMounted] = useState(false);
 
     // Dynamic Data Derivation for Faceted Search
-    const derivedOptions = useMemo(() => {
-        if (!rooms.length) return null;
-
-        // Helper to get rooms filtered by everything EXCEPT the specified keys
-        const getRoomsFilteredBy = (ignoredKeys: (keyof RoomFilters)[]) => {
-            return rooms.filter(room => {
-                const checkPrice = ignoredKeys.includes('priceRange') || (room.pricePerNight >= localFilters.priceRange[0] && room.pricePerNight <= localFilters.priceRange[1]);
-                const checkOccupancy = ignoredKeys.includes('occupancy') || (!localFilters.occupancy || room.maxOccupancy === localFilters.occupancy);
-                const checkSize = ignoredKeys.includes('size') || (!localFilters.size || room.sizeSqm === localFilters.size);
-                const checkFloors = ignoredKeys.includes('floors') || (localFilters.floors.length === 0 || localFilters.floors.includes(room.floor));
-                const checkAmenities = ignoredKeys.includes('amenityIds') || (localFilters.amenityIds.length === 0 || localFilters.amenityIds.every(id => room.layout.flatMap(c => c.amenities).some(a => a.id === id)));
-                const checkDoubleBeds = ignoredKeys.includes('doubleBeds') || (!localFilters.doubleBeds || (room.beds?.find(b => b.type === 'double')?.count || 0) === localFilters.doubleBeds);
-                const checkSingleBeds = ignoredKeys.includes('singleBeds') || (!localFilters.singleBeds || (room.beds?.find(b => b.type === 'single')?.count || 0) === localFilters.singleBeds);
-
-                return checkPrice && checkOccupancy && checkSize && checkFloors && checkAmenities && checkDoubleBeds && checkSingleBeds;
-            });
-        };
-
-        // Derive available options
-        const roomsForFloors = getRoomsFilteredBy(['floors']);
-        const availableFloors = Array.from(new Set(roomsForFloors.map(r => r.floor))).sort((a, b) => a - b);
-
-        const roomsForSizes = getRoomsFilteredBy(['size']);
-        const availableSizes = Array.from(new Set(roomsForSizes.map(r => r.sizeSqm))).sort((a, b) => a - b);
-
-        const roomsForAmenities = getRoomsFilteredBy(['amenityIds']);
-        const usedAmenityIds = new Set<number>();
-        roomsForAmenities.forEach(r => {
-            r.layout.forEach(cat => cat.amenities.forEach(a => usedAmenityIds.add(a.id)));
-        });
-        const availableAmenities = AMENITIES.filter(a => usedAmenityIds.has(a.id));
-
-        const roomsForDoubleBeds = getRoomsFilteredBy(['doubleBeds']);
-        const maxDoubleBeds = Math.max(0, ...roomsForDoubleBeds.map(r => r.beds?.find(b => b.type === 'double')?.count || 0));
-
-        const roomsForSingleBeds = getRoomsFilteredBy(['singleBeds']);
-        const maxSingleBeds = Math.max(0, ...roomsForSingleBeds.map(r => r.beds?.find(b => b.type === 'single')?.count || 0));
-
-        const allPrices = rooms.map(r => r.pricePerNight);
-        const minPrice = Math.min(...allPrices);
-        const maxPrice = Math.max(...allPrices);
-
-        return {
-            minPrice, maxPrice,
-            floors: availableFloors,
-            sizes: availableSizes,
-            availableAmenities,
-            maxDoubleBeds,
-            maxSingleBeds
-        };
-    }, [rooms, localFilters]);
+    const derivedOptions = useFacetedOptions(rooms, localFilters);
 
     useEffect(() => {
         setMounted(true);

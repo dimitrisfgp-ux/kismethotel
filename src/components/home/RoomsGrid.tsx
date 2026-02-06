@@ -5,6 +5,7 @@ import dynamic from "next/dynamic";
 
 import { useRef, useState, useMemo, useEffect } from "react";
 import { Room, RoomFilters } from "@/types";
+import { DEFAULT_FILTERS } from "@/data/constants";
 import { RoomCard } from "../rooms/RoomCard";
 import { DateSelectorBar } from "./DateSelectorBar";
 import { FilterWidget } from "./FilterWidget";
@@ -30,16 +31,7 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
     const [isSearching, setIsSearching] = useState(false); // For loading effect
 
     // Sync context guestCount with local filters or just use it in calculation
-    const [filters, setFilters] = useState<RoomFilters>({
-        priceRange: [0, 1000],
-        occupancy: 0,
-        size: 0,
-        floors: [],
-        bedrooms: 0,
-        doubleBeds: 0,
-        singleBeds: 0,
-        amenityIds: []
-    });
+    const [filters, setFilters] = useState<RoomFilters>(DEFAULT_FILTERS);
 
     // Derive max bed counts for the Sticky Bar Selector
     const maxDoubleBeds = useMemo(() => Math.max(0, ...rooms.map(r => r.beds?.find(b => b.type === 'double')?.count || 0)), [rooms]);
@@ -128,7 +120,7 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
                 {visibleRooms.length === 0 && !isSearching ? (
                     <div className="text-center py-20">
                         <p className="font-montserrat text-lg text-[var(--color-charcoal)]">No rooms match your criteria.</p>
-                        <button onClick={() => setFilters({ ...filters, priceRange: [0, 1000] })} className="text-[var(--color-aegean-blue)] underline mt-4">Reset Filters</button>
+                        <button onClick={() => setFilters(DEFAULT_FILTERS)} className="text-[var(--color-aegean-blue)] underline mt-4">Reset Filters</button>
                     </div>
                 ) : (
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white border-y border-white">

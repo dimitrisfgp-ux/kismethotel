@@ -5,6 +5,7 @@ import { Container } from "../ui/Container";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, BedDouble } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { BedSelector } from "../ui/BedSelector";
+import { MOBILE_FILTER_BTN_CLASS } from "@/data/constants";
 
 interface DateSelectorBarProps {
     onPrev?: () => void;
@@ -78,7 +79,7 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
                         <button
                             onClick={onFilterClick}
                             aria-label="Filter Dates"
-                            className="p-3 bg-white border-2 border-[var(--color-accent-gold)] rounded-full text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)] hover:text-white transition-all duration-300 active:scale-95 shadow-sm"
+                            className={MOBILE_FILTER_BTN_CLASS}
                         >
                             <CalendarIcon className="h-6 w-6" />
                         </button>
@@ -86,7 +87,7 @@ export function DateSelectorBar({ onPrev, onNext, canPrev, canNext, onFilterClic
                         <button
                             onClick={onFilterClick}
                             aria-label="Filter Guests"
-                            className="p-3 bg-white border-2 border-[var(--color-accent-gold)] rounded-full text-[var(--color-accent-gold)] hover:bg-[var(--color-accent-gold)] hover:text-white transition-all duration-300 active:scale-95 shadow-sm"
+                            className={MOBILE_FILTER_BTN_CLASS}
                         >
                             <BedDouble className="h-6 w-6" />
                         </button>

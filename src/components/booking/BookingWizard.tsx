@@ -44,10 +44,35 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
             {/* Main Form Area */}
             <div className="lg:col-span-2">
                 {/* Steps Indicator */}
-                <div className="flex items-center space-x-4 mb-12 text-sm font-montserrat uppercase tracking-widest">
+                {/* Steps Indicator (Mobile) */}
+                <div className="md:hidden mb-8">
+                    <div className="flex justify-between items-end mb-2">
+                        <span className="text-xs font-bold uppercase tracking-widest text-[var(--color-aegean-blue)]">
+                            Step {step} of {steps.length}
+                        </span>
+                        <span className="text-xs font-inter text-[var(--color-charcoal)]/60">
+                            {steps[step - 1]}
+                        </span>
+                    </div>
+                    <div className="w-full h-1 bg-[var(--color-sand)]/30 rounded-full overflow-hidden">
+                        <div
+                            className="h-full bg-[var(--color-aegean-blue)] transition-all duration-500 ease-premium"
+                            style={{ width: `${(step / steps.length) * 100}%` }}
+                        />
+                    </div>
+                </div>
+
+                {/* Steps Indicator (Desktop) */}
+                <div className="hidden md:flex items-center justify-center space-x-4 mb-12 text-sm font-montserrat uppercase tracking-widest">
                     {steps.map((label, i) => (
                         <div key={i} className={`flex items-center ${step === i + 1 ? 'text-[var(--color-aegean-blue)] font-bold' : step > i + 1 ? 'text-[var(--color-success)]' : 'opacity-40'}`}>
-                            <span className="mr-2">{i + 1}.</span>
+                            {step > i + 1 ? (
+                                // Completed Step Icon (Optional) or just number
+                                <span className="mr-2">✓</span>
+                            ) : (
+                                <span className="mr-2">{i + 1}.</span>
+                            )}
+
                             <span>{label}</span>
                             {i < steps.length - 1 && <span className="mx-4 opacity-30">/</span>}
                         </div>

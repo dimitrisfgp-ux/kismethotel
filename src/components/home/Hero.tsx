@@ -5,7 +5,13 @@ import { Button } from "../ui/Button";
 import { ChevronDown } from "lucide-react";
 import { scrollToElement } from "@/lib/utils";
 
-export function Hero() {
+interface HeroProps {
+    title: string;
+    subtitle: string;
+    ctaText: string;
+}
+
+export function Hero({ title, subtitle, ctaText }: HeroProps) {
     const handleScroll = (e: React.MouseEvent) => {
         e.preventDefault();
         scrollToElement("search-bar"); // Or 'rooms' if preferred, preserving 'search-bar' targeting
@@ -36,15 +42,15 @@ export function Hero() {
             {/* Content */}
             <div className="relative z-20 text-center text-white px-4 animate-fade-in">
                 <h1 className="font-montserrat font-light text-[clamp(2.5rem,6vw,5rem)] tracking-[0.2em] mb-4 drop-shadow-lg text-[var(--color-sand)]">
-                    Your Destiny Awaits
+                    {title}
                 </h1>
                 <div className="w-full max-w-lg h-[1px] bg-gradient-to-r from-transparent via-[var(--color-sand)] to-transparent mx-auto mb-6 shadow-sm" />
                 <p className="font-inter text-lg md:text-xl tracking-widest uppercase opacity-90 mb-10 max-w-2xl mx-auto drop-shadow-sm">
-                    Curated Luxury on the Cretan Coast
+                    {subtitle}
                 </p>
                 <div onClick={handleScroll}>
                     <Button size="lg" className="min-w-[240px] bg-white/20 backdrop-blur-xl border border-white/50 text-white hover:bg-white/30 hover:text-white hover:translate-y-0 transition-colors duration-300">
-                        Explore Collection
+                        {ctaText}
                     </Button>
                 </div>
             </div>

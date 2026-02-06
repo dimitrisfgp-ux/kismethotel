@@ -60,11 +60,15 @@ export const viewport: Viewport = {
 import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
 // ...
-export default function RootLayout({
+import { contentService } from "@/services/contentService";
+
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const settings = await contentService.getSettings();
+
   return (
     <html lang="en" className={`${montserrat.variable} ${inter.variable}`} data-scroll-behavior="smooth">
       <body className="antialiased bg-[var(--color-warm-white)] text-[var(--color-charcoal)]">
@@ -75,8 +79,8 @@ export default function RootLayout({
             <main className="min-h-screen">
               {children}
             </main>
-            <Footer />
-            <FloatingWidget />
+            <Footer settings={settings} />
+            <FloatingWidget settings={settings} />
           </DateProvider>
         </UIProvider>
       </body>
