@@ -1,5 +1,6 @@
 export type BedType = 'single' | 'double';
-export type SectionType = 'kitchen' | 'living_room' | 'bedroom' | 'bathroom';
+// SectionType is now just a string alias for clarity, but allows any value for CMS flexibility
+export type SectionType = string;
 export type BookingStatus = 'held' | 'confirmed' | 'completed' | 'cancelled' | 'expired';
 export type BlockReason = 'maintenance' | 'owner_use' | 'seasonal' | 'other';
 export type RoomSizeCategory = 'small' | 'medium' | 'large';
@@ -10,7 +11,7 @@ export interface Amenity {
     id: number;
     name: string;
     iconName: string; // Lucide icon name
-    category?: SectionType | 'general';
+    category?: string; // Relaxed from SectionType for custom grouping
 }
 
 export interface RoomBed {
@@ -19,10 +20,10 @@ export interface RoomBed {
 }
 
 export interface RoomLayoutCategory {
-    type: SectionType;
+    type: string; // CUSTOM string from CMS (e.g. "Gaming Den", "Library")
     title: string; // e.g. "Master Bedroom", "Kitchenette"
     details: string[]; // e.g. "King Size Bed", "En-suite"
-    amenities: Amenity[]; // Direct assignment for now
+    amenities: Amenity[];
 }
 
 export interface Room {
