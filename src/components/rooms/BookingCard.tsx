@@ -1,6 +1,6 @@
 "use client";
 
-import { Room } from "@/types";
+import { Room, BlockedDate, Booking } from "@/types";
 import { useDateContext } from "@/contexts/DateContext";
 import { Calendar } from "../ui/Calendar";
 import { Button } from "../ui/Button";
@@ -10,11 +10,19 @@ import { useRouter } from "next/navigation";
 
 interface BookingCardProps {
     room: Room;
+    blockedDates?: BlockedDate[];
+    bookings?: Booking[];
 }
 
-export function BookingCard({ room }: BookingCardProps) {
+export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingCardProps) {
     const { dateRange, setDateRange } = useDateContext();
     const router = useRouter();
+
+    // Prepare disabled dates for DayPicker
+    const disabledDates = [
+        ...blockedDates.map(b => ({ from: new Date(b.from), to: new Date(b.to) })),
+        ...bookings.filter(b => b.status === 'confirmed').map(b => ({ from: new Date(b.checkIn), to: new Date(b.checkOut) }))
+    ];
 
     // Logic: If 'from' is selected but 'to' is not, consider it 1 night (User selecting just check-in for 1 night stay)
     const nights = dateRange?.from
@@ -42,6 +50,27 @@ export function BookingCard({ room }: BookingCardProps) {
         router.push(`/book?roomId=${room.id}`);
     };
 
+    // Modifiers Calculation
+    const bookedMatchers = bookings
+        .filter(b => b.status === "confirmed")
+        .map(b => ({ from: new Date(b.checkIn), to: new Date(b.checkOut) }));
+
+    const maintenanceMatchers = blockedDates
+        .filter(b => b.reason === "Maintenance")
+        .map(b => ({ from: new Date(b.from), to: new Date(b.to) }));
+
+    const renovationMatchers = blockedDates
+        .filter(b => b.reason === "Renovations")
+        .map(b => ({ from: new Date(b.from), to: new Date(b.to) }));
+
+    const seasonMatchers = blockedDates
+        .filter(b => b.reason === "Out of Season")
+        .map(b => ({ from: new Date(b.from), to: new Date(b.to) }));
+
+    const otherMatchers = blockedDates
+        .filter(b => b.reason === "Other")
+        .map(b => ({ from: new Date(b.from), to: new Date(b.to) }));
+
     return (
         <div className="sticky top-28 bg-white border border-[var(--color-sand)] rounded-card shadow-xl animate-slide-up overflow-hidden">
             {/* Header: Price */}
@@ -52,20 +81,28 @@ export function BookingCard({ room }: BookingCardProps) {
 
             <div className="p-6 space-y-6">
                 {/* Inline Calendar */}
-                <div className="flex justify-center">
+                <div className="flex justify-center booking-calendar-wrapper">
                     <Calendar
+                        className="calendar-light p-3"
                         mode="range"
                         selected={dateRange}
                         onSelect={setDateRange}
                         numberOfMonths={1}
-                        classNames={{
-                            selected: "bg-[var(--color-deep-med)] !text-white hover:bg-[var(--color-deep-med)]/90 rounded-full",
-                            range_start: "bg-[var(--color-deep-med)] !text-white rounded-l-full rounded-r-none",
-                            range_end: "bg-[var(--color-deep-med)] !text-white rounded-l-none rounded-r-full",
-                            range_middle: "bg-[var(--color-deep-med)]/10 text-[var(--color-deep-med)] rounded-none",
-                            today: "text-[var(--color-deep-med)] font-bold"
+                        disabled={disabledDates}
+                        modifiers={{
+                            booked: bookedMatchers,
+                            maintenance: maintenanceMatchers,
+                            renovation: renovationMatchers,
+                            season: seasonMatchers,
+                            other: otherMatchers
                         }}
-                    // showOutsideDays={false} // Default in Calendar
+                        modifiersClassNames={{
+                            booked: "rdp-day_booked",
+                            maintenance: "rdp-day_maintenance",
+                            renovation: "rdp-day_renovation",
+                            season: "rdp-day_season",
+                            other: "rdp-day_other"
+                        }}
                     />
                 </div>
 

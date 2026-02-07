@@ -4,7 +4,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { Room } from "@/types";
 import { formatCurrency } from "@/lib/priceCalculator";
-import { ArrowRight, BedSingle, BedDouble, Users } from "lucide-react";
+import { BedSingle, BedDouble, Users } from "lucide-react";
 
 interface RoomCardProps {
     room: Room;
@@ -13,15 +13,15 @@ interface RoomCardProps {
 
 import { useRef, useState, useEffect } from "react";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-// ... imports
+import { RoomPlaceholder } from "@/components/ui/RoomPlaceholder";
 
-export function RoomCard({ room, index }: RoomCardProps) {
+export function RoomCard({ room, index: _index }: RoomCardProps) {
     const cardRef = useRef<HTMLAnchorElement>(null);
     const [isTouch, setIsTouch] = useState(false);
 
     useEffect(() => {
         setIsTouch(window.matchMedia("(hover: none)").matches || window.innerWidth < 1024);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     const isActive = useIntersectionObserver(cardRef, {
@@ -38,13 +38,17 @@ export function RoomCard({ room, index }: RoomCardProps) {
         >
             {/* Image */}
             <div className="absolute inset-0 transition-transform duration-500 ease-premium group-hover:scale-105 group-[.is-active]:scale-105">
-                <Image
-                    src={room.images[0]}
-                    alt={room.name}
-                    fill
-                    className="object-cover"
-                    sizes="(max-width: 768px) 100vw, 50vw"
-                />
+                {room.images?.[0]?.trim() ? (
+                    <Image
+                        src={room.images[0]}
+                        alt={room.name}
+                        fill
+                        className="object-cover"
+                        sizes="(max-width: 768px) 100vw, 50vw"
+                    />
+                ) : (
+                    <RoomPlaceholder />
+                )}
             </div>
 
             {/* Overlay Gradient */}
@@ -63,12 +67,20 @@ export function RoomCard({ room, index }: RoomCardProps) {
                                 <div className="flex items-center gap-4">
                                     <div className="flex items-center gap-3">
                                         {/* Beds */}
-                                        {room.beds?.map((bed, i) => (
-                                            <div key={i} className="flex items-center gap-1.5" title={`${bed.count} ${bed.type === 'double' ? 'Double' : 'Single'} Bed${bed.count > 1 ? 's' : ''}`}>
-                                                {bed.type === 'double' ? <BedDouble className="w-4 h-4" /> : <BedSingle className="w-4 h-4" />}
-                                                <span>{bed.count}</span>
-                                            </div>
-                                        ))}
+                                        {/* Beds (Aggregated) */}
+                                        {(() => {
+                                            const bedMap = (room.beds || []).reduce((acc, bed) => {
+                                                acc[bed.type] = (acc[bed.type] || 0) + bed.count;
+                                                return acc;
+                                            }, {} as Record<string, number>);
+
+                                            return Object.entries(bedMap).map(([type, count]) => (
+                                                <div key={type} className="flex items-center gap-1.5" title={`${count} ${type === 'double' ? 'Double' : 'Single'} Bed${count > 1 ? 's' : ''}`}>
+                                                    {type === 'double' ? <BedDouble className="w-4 h-4" /> : <BedSingle className="w-4 h-4" />}
+                                                    <span>{count}</span>
+                                                </div>
+                                            ));
+                                        })()}
                                     </div>
                                     <div className="w-px h-3 bg-white/40" />
                                     {/* Occupancy */}

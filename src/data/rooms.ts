@@ -17,7 +17,7 @@ export const ROOMS: Room[] = [
             "/images/Room Imagery/Room 1/angle1-room1.jpeg",
             "/images/Room Imagery/Room 1/angle2-room1.jpeg"
         ],
-        beds: [{ type: 'double', count: 1 }, { type: 'double', count: 1 }], // King + Sofa Bed inferred from Max 4
+        beds: [{ type: 'double', count: 2 }], // King + Sofa Bed (consolidated)
         layout: [
             {
                 type: 'bedroom',

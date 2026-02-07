@@ -3,7 +3,7 @@ import { cn } from '@/lib/utils';
 import { Loader2 } from 'lucide-react';
 
 export interface ButtonProps extends ButtonHTMLAttributes<HTMLButtonElement> {
-    variant?: 'primary' | 'secondary' | 'outline' | 'ghost';
+    variant?: 'primary' | 'secondary' | 'outline' | 'ghost' | 'destructive';
     size?: 'sm' | 'md' | 'lg';
     isLoading?: boolean;
 }
@@ -17,7 +17,8 @@ const Button = forwardRef<HTMLButtonElement, ButtonProps>(({
         primary: 'bg-[var(--color-deep-med)] border border-[var(--color-accent-gold)] text-white uppercase tracking-[0.08em] hover:bg-[var(--color-deep-med)]/90 hover:translate-y-[-2px] hover:shadow-[var(--shadow-hover)]',
         secondary: 'bg-[var(--color-sand)] text-[var(--color-charcoal)] hover:bg-[var(--color-sand)]/80',
         outline: 'bg-transparent border border-[var(--color-aegean-blue)] text-[var(--color-aegean-blue)] hover:bg-[var(--color-aegean-blue)] hover:text-white',
-        ghost: 'bg-transparent text-[var(--color-charcoal)] hover:bg-[var(--color-sand)]/20'
+        ghost: 'bg-transparent text-[var(--color-charcoal)] hover:bg-[var(--color-sand)]/20',
+        destructive: 'bg-[var(--color-error)] text-white hover:bg-[var(--color-error)]/90 shadow-sm'
     };
 
     const sizes = {

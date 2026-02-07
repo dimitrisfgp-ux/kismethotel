@@ -4,6 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
+import { RoomPlaceholder } from "@/components/ui/RoomPlaceholder";
 
 // Dynamic import for Lightbox - only loads when user clicks to open gallery
 const Lightbox = dynamic(() => import("../ui/Lightbox").then(m => m.Lightbox), {
@@ -40,25 +41,33 @@ export function ImageGallery({ images, roomName }: ImageGalleryProps) {
 
     // Helper for rendering an interactive image
     function GalleryImage({ src, alt, index, onOpen, priority = false, className, sizes }: { src: string, alt: string, index: number, onOpen: (i: number) => void, priority?: boolean, className?: string, sizes?: string }) {
+        const hasImage = src && src.trim().length > 0;
+
         return (
             <div
                 className={cn("relative w-full h-full overflow-hidden cursor-pointer group", className)}
-                onClick={() => onOpen(index)}
-                onMouseEnter={preloadLightbox}
+                onClick={() => hasImage && onOpen(index)}
+                onMouseEnter={hasImage ? preloadLightbox : undefined}
                 role="button"
                 tabIndex={0}
-                onKeyDown={(e) => (e.key === 'Enter' || e.key === ' ') && onOpen(index)}
+                onKeyDown={(e) => hasImage && (e.key === 'Enter' || e.key === ' ') && onOpen(index)}
             >
-                <Image
-                    src={src}
-                    alt={alt}
-                    fill
-                    className="object-cover transition-transform duration-700 ease-premium group-hover:scale-110"
-                    priority={priority}
-                    sizes={sizes || "(max-width: 768px) 100vw, 50vw"}
-                />
-                {/* Overlay hint */}
-                <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                {hasImage ? (
+                    <>
+                        <Image
+                            src={src}
+                            alt={alt}
+                            fill
+                            className="object-cover transition-transform duration-700 ease-premium group-hover:scale-110"
+                            priority={priority}
+                            sizes={sizes || "(max-width: 768px) 100vw, 50vw"}
+                        />
+                        {/* Overlay hint */}
+                        <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                    </>
+                ) : (
+                    <RoomPlaceholder />
+                )}
             </div>
         );
     }
@@ -76,8 +85,8 @@ export function ImageGallery({ images, roomName }: ImageGalleryProps) {
 
                     {/* Secondary Grid */}
                     <div className="grid grid-rows-2 gap-2 h-full">
-                        <GalleryImage src={images[1] || images[0]} alt={`${roomName} Detail 1`} index={1} onOpen={openLightbox} />
-                        <GalleryImage src={images[2] || images[0]} alt={`${roomName} Detail 2`} index={2} onOpen={openLightbox} />
+                        <GalleryImage src={images[1] || ""} alt={`${roomName} Detail 1`} index={1} onOpen={openLightbox} />
+                        <GalleryImage src={images[2] || ""} alt={`${roomName} Detail 2`} index={2} onOpen={openLightbox} />
                     </div>
                 </div>
             )}

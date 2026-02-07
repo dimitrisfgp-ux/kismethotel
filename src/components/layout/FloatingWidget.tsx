@@ -2,8 +2,7 @@
 
 import Image from "next/image";
 
-import { useState } from "react";
-import { MessageCircle, Phone, X } from "lucide-react";
+import { Phone, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HotelSettings } from "@/types";
 

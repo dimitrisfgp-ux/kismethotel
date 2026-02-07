@@ -10,6 +10,8 @@ interface RoomPageProps {
     params: Promise<{ slug: string }>;
 }
 
+export const dynamic = 'force-dynamic';
+
 export async function generateStaticParams() {
     const rooms = await roomService.getRooms();
     return rooms.map((room) => ({
@@ -24,6 +26,9 @@ export default async function RoomPage({ params }: RoomPageProps) {
     if (!room) {
         notFound();
     }
+
+    const blockedDates = await roomService.getBlockedDates(room.id);
+    const bookings = await roomService.getBookings(room.id);
 
     return (
         <article className="">
@@ -41,7 +46,7 @@ export default async function RoomPage({ params }: RoomPageProps) {
 
                     {/* Sticky Sidebar (Right 1 col) */}
                     <div className="relative">
-                        <BookingCard room={room} />
+                        <BookingCard room={room} blockedDates={blockedDates} bookings={bookings} />
                     </div>
 
                 </div>

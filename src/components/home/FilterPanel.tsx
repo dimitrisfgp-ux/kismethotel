@@ -1,7 +1,7 @@
 "use client";
 
 import { createPortal } from "react-dom";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { RoomFilters, Room } from "@/types";
 import { Button } from "../ui/Button";
 import { X } from "lucide-react";
@@ -79,20 +79,7 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
                             selected={dateRange}
                             onSelect={setDateRange}
                             numberOfMonths={1}
-                            style={{
-                                '--cal-nav-color': 'white',
-                                '--cal-label-color': 'white'
-                            } as React.CSSProperties}
-                            className="w-full flex justify-center pb-2 text-white"
-                            classNames={{
-                                selected: "bg-[var(--color-accent-gold)] text-white hover:bg-[var(--color-accent-gold)]/90 rounded-md",
-                                range_start: "bg-[var(--color-accent-gold)] text-white rounded-l-md rounded-r-none",
-                                range_end: "bg-[var(--color-accent-gold)] text-white rounded-l-none rounded-r-md",
-                                range_middle: "bg-white/10 text-white rounded-none",
-                                today: "text-[var(--color-accent-gold)] font-bold",
-                                head_cell: "text-white/60 font-medium text-[0.7rem] uppercase tracking-wider",
-                                caption_label: "text-white font-bold font-montserrat tracking-widest uppercase"
-                            }}
+                            className="w-full flex justify-center pb-2 text-white calendar-dark"
                         />
                     </div>
 

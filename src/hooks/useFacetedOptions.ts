@@ -1,6 +1,5 @@
 import { useMemo } from "react";
 import { Room, RoomFilters } from "@/types";
-import { AMENITIES } from "@/data/amenities";
 import { matchesPrice, matchesOccupancy, matchesSize, matchesFloor, matchesAmenities, matchesDoubleBeds, matchesSingleBeds } from "@/lib/filterHelpers";
 
 export function useFacetedOptions(rooms: Room[], filters: RoomFilters) {
@@ -30,11 +29,17 @@ export function useFacetedOptions(rooms: Room[], filters: RoomFilters) {
         const availableSizes = Array.from(new Set(roomsForSizes.map(r => r.sizeSqm))).sort((a, b) => a - b);
 
         const roomsForAmenities = getRoomsFilteredBy(['amenityIds']);
-        const usedAmenityIds = new Set<number>();
+        const uniqueAmenitiesMap = new Map<number, { id: number, name: string, iconName: string, category?: string }>();
+
         roomsForAmenities.forEach(r => {
-            r.layout.forEach(cat => cat.amenities.forEach(a => usedAmenityIds.add(a.id)));
+            r.layout.forEach(cat => cat.amenities.forEach(a => {
+                if (!uniqueAmenitiesMap.has(a.id)) {
+                    uniqueAmenitiesMap.set(a.id, a);
+                }
+            }));
         });
-        const availableAmenities = AMENITIES.filter(a => usedAmenityIds.has(a.id));
+
+        const availableAmenities = Array.from(uniqueAmenitiesMap.values()).sort((a, b) => a.name.localeCompare(b.name));
 
         const roomsForDoubleBeds = getRoomsFilteredBy(['doubleBeds']);
         const maxDoubleBeds = Math.max(0, ...roomsForDoubleBeds.map(r => r.beds?.find(b => b.type === 'double')?.count || 0));

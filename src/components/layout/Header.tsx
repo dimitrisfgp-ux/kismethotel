@@ -9,9 +9,14 @@ import { BurgerIcon } from "./BurgerIcon";
 import { Container } from "../ui/Container";
 import { useScroll } from "@/hooks/useScroll";
 
-export function Header() {
+export interface HeaderProps {
+    settings?: { name: string }; // Optional because layout might not pass it initially
+}
+
+export function Header({ settings }: HeaderProps) {
     const { isScrolled } = useScroll({ threshold: 50 });
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const hotelName = settings?.name || "Kismet";
 
     // Logic: 
     // Top of page (Hero): Transparent bg, White logo/text. (dark prop = true)
@@ -34,7 +39,7 @@ export function Header() {
                         "font-montserrat font-bold text-2xl tracking-[0.2em] uppercase transition-colors duration-300",
                         isMobileOpen ? "text-white" : (isDark ? "text-white" : "text-[var(--color-charcoal)]")
                     )}>
-                        Kismet
+                        {hotelName}
                     </span>
                 </Link>
 

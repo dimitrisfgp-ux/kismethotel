@@ -10,7 +10,7 @@ interface FooterProps {
 
 export function Footer({ settings }: FooterProps) {
     return (
-        <footer id="contact" className="bg-[var(--color-aegean-blue)] text-[var(--color-sand)] pt-[var(--space-2xl)] pb-[var(--space-lg)]">
+        <footer id="contact" className="bg-[var(--color-aegean-blue)] text-[var(--color-sand)] pt-24 pb-12">
             <Container>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-16">
                     {/* Column 1: Info */}

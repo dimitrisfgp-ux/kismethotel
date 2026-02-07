@@ -254,7 +254,9 @@ function GestureController() {
         // Initial State: Disable drag ONLY on mobile devices to allow scroll
         if (L.Browser.mobile) {
             map.dragging.disable();
-            if ((map as any).tap) (map as any).tap.disable();
+            // Access L.Browser tap property with type assertion for Leaflet mobile
+            const mapWithTap = map as L.Map & { tap?: { disable: () => void } };
+            if (mapWithTap.tap) mapWithTap.tap.disable();
         } else {
             map.dragging.enable();
         }

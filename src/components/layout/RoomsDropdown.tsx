@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { ROOMS } from "@/data/rooms";
-import { cn } from "@/lib/utils";
 
 export function RoomsDropdown() {
     return (

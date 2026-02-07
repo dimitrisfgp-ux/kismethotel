@@ -90,12 +90,12 @@ export function DatePickerWithRange({
                         </div>
 
                         <Calendar
+                            className="calendar-light p-3"
                             mode="range"
                             defaultMonth={date?.from}
                             selected={date}
                             onSelect={setDate}
                             numberOfMonths={1}
-                        // showOutsideDays={false}
                         />
                     </div>
                 </div>

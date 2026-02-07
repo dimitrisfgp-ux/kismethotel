@@ -1,26 +1,12 @@
 import type { Metadata, Viewport } from "next";
-import { Montserrat, Inter } from "next/font/google";
-import "./globals.css";
+import { montserrat, inter } from "@/lib/fonts";
+import "../globals.css";
 import { DateProvider } from "@/contexts/DateContext";
 import { UIProvider } from "@/contexts/UIContext";
+import { ToastProvider } from "@/contexts/ToastContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWidget } from "@/components/layout/FloatingWidget";
-
-
-const montserrat = Montserrat({
-  subsets: ["latin"],
-  variable: "--font-montserrat",
-  weight: ["300", "400", "500", "600", "700"],
-  display: "swap",
-});
-
-const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  weight: ["400", "500"],
-  display: "swap",
-});
 
 export const metadata: Metadata = {
   title: {
@@ -52,7 +38,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#4A90E2",
+  themeColor: "#2C5F8D", // var(--color-deep-med)
   width: "device-width",
   initialScale: 1,
 };
@@ -74,13 +60,15 @@ export default async function RootLayout({
       <body className="antialiased bg-[var(--color-warm-white)] text-[var(--color-charcoal)]">
         <UIProvider>
           <DateProvider>
-            <ScrollToTop />
-            <Header />
-            <main className="min-h-screen">
-              {children}
-            </main>
-            <Footer settings={settings} />
-            <FloatingWidget settings={settings} />
+            <ToastProvider>
+              <ScrollToTop />
+              <Header settings={settings} />
+              <main className="min-h-screen">
+                {children}
+              </main>
+              <Footer settings={settings} />
+              <FloatingWidget settings={settings} />
+            </ToastProvider>
           </DateProvider>
         </UIProvider>
       </body>

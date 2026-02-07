@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Room } from "@/types";
+import { Room, Booking } from "@/types";
 import { DateRange } from "react-day-picker";
 import { Button } from "../ui/Button";
 import { PaymentMock } from "./PaymentMock";
@@ -9,8 +9,10 @@ import { calculateTotal } from "@/lib/priceCalculator";
 import { differenceInDays } from "date-fns";
 import { useRouter } from "next/navigation";
 import { StepItinerary } from "./steps/StepItinerary";
-import { StepGuestDetails } from "./steps/StepGuestDetails";
+import { StepGuestDetails, GuestData } from "./steps/StepGuestDetails";
 import { BookingSummary } from "./BookingSummary";
+import { createBookingAction } from "@/app/actions";
+import { useToast } from "@/contexts/ToastContext";
 
 interface BookingWizardProps {
     room: Room;
@@ -20,20 +22,50 @@ interface BookingWizardProps {
 export function BookingWizard({ room, dateRange }: BookingWizardProps) {
     const [step, setStep] = useState(1);
     const [isLoading, setIsLoading] = useState(false);
+    const [guestData, setGuestData] = useState<GuestData>({ firstName: "", lastName: "", email: "", phone: "" });
     const router = useRouter();
+    const { showToast } = useToast();
 
     const nights = dateRange.from && dateRange.to ? differenceInDays(dateRange.to, dateRange.from) : 0;
     const total = calculateTotal(room.pricePerNight, nights);
 
     const handleNext = async () => {
+        if (step === 2) {
+            // Validation
+            if (!guestData.firstName || !guestData.lastName || !guestData.email) {
+                showToast("Please fill in all required fields", "error");
+                return;
+            }
+        }
+
         if (step < 3) {
             setStep(step + 1);
         } else {
             // Submit
             setIsLoading(true);
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 1500));
-            router.push("/book/success");
+            const booking: Booking = {
+                id: Math.random().toString(36).substr(2, 9),
+                roomId: room.id,
+                checkIn: dateRange.from!.toISOString(),
+                checkOut: dateRange.to!.toISOString(),
+                guestName: `${guestData.firstName} ${guestData.lastName}`,
+                guestEmail: guestData.email,
+                guestPhone: guestData.phone,
+                guestsCount: 2, // Hardcoded for simplified wizard
+                totalPrice: total,
+                status: 'confirmed',
+                createdAt: new Date().toISOString()
+            };
+
+            try {
+                await createBookingAction(booking);
+                showToast("Booking Confirmed!", "success");
+                router.push("/book/success");
+            } catch (_error) {
+                showToast("Booking failed. Please try again.", "error");
+            } finally {
+                setIsLoading(false);
+            }
         }
     };
 
@@ -85,7 +117,7 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
 
                     {step === 1 && <StepItinerary room={room} dateRange={dateRange} nights={nights} />}
 
-                    {step === 2 && <StepGuestDetails />}
+                    {step === 2 && <StepGuestDetails data={guestData} onChange={setGuestData} />}
 
                     {step === 3 && <PaymentMock />}
 

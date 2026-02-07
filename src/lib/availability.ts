@@ -1,5 +1,4 @@
-import { DateRange } from "react-day-picker";
-import { isWithinInterval, parseISO } from "date-fns";
+import { isWithinInterval } from "date-fns";
 
 // Mock unavailable ranges format
 export interface UnavailableRange {

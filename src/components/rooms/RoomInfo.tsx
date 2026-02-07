@@ -44,7 +44,21 @@ export function RoomInfo({ room }: { room: Room }) {
                         <span className="text-xs uppercase tracking-widest">Beds</span>
                     </div>
                     <span className="font-inter text-lg font-medium capitalize">
-                        {room.beds?.map(b => `${b.count} ${b.type}`).join(", ") || "Double"}
+                        {(() => {
+                            const beds = room.beds || [];
+                            if (beds.length === 0) return "Double"; // Fallback
+
+                            // Aggregate counts by type to handle legacy data duplicates
+                            const bedMap = beds.reduce((acc, bed) => {
+                                acc[bed.type] = (acc[bed.type] || 0) + bed.count;
+                                return acc;
+                            }, {} as Record<string, number>);
+
+                            // Format output
+                            return Object.entries(bedMap)
+                                .map(([type, count]) => `${count} ${type}`)
+                                .join(", ");
+                        })()}
                     </span>
                 </div>
                 <div>

@@ -2,8 +2,17 @@ export type BedType = 'single' | 'double';
 // SectionType is now just a string alias for clarity, but allows any value for CMS flexibility
 export type SectionType = string;
 export type BookingStatus = 'held' | 'confirmed' | 'completed' | 'cancelled' | 'expired';
-export type BlockReason = 'maintenance' | 'owner_use' | 'seasonal' | 'other';
+export type BlockReason = 'Maintenance' | 'Renovations' | 'Out of Season' | 'Other';
 export type RoomSizeCategory = 'small' | 'medium' | 'large';
+
+export interface BlockedDate {
+    id: string;
+    roomId: string;
+    from: string; // ISO Date
+    to: string; // ISO Date
+    reason: BlockReason;
+    note?: string; // Optional custom note
+}
 
 // === Entities ===
 
@@ -51,6 +60,7 @@ export interface Booking {
     checkOut: string; // ISO Date
     guestName: string;
     guestEmail: string;
+    guestPhone?: string;
     guestsCount: number;
     totalPrice: number;
     status: BookingStatus;

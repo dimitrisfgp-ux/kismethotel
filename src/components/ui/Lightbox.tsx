@@ -5,7 +5,6 @@ import { createPortal } from "react-dom";
 import { X, ChevronLeft, ChevronRight } from "lucide-react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
-import { Button } from "./Button";
 
 interface LightboxProps {
     isOpen: boolean;
@@ -28,7 +27,7 @@ export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev
     // Initial mount check for portal
     useEffect(() => {
         setMounted(true);
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     // Handle keyboard navigation

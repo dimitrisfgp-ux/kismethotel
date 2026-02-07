@@ -5,7 +5,7 @@ import { DayPicker, useNavigation, DayPickerProps } from "react-day-picker";
 import "react-day-picker/style.css";
 import { format } from "date-fns";
 import { ChevronLeft, ChevronRight } from "lucide-react";
-import { cn } from "@/lib/utils";
+
 
 function CustomCaption(props: { calendarMonth: { date: Date } }) {
     const { goToMonth, nextMonth, previousMonth } = useNavigation();
@@ -37,27 +37,24 @@ function CustomCaption(props: { calendarMonth: { date: Date } }) {
 export type CalendarProps = DayPickerProps;
 
 export function Calendar({ className, classNames, showOutsideDays = false, ...props }: CalendarProps) {
+    const { components, modifiersClassNames, ...otherProps } = props;
+
     return (
-        <DayPicker
-            showOutsideDays={showOutsideDays}
-            hideNavigation
-            className={cn("p-0", className)}
-            components={{
-                MonthCaption: CustomCaption
-            }}
-            modifiersClassNames={{
-                selected: "bg-[var(--color-aegean-blue)] text-white hover:bg-[var(--color-deep-med)] rounded-full",
-                range_start: "bg-[var(--color-aegean-blue)] text-white rounded-l-full rounded-r-none",
-                range_end: "bg-[var(--color-aegean-blue)] text-white rounded-l-none rounded-r-full",
-                range_middle: "!bg-[var(--color-aegean-blue)]/10 !text-[var(--color-charcoal)] rounded-none",
-                today: "text-[var(--color-aegean-blue)] font-bold",
-                ...classNames
-            }}
-            styles={{
-                head_cell: { color: 'var(--color-charcoal)', opacity: 0.6, fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.1em' },
-                day: { transition: 'background-color 0.2s', fontFamily: 'var(--font-inter)' }
-            }}
-            {...props}
-        />
+        <div className={className}>
+            <DayPicker
+                showOutsideDays={showOutsideDays}
+                hideNavigation
+                className="p-0 border-none"
+                modifiersClassNames={{
+                    ...classNames,
+                    ...modifiersClassNames
+                }}
+                components={{
+                    MonthCaption: CustomCaption,
+                    ...components,
+                }}
+                {...otherProps}
+            />
+        </div>
     );
 }
