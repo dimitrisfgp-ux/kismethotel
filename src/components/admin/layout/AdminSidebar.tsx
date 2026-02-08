@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BedDouble, Settings, LogOut, ExternalLink, CalendarCheck } from "lucide-react";
+import { LayoutDashboard, BedDouble, Settings, LogOut, ExternalLink, CalendarCheck, MessageSquare } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const NAV_ITEMS = [
@@ -10,6 +10,11 @@ const NAV_ITEMS = [
         label: "Bookings",
         href: "/admin/bookings",
         icon: CalendarCheck // Importing CalendarCheck
+    },
+    {
+        label: "Requests",
+        href: "/admin/requests",
+        icon: MessageSquare
     },
     {
         label: "Rooms",

@@ -4,6 +4,8 @@ export type SectionType = string;
 export type BookingStatus = 'held' | 'confirmed' | 'completed' | 'cancelled' | 'expired';
 export type BlockReason = 'Maintenance' | 'Renovations' | 'Out of Season' | 'Other';
 export type RoomSizeCategory = 'small' | 'medium' | 'large';
+export type RequestSubject = 'general' | 'reschedule' | 'cancellation';
+export type RequestStatus = 'pending' | 'approved' | 'discarded';
 
 export interface BlockedDate {
     id: string;
@@ -64,6 +66,22 @@ export interface Booking {
     guestsCount: number;
     totalPrice: number;
     status: BookingStatus;
+    createdAt: string;
+}
+
+export interface ContactRequest {
+    id: string;
+    subject: RequestSubject;
+    name: string;
+    email: string;
+    phone?: string;
+    message: string;
+    bookingId?: string;           // For reschedule/cancellation
+    newCheckIn?: string;          // For reschedule (ISO Date)
+    newCheckOut?: string;         // For reschedule (ISO Date)
+    originalCheckIn?: string;     // Stored when reschedule is approved (original dates before change)
+    originalCheckOut?: string;    // Stored when reschedule is approved (original dates before change)
+    status: RequestStatus;
     createdAt: string;
 }
 

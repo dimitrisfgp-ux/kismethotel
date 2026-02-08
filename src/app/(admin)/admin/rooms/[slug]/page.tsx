@@ -10,7 +10,7 @@ interface RoomEditPageProps {
 
 export default async function RoomEditPage({ params }: RoomEditPageProps) {
     const { slug } = await params;
-    const room = await roomService.getRoom(slug);
+    const room = await roomService.getRoomBySlug(slug);
 
     if (!room) {
         notFound();

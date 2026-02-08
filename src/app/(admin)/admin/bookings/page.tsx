@@ -1,14 +1,21 @@
 import { roomService } from "@/services/roomService";
+import { requestService } from "@/services/requestService";
 import { AvailabilityManager } from "@/components/admin/bookings/AvailabilityManager";
 import { BookingsTable } from "@/components/admin/bookings/BookingsTable";
+import { approveRequestAction, discardRequestAction } from "@/app/actions";
+import { ContactRequest } from "@/types";
 
 export default async function BookingsPage() {
     const rooms = await roomService.getRooms();
     const bookings = await roomService.getBookings();
     const blockedDates = await roomService.getBlockedDates();
+    const requests = await requestService.getRequests();
+
+    // Only pass pending requests related to bookings
+    const bookingRequests = requests.filter(r => r.bookingId && r.status === "pending");
 
     return (
-        <div className="max-w-6xl mx-auto space-y-8 pb-12">
+        <div className="max-w-[1600px] mx-auto space-y-8 pb-12 px-4">
             <div className="border-b border-[var(--color-sand)] pb-6 flex justify-between items-end">
                 <div>
                     <h1 className="text-3xl font-bold font-montserrat text-[var(--color-charcoal)]">Bookings & Availability</h1>
@@ -22,7 +29,19 @@ export default async function BookingsPage() {
                     <span className="w-2 h-8 bg-[var(--color-accent-gold)] rounded-full block"></span>
                     Confirmed Bookings
                 </h2>
-                <BookingsTable bookings={bookings} rooms={rooms} />
+                <BookingsTable
+                    bookings={bookings}
+                    rooms={rooms}
+                    requests={bookingRequests}
+                    onApproveRequest={async (request: ContactRequest) => {
+                        "use server";
+                        await approveRequestAction(request.id);
+                    }}
+                    onDiscardRequest={async (request: ContactRequest) => {
+                        "use server";
+                        await discardRequestAction(request.id);
+                    }}
+                />
             </section>
 
             {/* Section 2: Availability Manager (Blocked Dates) */}

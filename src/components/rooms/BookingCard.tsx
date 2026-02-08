@@ -7,6 +7,7 @@ import { Button } from "../ui/Button";
 import { formatCurrency, calculateTotal } from "@/lib/priceCalculator";
 import { differenceInDays, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
+import { TIMEZONE_DISCLAIMER } from "@/data/constants";
 
 interface BookingCardProps {
     room: Room;
@@ -18,8 +19,9 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
     const { dateRange, setDateRange } = useDateContext();
     const router = useRouter();
 
-    // Prepare disabled dates for DayPicker
+    // Prepare disabled dates for DayPicker (including past dates)
     const disabledDates = [
+        { before: new Date() }, // Disable all past dates
         ...blockedDates.map(b => ({ from: new Date(b.from), to: new Date(b.to) })),
         ...bookings.filter(b => b.status === 'confirmed').map(b => ({ from: new Date(b.checkIn), to: new Date(b.checkOut) }))
     ];
@@ -105,6 +107,9 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
                         }}
                     />
                 </div>
+                <p className="text-[10px] text-center text-[var(--color-charcoal)]/50 mt-2">
+                    {TIMEZONE_DISCLAIMER}
+                </p>
 
 
                 {/* Totals & Action */}

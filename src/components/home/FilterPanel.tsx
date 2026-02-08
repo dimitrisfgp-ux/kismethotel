@@ -8,6 +8,7 @@ import { X } from "lucide-react";
 import { useDateContext } from "@/contexts/DateContext";
 import { useFacetedOptions } from "@/hooks/useFacetedOptions";
 import { Calendar } from "../ui/Calendar";
+import { TIMEZONE_DISCLAIMER } from "@/data/constants";
 import {
     PriceRangeSlider,
     BedConfigSelector,
@@ -80,7 +81,11 @@ export function FilterPanel({ isOpen, onClose, currentFilters, onApply, rooms }:
                             onSelect={setDateRange}
                             numberOfMonths={1}
                             className="w-full flex justify-center pb-2 text-white calendar-dark"
+                            disabled={{ before: new Date() }}
                         />
+                        <p className="text-[10px] text-center text-white/50 mt-2">
+                            {TIMEZONE_DISCLAIMER}
+                        </p>
                     </div>
 
                     <div className="h-px bg-white/10 w-full" />

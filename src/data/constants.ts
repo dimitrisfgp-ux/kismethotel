@@ -16,3 +16,7 @@ export const MOBILE_FILTER_BTN_CLASS = "p-3 bg-white border-2 border-[var(--colo
 
 // Layout Constants
 export const FAB_BOTTOM_OFFSET = "bottom-24"; // Height (56px) + Offset (24px) + Buffer
+
+// Timezone Constants
+export const HOTEL_TIMEZONE = "Europe/Athens";
+export const TIMEZONE_DISCLAIMER = "All dates shown in Greek time (Europe/Athens)";

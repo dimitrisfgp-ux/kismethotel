@@ -4,8 +4,7 @@ import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Room, RoomLayoutCategory, Amenity } from "@/types";
 // import { roomService } from "@/services/roomService"; // Removed client-side service
-import { createRoomAction, saveRoomAction } from "@/app/actions";
-import { contentService } from "@/services/contentService";
+import { createRoomAction, saveRoomAction, getAmenitiesAction } from "@/app/actions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { TextArea } from "@/components/ui/admin/TextArea";
@@ -60,7 +59,7 @@ export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
     const [errors, setErrors] = useState<Record<string, string>>({});
 
     useEffect(() => {
-        contentService.getAmenities().then(setAvailableAmenities);
+        getAmenitiesAction().then(setAvailableAmenities);
     }, []);
 
     const validateForm = () => {

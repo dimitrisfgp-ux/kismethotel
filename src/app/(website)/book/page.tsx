@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { addDays } from "date-fns";
 import { useEffect, useState, Suspense } from "react";
 import { useDateContext } from "@/contexts/DateContext";
-import { roomService } from "@/services/roomService";
+import { getRoomsAction } from "@/app/actions";
 import { Room } from "@/types";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
@@ -26,11 +26,7 @@ function BookContent() {
             return;
         }
 
-        // Check if dates are selected ?? 
-        // Usually we want to persist context. If missing, maybe just prompt selection.
-        // For now assuming flow holds.
-
-        roomService.getRooms().then(rooms => {
+        getRoomsAction().then(rooms => {
             const found = rooms.find(r => r.id === roomId);
             if (found) setRoom(found);
             setLoading(false);

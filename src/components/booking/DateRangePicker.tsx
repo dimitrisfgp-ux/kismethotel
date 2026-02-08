@@ -6,6 +6,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
+import { TIMEZONE_DISCLAIMER } from "@/data/constants";
 import { useClickOutside } from "@/hooks/useClickOutside";
 
 // Dynamic import for Calendar to avoid initial bundle weight & CSS blocking
@@ -96,7 +97,11 @@ export function DatePickerWithRange({
                             selected={date}
                             onSelect={setDate}
                             numberOfMonths={1}
+                            disabled={{ before: new Date() }}
                         />
+                        <p className="text-[10px] text-center text-[var(--color-charcoal)]/50 mt-2">
+                            {TIMEZONE_DISCLAIMER}
+                        </p>
                     </div>
                 </div>
             )}

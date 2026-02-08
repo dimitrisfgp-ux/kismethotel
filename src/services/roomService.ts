@@ -21,10 +21,6 @@ export const roomService = {
         return globalForMock.mockRooms;
     },
 
-    getRoom: async (slug: string): Promise<Room | undefined> => {
-        return globalForMock.mockRooms.find(room => room.slug === slug);
-    },
-
     getRoomBySlug: async (slug: string): Promise<Room | undefined> => {
         return globalForMock.mockRooms.find(room => room.slug === slug);
     },
@@ -116,5 +112,21 @@ export const roomService = {
         const initialLength = globalForMock.mockRooms.length;
         globalForMock.mockRooms = globalForMock.mockRooms.filter(r => r.id !== roomId);
         return globalForMock.mockRooms.length < initialLength;
+    },
+
+    // --- Booking Management ---
+
+    getBookingById: async (bookingId: string): Promise<Booking | undefined> => {
+        return globalForMock.mockBookings.find(b => b.id === bookingId);
+    },
+
+    updateBookingDates: async (bookingId: string, checkIn: string, checkOut: string): Promise<boolean> => {
+        const booking = globalForMock.mockBookings.find(b => b.id === bookingId);
+        if (booking) {
+            booking.checkIn = checkIn;
+            booking.checkOut = checkOut;
+            return true;
+        }
+        return false;
     }
 };

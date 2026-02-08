@@ -4,7 +4,7 @@ import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 
 import { useRef, useState, useMemo, useEffect } from "react";
-import { Room, RoomFilters } from "@/types";
+import { Room, RoomFilters, Booking, BlockedDate } from "@/types";
 import { DEFAULT_FILTERS } from "@/data/constants";
 import { RoomCard } from "../rooms/RoomCard";
 import { DateSelectorBar } from "./DateSelectorBar";
@@ -13,6 +13,7 @@ import { useRoomFilters } from "@/hooks/useRoomFilters";
 import { scrollToElement } from "@/lib/utils";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useDateContext } from "@/contexts/DateContext";
+import { getAvailabilityAction } from "@/app/actions";
 
 // Dynamic import for FilterPanel - only loads when filter drawer is opened
 const FilterPanel = dynamic(() => import("./FilterPanel").then(m => m.FilterPanel), {
@@ -29,6 +30,15 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
     const [currentPage, setCurrentPage] = useState(1);
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const [isSearching, setIsSearching] = useState(false); // For loading effect
+    const [bookings, setBookings] = useState<Booking[]>([]);
+    const [blockedDates, setBlockedDates] = useState<BlockedDate[]>([]);
+
+    useEffect(() => {
+        getAvailabilityAction().then(({ bookings, blockedDates }) => {
+            setBookings(bookings);
+            setBlockedDates(blockedDates);
+        });
+    }, []);
 
     // Sync context guestCount with local filters or just use it in calculation
     const [filters, setFilters] = useState<RoomFilters>(DEFAULT_FILTERS);
@@ -62,7 +72,13 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
         singleBeds: filters.singleBeds > 0 ? filters.singleBeds : singleBeds
     }), [filters, doubleBeds, singleBeds]);
 
-    const filteredRooms = useRoomFilters({ rooms, filters: effectiveFilters, dateRange });
+    const filteredRooms = useRoomFilters({
+        rooms,
+        filters: effectiveFilters,
+        dateRange,
+        bookings,
+        blockedDates
+    });
 
     const ITEMS_PER_PAGE = 4;
     const totalPages = Math.ceil(filteredRooms.length / ITEMS_PER_PAGE);
