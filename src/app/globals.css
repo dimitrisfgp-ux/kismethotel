@@ -156,7 +156,8 @@ h6 {
 .rdp-day_maintenance,
 .rdp-day_renovation,
 .rdp-day_season,
-.rdp-day_other {
+.rdp-day_other,
+.rdp-day_held {
   position: relative;
   color: transparent !important;
   /* Hide the number */
@@ -177,6 +178,17 @@ h6 {
   background-color: rgba(217, 119, 6, 0.1) !important;
 }
 
+.rdp-day_season {
+  background-color: rgba(100, 116, 139, 0.2) !important;
+}
+
+.rdp-day_other {
+  background-color: rgba(0, 0, 0, 0.1) !important;
+}
+
+.rdp-day_held {
+  background-color: rgba(217, 119, 6, 0.15) !important; /* Amber tint */
+}
 
 
 /* The Centered Label */
@@ -184,7 +196,8 @@ h6 {
 .rdp-day_maintenance::after,
 .rdp-day_renovation::after,
 .rdp-day_season::after,
-.rdp-day_other::after {
+.rdp-day_other::after,
+.rdp-day_held::after {
   content: '';
   position: absolute;
   top: 50%;
@@ -219,4 +232,9 @@ h6 {
 
 .rdp-day_other::after {
   content: 'BLOCK';
+}
+
+.rdp-day_held::after {
+  content: 'HELD';
+  color: #92400e;
 }

@@ -47,19 +47,24 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         const prevHold = previousHoldRef.current;
         const currentHold = activeHold;
 
+        console.log('BookingCard Effect:', { prev: prevHold?.id, current: currentHold?.id, modalStatus });
+
         // 1. New Hold Detected
         if (currentHold && !prevHold) {
+            console.log('Transition: New Hold Detected');
             setModalStatus('held');
             setIsHeldDismissed(false);
         }
         // 1b. Hold ID changed (new hold replaced old one)
         else if (currentHold && prevHold && currentHold.id !== prevHold.id) {
+            console.log('Transition: Hold ID Changed');
             setModalStatus('held');
             setIsHeldDismissed(false);
         }
 
         // 2. Hold Released (Active -> Null)
         if (prevHold && !currentHold) {
+            console.log('Transition: Hold Released. Checking status...');
             // Check if it resulted in a booking
             checkBookingStatusAction(
                 room.id,
@@ -67,6 +72,7 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
                 prevHold.checkOut
             ).then(({ isBooked }) => {
                 if (!isMounted) return;
+                console.log('Check Result:', { isBooked });
 
                 if (isBooked) {
                     setModalStatus('booked');
@@ -166,7 +172,9 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
                     status={modalStatus as HoldStatus}
                     expiresAt={activeHold?.expiresAt} // Only needed for 'held'
                     onExpired={() => {
-                        // Let the effect handle the transition to 'released' when activeHold becomes null
+                        console.log('Timer Expired: Setting status to released');
+                        setModalStatus('released');
+                        router.refresh();
                     }}
                     onClose={handleCloseModal}
                 />
