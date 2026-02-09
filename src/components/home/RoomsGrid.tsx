@@ -104,8 +104,8 @@ export function RoomsGrid({ rooms }: RoomsGridProps) {
     const sectionRef = useRef<HTMLElement>(null);
     const isWidgetVisible = useIntersectionObserver(sectionRef, {
         threshold: 0,
-        // Relaxed visibility: Active as long as 10% of the section is on screen
-        rootMargin: "-10% 0px -10% 0px"
+        // Strict "Center Focus": Match LocationSection to sync exit timing
+        rootMargin: "-45% 0px -45% 0px"
     });
 
     return (
