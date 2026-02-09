@@ -2,14 +2,15 @@
 
 import { useEffect, useState } from "react";
 import { differenceInSeconds } from "date-fns";
-import { Clock, Users } from "lucide-react";
+import { Clock, Users, X } from "lucide-react";
 
 interface HoldBlockedModalProps {
     expiresAt: string;
     onExpired: () => void;
+    onClose: () => void;
 }
 
-export function HoldBlockedModal({ expiresAt, onExpired }: HoldBlockedModalProps) {
+export function HoldBlockedModal({ expiresAt, onExpired, onClose }: HoldBlockedModalProps) {
     const [secondsLeft, setSecondsLeft] = useState(0);
 
     useEffect(() => {
@@ -31,8 +32,15 @@ export function HoldBlockedModal({ expiresAt, onExpired }: HoldBlockedModalProps
     const seconds = secondsLeft % 60;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
-            <div className="bg-white p-8 rounded-lg max-w-md mx-4 text-center shadow-2xl border border-[var(--color-sand)]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
+            <div className="bg-white p-8 rounded-lg max-w-md mx-4 text-center shadow-2xl border border-[var(--color-sand)] relative animate-scale-in">
+                <button
+                    onClick={onClose}
+                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                    <X className="w-6 h-6" />
+                </button>
+
                 <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
                     <Users className="h-8 w-8 text-amber-600" />
                 </div>
@@ -54,6 +62,13 @@ export function HoldBlockedModal({ expiresAt, onExpired }: HoldBlockedModalProps
                 <p className="text-sm text-[var(--color-charcoal)]/50 font-inter">
                     The room will become available when the timer expires
                 </p>
+
+                <button
+                    onClick={onClose}
+                    className="mt-6 text-sm text-[var(--color-aegean-blue)] underline hover:text-[var(--color-gold)]"
+                >
+                    I'll check other dates
+                </button>
             </div>
         </div>
     );

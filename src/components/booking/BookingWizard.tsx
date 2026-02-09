@@ -68,10 +68,10 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
                 setHoldExpiresAt(result.expiresAt!);
             } else {
                 showToast(result.error || "Could not reserve room", "error");
-                router.push('/rooms');
+                router.push(`/rooms/${room.slug}`);
             }
         });
-    }, [room.id, dateRange.from, dateRange.to, sessionId, showToast, router]);
+    }, [room.id, room.slug, dateRange.from, dateRange.to, sessionId, showToast, router]);
 
     // Cleanup on unmount - release the hold
     useEffect(() => {
@@ -86,7 +86,7 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
     // Handle hold expiration
     const handleHoldExpired = () => {
         showToast("Your booking session has expired. Please start again.", "error");
-        router.push('/rooms');
+        router.push(`/rooms/${room.slug}`);
     };
 
     const nights = dateRange.from && dateRange.to ? differenceInDays(dateRange.to, dateRange.from) : 0;

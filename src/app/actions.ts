@@ -406,3 +406,29 @@ export async function getActiveHoldAction(
         createdAt: data.created_at
     };
 }
+
+// Check if a specific period was successfully booked (used for notifications)
+export async function checkBookingStatusAction(
+    roomId: string,
+    checkIn: string,
+    checkOut: string
+): Promise<{ isBooked: boolean }> {
+    const supabase = createServerClient();
+
+    // Check for any confirmed booking overlapping the range
+    const { data, error } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('room_id', roomId)
+        .eq('status', 'confirmed')
+        .lt('check_in', checkOut)
+        .gt('check_out', checkIn)
+        .maybeSingle();
+
+    if (error) {
+        console.error('Error checking booking status:', error);
+        return { isBooked: false };
+    }
+
+    return { isBooked: !!data };
+}

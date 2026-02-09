@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect, useRef } from "react";
+
 import { Room, BlockedDate, Booking } from "@/types";
 import { useDateContext } from "@/contexts/DateContext";
 import { Calendar } from "../ui/Calendar";
@@ -10,6 +12,9 @@ import { useRouter } from "next/navigation";
 import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
 import { HoldBlockedModal } from "../booking/HoldBlockedModal";
+import { DiscreetHoldTimer } from "../booking/DiscreetHoldTimer";
+import { useToast } from "@/contexts/ToastContext";
+import { checkBookingStatusAction } from "@/app/actions";
 
 interface BookingCardProps {
     room: Room;
@@ -20,6 +25,7 @@ interface BookingCardProps {
 export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingCardProps) {
     const { dateRange, setDateRange } = useDateContext();
     const router = useRouter();
+    const { showToast } = useToast();
 
     // Subscribe to realtime holds for this room
     const { allHolds, activeHold } = useRealtimeHolds({
@@ -27,6 +33,45 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         checkIn: dateRange?.from,
         checkOut: dateRange?.to
     });
+
+    // Manage modal dismissal state
+    const [isModalDismissed, setIsModalDismissed] = useState(false);
+
+    // Store previous hold to detect when it's released
+    const previousHoldRef = useRef(activeHold);
+
+    // Effect for Hold Release Notification
+    useEffect(() => {
+        const prevHold = previousHoldRef.current;
+
+        // Case: Hold WAS present, and now is NULL (Released)
+        if (prevHold && !activeHold) {
+
+            // Check if it was booked or just abandoned
+            checkBookingStatusAction(
+                room.id,
+                prevHold.checkIn,
+                prevHold.checkOut
+            ).then(({ isBooked }) => {
+                if (isBooked) {
+                    showToast("These dates were just booked by another guest.", "error");
+                } else {
+                    showToast("Dates are now available!", "success");
+                }
+                router.refresh(); // Refresh to update calendar (fetch new bookings)
+            });
+        }
+
+        // Update ref
+        previousHoldRef.current = activeHold;
+    }, [activeHold, room.id, router, showToast]);
+
+    // Reset dismissal when a new hold appears (different ID)
+    useEffect(() => {
+        if (activeHold && activeHold.id !== previousHoldRef.current?.id) {
+            setIsModalDismissed(false);
+        }
+    }, [activeHold?.id]); // Depend on ID to discern new holds
 
     // Prepare disabled dates for DayPicker (including past dates)
     const disabledDates = [
@@ -97,12 +142,21 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
 
     return (
         <div className="sticky top-28 bg-white border border-[var(--color-sand)] rounded-card shadow-xl animate-slide-up overflow-hidden">
-            {activeHold && (
+            {activeHold && !isModalDismissed && (
                 <HoldBlockedModal
                     expiresAt={activeHold.expiresAt}
                     onExpired={() => {
                         // Optional: trigger re-verify or just let realtime clear it
                     }}
+                    onClose={() => setIsModalDismissed(true)}
+                />
+            )}
+
+            {/* Discreet Timer (shown when modal is dismissed) */}
+            {activeHold && isModalDismissed && (
+                <DiscreetHoldTimer
+                    expiresAt={activeHold.expiresAt}
+                    onExpired={() => { /* Handle expiry if needed */ }}
                 />
             )}
             {/* Header: Price */}
