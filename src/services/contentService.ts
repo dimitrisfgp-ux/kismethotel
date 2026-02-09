@@ -232,5 +232,20 @@ export const contentService = {
             return !error;
         }
         return true;
+    },
+
+    deleteCategory: async (id: string): Promise<boolean> => {
+        const supabase = createServerClient();
+
+        // 1. Delete associated conveniences first
+        await supabase.from('conveniences').delete().eq('category_id', id);
+
+        // 2. Delete the category
+        const { error } = await supabase
+            .from('location_categories')
+            .delete()
+            .eq('id', id);
+
+        return !error;
     }
 };

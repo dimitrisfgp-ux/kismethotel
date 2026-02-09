@@ -8,6 +8,8 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWidget } from "@/components/layout/FloatingWidget";
 
+export const dynamic = 'force-dynamic';
+
 export const metadata: Metadata = {
   title: {
     default: "Kismet - Boutique Accommodation in Crete",

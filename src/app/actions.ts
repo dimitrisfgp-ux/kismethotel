@@ -290,3 +290,12 @@ export async function updateBookingDatesAction(bookingId: string, checkIn: strin
     }
     return success;
 }
+
+export async function deleteCategoryAction(categoryId: string) {
+    const success = await contentService.deleteCategory(categoryId);
+    if (success) {
+        revalidatePath("/admin/page-content");
+        revalidatePath("/");
+    }
+    return success;
+}

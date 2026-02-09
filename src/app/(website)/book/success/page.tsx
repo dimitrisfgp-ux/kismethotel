@@ -3,6 +3,8 @@ import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 export default function SuccessPage() {
     return (
         <div className="pt-[var(--header-height)] min-h-screen flex items-center bg-[var(--color-warm-white)]">

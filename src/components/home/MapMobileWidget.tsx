@@ -45,7 +45,7 @@ export function MapMobileWidget({ isVisible, categories, activeCategoryIndex, on
                                         ? "shadow-md"
                                         : "hover:bg-[var(--color-sand)]/20"
                                 )}
-                                aria-label={cat.label}
+                                aria-label={cat.label || "Category"}
                             >
                                 <Icon className="w-5 h-5" />
                             </button>

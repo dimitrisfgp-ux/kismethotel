@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Convenience, LocationCategory, PageContent } from "@/types";
-import { updateLocationsAction, updateCategoriesAction, updatePageContentAction } from "@/app/actions";
+import { updateLocationsAction, updateCategoriesAction, updatePageContentAction, deleteCategoryAction } from "@/app/actions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { CategoryRow } from "@/components/admin/locations/CategoryRow";
@@ -27,6 +27,7 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
     const [expandedCategoryIds, setExpandedCategoryIds] = useState<string[]>([]);
     const [editingLocationId, setEditingLocationId] = useState<number | null>(null);
     const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
+    const [deletedCategoryIds, setDeletedCategoryIds] = useState<string[]>([]);
 
     const { showToast } = useToast();
 
@@ -58,6 +59,10 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
 
     const deleteCategory = (id: string) => {
         if (confirm("Delete this category? Locations inside will be deleted or need reassignment.")) {
+            // Track for deletion on Save if it's an existing category
+            if (!id.startsWith('cat_')) {
+                setDeletedCategoryIds(prev => [...prev, id]);
+            }
             setCategories(prev => prev.filter(c => c.id !== id));
             // Also delete (or orphan) locations? Let's delete for now as per "Nested" concept
             setLocations(prev => prev.filter(l => l.categoryId !== id));
@@ -105,6 +110,13 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
                 }
             };
 
+            // Process Deletions First
+            if (deletedCategoryIds.length > 0) {
+                await Promise.all(deletedCategoryIds.map(id => deleteCategoryAction(id)));
+            }
+
+
+
             // Parallel save
             // NOTE: In a real DB, we might want a transaction or single endpoint.
             // Here we have separate actions.
@@ -125,6 +137,7 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
             setIsLoading(false);
             setEditingCategoryId(null);
             setEditingLocationId(null);
+            setDeletedCategoryIds([]);
         }
     };
 

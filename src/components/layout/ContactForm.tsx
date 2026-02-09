@@ -147,8 +147,9 @@ export function ContactForm() {
         <form className="space-y-4" onSubmit={handleSubmit}>
             {/* Subject Selector */}
             <div>
-                <label className="block text-xs font-bold uppercase tracking-widest mb-2 text-white/60">Subject</label>
+                <label htmlFor="contact-subject" className="block text-xs font-bold uppercase tracking-widest mb-2 text-white/60">Subject</label>
                 <select
+                    id="contact-subject"
                     value={subject}
                     onChange={(e) => {
                         setSubject(e.target.value as RequestSubject);

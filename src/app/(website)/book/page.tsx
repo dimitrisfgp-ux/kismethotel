@@ -12,6 +12,8 @@ import { SectionHeading } from "@/components/ui/SectionHeading";
 import { BookingWizard } from "@/components/booking/BookingWizard";
 import { Loader2 } from "lucide-react";
 
+export const dynamic = 'force-dynamic';
+
 function BookContent() {
     const searchParams = useSearchParams();
     const roomId = searchParams.get("roomId");
