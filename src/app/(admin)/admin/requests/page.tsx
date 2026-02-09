@@ -2,6 +2,8 @@ import { requestService } from "@/services/requestService";
 import { roomService } from "@/services/roomService";
 import { RequestsTable } from "@/components/admin/requests/RequestsTable";
 
+export const dynamic = "force-dynamic";
+
 export default async function RequestsPage() {
     const requests = await requestService.getRequests();
     const bookings = await roomService.getBookings();

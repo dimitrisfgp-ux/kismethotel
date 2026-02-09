@@ -5,6 +5,8 @@ import { BookingsTable } from "@/components/admin/bookings/BookingsTable";
 import { approveRequestAction, discardRequestAction } from "@/app/actions";
 import { ContactRequest } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 export default async function BookingsPage() {
     const rooms = await roomService.getRooms();
     const bookings = await roomService.getBookings();
