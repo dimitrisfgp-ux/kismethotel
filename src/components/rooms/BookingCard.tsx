@@ -43,6 +43,7 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
 
     // Effect: Handle State Transitions
     useEffect(() => {
+        let isMounted = true;
         const prevHold = previousHoldRef.current;
         const currentHold = activeHold;
 
@@ -65,6 +66,8 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
                 prevHold.checkIn,
                 prevHold.checkOut
             ).then(({ isBooked }) => {
+                if (!isMounted) return;
+
                 if (isBooked) {
                     setModalStatus('booked');
                 } else {
@@ -75,6 +78,7 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         }
 
         previousHoldRef.current = activeHold;
+        return () => { isMounted = false; };
     }, [activeHold, room.id, router]);
 
     // Close Handler

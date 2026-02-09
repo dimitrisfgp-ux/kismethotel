@@ -54,6 +54,7 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
 
     // Create hold on mount
     useEffect(() => {
+        let isMounted = true;
         if (holdCreated.current || !sessionId || !dateRange.from || !dateRange.to) return;
         holdCreated.current = true;
 
@@ -63,6 +64,8 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
             dateRange.to.toISOString(),
             sessionId
         ).then(result => {
+            if (!isMounted) return;
+
             if (result.success) {
                 setHoldId(result.holdId!);
                 setHoldExpiresAt(result.expiresAt!);
@@ -71,6 +74,8 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
                 router.push(`/rooms/${room.slug}`);
             }
         });
+
+        return () => { isMounted = false; };
     }, [room.id, room.slug, dateRange.from, dateRange.to, sessionId, showToast, router]);
 
     // Cleanup on unmount - release the hold

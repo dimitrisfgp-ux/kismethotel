@@ -407,6 +407,32 @@ export async function getActiveHoldAction(
     };
 }
 
+// Get all active holds for a room (to populate initial state)
+export async function getRoomHoldsAction(roomId: string): Promise<BookingHold[]> {
+    const supabase = createServerClient();
+    const { data, error } = await supabase
+        .from('booking_holds')
+        .select('*')
+        .eq('room_id', roomId)
+        .gt('expires_at', new Date().toISOString());
+
+    if (error) {
+        console.error('Error fetching room holds:', error);
+        return [];
+    }
+
+    return data.map(record => ({
+        id: record.id,
+        roomId: record.room_id,
+        checkIn: record.check_in,
+        checkOut: record.check_out,
+        sessionId: record.session_id,
+        expiresAt: record.expires_at,
+        hasContention: record.has_contention,
+        createdAt: record.created_at
+    }));
+}
+
 // Check if a specific period was successfully booked (used for notifications)
 export async function checkBookingStatusAction(
     roomId: string,

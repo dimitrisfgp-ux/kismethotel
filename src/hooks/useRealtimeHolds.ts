@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback } from "react";
 import { supabase } from "@/lib/supabase";
 import { BookingHold } from "@/types";
-import { getActiveHoldAction, pingHoldAction } from "@/app/actions";
+import { getActiveHoldAction, pingHoldAction, getRoomHoldsAction } from "@/app/actions";
 
 interface UseRealtimeHoldsOptions {
     roomId: string;
@@ -42,38 +42,40 @@ export function useRealtimeHolds({
 
     // Initial check for existing holds
     useEffect(() => {
+        let isMounted = true;
+
         async function checkExistingHolds() {
-            setIsLoading(true);
-
             try {
-                // If we need to check specific dates (Booking Flow)
-                if (checkIn && checkOut) {
-                    const myHold = await getActiveHoldAction(
-                        roomId,
-                        checkIn.toISOString(),
-                        checkOut.toISOString(),
-                        mySessionId
-                    );
+                // 1. Fetch ALL active holds for this room (for the Calendar)
+                const roomHolds = await getRoomHoldsAction(roomId);
 
-                    if (myHold) {
-                        setActiveHold(myHold);
-                        await pingHoldAction(myHold.id);
+                if (isMounted) {
+                    setAllHolds(roomHolds);
+
+                    // 2. If I have selected dates, check if any EXISTING hold blocks me
+                    if (checkIn && checkOut) {
+                        const overlappingHold = roomHolds.find(h =>
+                            datesOverlap({ check_in: h.checkIn, check_out: h.checkOut }) &&
+                            h.sessionId !== mySessionId
+                        );
+
+                        if (overlappingHold) {
+                            setActiveHold(overlappingHold);
+                            await pingHoldAction(overlappingHold.id);
+                        }
                     }
                 }
-
-                // Note: 'allHolds' will be populated by Realtime events or we could fetch them here.
-                // For now, relying on Realtime updates for the list to keep it simple.
-                // A future improvement would be to add getRoomHoldsAction(roomId).
-
             } catch (error) {
                 console.error('Error checking existing holds:', error);
             }
 
-            setIsLoading(false);
+            if (isMounted) setIsLoading(false);
         }
 
         checkExistingHolds();
-    }, [roomId, checkIn, checkOut, mySessionId]);
+
+        return () => { isMounted = false; };
+    }, [roomId, checkIn, checkOut, mySessionId, datesOverlap]);
 
     // Realtime subscription
     useEffect(() => {
