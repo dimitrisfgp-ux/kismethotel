@@ -5,6 +5,8 @@ import { format } from "date-fns";
 import { X, Calendar, User, Mail, Phone, MessageSquare, Clock, CreditCard } from "lucide-react";
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
+import { SUBJECT_LABELS, SUBJECT_COLORS } from "@/lib/constants/requestStyles";
+import { getStatusColor } from "@/lib/constants/statusStyles";
 
 interface RequestDetailsModalProps {
     request: ContactRequest;
@@ -13,18 +15,6 @@ interface RequestDetailsModalProps {
     onApprove: () => Promise<void>;
     onDiscard: () => Promise<void>;
 }
-
-const SUBJECT_LABELS: Record<string, string> = {
-    general: "General Inquiry",
-    reschedule: "Reschedule Request",
-    cancellation: "Cancellation Request"
-};
-
-const SUBJECT_COLORS: Record<string, string> = {
-    general: "bg-blue-100 text-blue-700 border-blue-200",
-    reschedule: "bg-amber-100 text-amber-700 border-amber-200",
-    cancellation: "bg-red-100 text-red-700 border-red-200"
-};
 
 export function RequestDetailsModal({ request, booking, onClose, onApprove, onDiscard }: RequestDetailsModalProps) {
     const isPending = request.status === 'pending';
@@ -57,11 +47,7 @@ export function RequestDetailsModal({ request, booking, onClose, onApprove, onDi
                             <p className="text-xs font-bold uppercase tracking-widest opacity-50 mb-1">Status</p>
                             <Badge
                                 variant="outline"
-                                className={
-                                    request.status === 'approved' ? 'bg-green-100 text-green-700 border-green-200' :
-                                        request.status === 'discarded' ? 'bg-gray-100 text-gray-600 border-gray-200' :
-                                            'bg-yellow-100 text-yellow-700 border-yellow-200'
-                                }
+                                className={getStatusColor(request.status, 'request')}
                             >
                                 {request.status.toUpperCase()}
                             </Badge>

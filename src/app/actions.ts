@@ -10,7 +10,7 @@ import {
     newRequestAlertEmail,
     requestApprovedEmail
 } from "@/services/emailTemplates";
-import { Room, HotelSettings, PageContent, FAQ, BlockedDate, Booking } from "@/types";
+import { Room, HotelSettings, PageContent, FAQ, BlockedDate, Booking, Convenience, LocationCategory } from "@/types";
 
 // --- Room Actions ---
 
@@ -67,6 +67,24 @@ export async function updatePageContentAction(content: PageContent) {
 
 export async function updateFAQsAction(faqs: FAQ[]) {
     const success = await contentService.updateFAQs(faqs);
+    if (success) {
+        revalidatePath("/admin/page-content");
+        revalidatePath("/");
+    }
+    return success;
+}
+
+export async function updateLocationsAction(locations: Convenience[]) {
+    const success = await contentService.updateConveniences(locations);
+    if (success) {
+        revalidatePath("/admin/page-content");
+        revalidatePath("/");
+    }
+    return success;
+}
+
+export async function updateCategoriesAction(categories: LocationCategory[]) {
+    const success = await contentService.updateCategories(categories);
     if (success) {
         revalidatePath("/admin/page-content");
         revalidatePath("/");

@@ -10,12 +10,13 @@ export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   // Fetch data in parallel
-  const [rooms, conveniences, attractions, faqs, pageContent] = await Promise.all([
+  const [rooms, conveniences, attractions, faqs, pageContent, categories] = await Promise.all([
     roomService.getRooms(),
     contentService.getConveniences(),
     contentService.getAttractions(),
     contentService.getFAQs(),
-    contentService.getPageContent()
+    contentService.getPageContent(),
+    contentService.getCategories()
   ]);
 
   return (
@@ -27,7 +28,11 @@ export default async function Home() {
       />
       <div id="search-bar" />
       <RoomsGrid rooms={rooms} />
-      <LocationSection conveniences={conveniences} />
+      <LocationSection
+        conveniences={conveniences}
+        categories={categories}
+        content={pageContent.locationsSection}
+      />
       <AttractionsGrid attractions={attractions} />
       <FAQAccordion faqs={faqs} />
     </div>

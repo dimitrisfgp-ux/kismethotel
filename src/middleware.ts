@@ -5,8 +5,8 @@ export function middleware(request: NextRequest) {
     // 1. Check if the path is an admin route
     if (request.nextUrl.pathname.startsWith('/admin')) {
 
-        // 2. Allow access to the login page itself
-        if (request.nextUrl.pathname === '/admin/login') {
+        // 2. Allow access to the login page itself (now at /login, outside /admin)
+        if (request.nextUrl.pathname === '/login') {
             return NextResponse.next();
         }
 
@@ -15,7 +15,7 @@ export function middleware(request: NextRequest) {
 
         // 4. Redirect to login if no session
         if (!session) {
-            return NextResponse.redirect(new URL('/admin/login', request.url));
+            return NextResponse.redirect(new URL('/login', request.url));
         }
     }
 

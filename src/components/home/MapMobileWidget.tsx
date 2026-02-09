@@ -1,22 +1,20 @@
 "use client";
 
 import { cn } from "@/lib/utils";
+import { LocationCategory } from "@/types";
+import { iconMap } from "@/components/ui/icons/iconMap";
+import { MapPin } from "lucide-react";
 
-interface Category {
-    label: string;
-    types: string[];
-    icon: React.ReactNode;
-    color?: string;
-}
+import { DEFAULT_HOTEL_COLOR } from "@/lib/constants";
 
 interface MapMobileWidgetProps {
     isVisible: boolean;
-    categories: Category[];
+    categories: LocationCategory[];
     activeCategoryIndex: number | null;
-    onCategorySelect: (index: number) => void;
+    onCategoryClick: (index: number) => void;
 }
 
-export function MapMobileWidget({ isVisible, categories, activeCategoryIndex, onCategorySelect }: MapMobileWidgetProps) {
+export function MapMobileWidget({ isVisible, categories, activeCategoryIndex, onCategoryClick }: MapMobileWidgetProps) {
     return (
         <div
             className={cn(
@@ -28,12 +26,14 @@ export function MapMobileWidget({ isVisible, categories, activeCategoryIndex, on
                 <div className="flex items-center justify-center w-full gap-2 overflow-x-auto overflow-y-hidden no-scrollbar px-1">
                     {categories.map((cat, index) => {
                         const isActive = activeCategoryIndex === index;
-                        const activeColor = cat.color || "var(--color-deep-med)";
+                        // Use cat.color or fallback
+                        const activeColor = cat.color || DEFAULT_HOTEL_COLOR;
+                        const Icon = iconMap[cat.icon] || MapPin;
 
                         return (
                             <button
-                                key={cat.label}
-                                onClick={() => onCategorySelect(index)}
+                                key={cat.id}
+                                onClick={() => onCategoryClick(index)}
                                 style={{
                                     backgroundColor: isActive ? activeColor : 'white',
                                     borderColor: isActive ? activeColor : 'var(--color-accent-gold)',
@@ -47,7 +47,7 @@ export function MapMobileWidget({ isVisible, categories, activeCategoryIndex, on
                                 )}
                                 aria-label={cat.label}
                             >
-                                {cat.icon}
+                                <Icon className="w-5 h-5" />
                             </button>
                         );
                     })}

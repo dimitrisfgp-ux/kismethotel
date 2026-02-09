@@ -1,10 +1,14 @@
 "use client";
 
-import { useState } from "react";
-import { Convenience } from "@/types";
-import dynamic from "next/dynamic";
-import { Bus, ShoppingCart, Pill, Car, Utensils, Waves } from "lucide-react";
+import { useState, useRef, useEffect } from "react";
+import { Convenience, LocationCategory } from "@/types";
+import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
+import { useUIContext } from "@/contexts/UIContext";
+import { MapMobileWidget } from "./MapMobileWidget";
 import { cn } from "@/lib/utils";
+import dynamic from "next/dynamic";
+import { iconMap } from "@/components/ui/icons/iconMap";
+import { MapPin } from "lucide-react";
 
 // Dynamic import for Map to avoid SSR issues
 const InteractiveMap = dynamic(() => import("../ui/InteractiveMap"), {
@@ -14,26 +18,14 @@ const InteractiveMap = dynamic(() => import("../ui/InteractiveMap"), {
 
 interface LocationSectionProps {
     conveniences: Convenience[];
+    categories: LocationCategory[];
+    content?: {
+        title: string;
+        subtitle: string;
+    };
 }
 
-const CATEGORIES = [
-    { label: "Ktel & Transport", types: ["Bus"], icon: <Bus className="h-6 w-6" />, color: "var(--color-map-transport)" },
-    { label: "Car Rentals", types: ["Car Rental"], icon: <Car className="h-6 w-6" />, color: "var(--color-map-rental)" },
-    { label: "SuperMarkets", types: ["Supermarket"], icon: <ShoppingCart className="h-6 w-6" />, color: "var(--color-map-supermarket)" },
-    { label: "Pharmacies", types: ["Pharmacy"], icon: <Pill className="h-6 w-6" />, color: "var(--color-map-pharmacy)" },
-    { label: "Dining & Drinks", types: ["Restaurant", "Cafe", "Bar"], icon: <Utensils className="h-6 w-6" />, color: "var(--color-map-dining)" },
-    { label: "Beaches", types: ["Beach"], icon: <Waves className="h-6 w-6" />, color: "var(--color-map-beach)" },
-];
-
-// ... imports ...
-import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-import { useRef, useEffect } from "react";
-import { MapMobileWidget } from "./MapMobileWidget";
-import { useUIContext } from "@/contexts/UIContext";
-
-// ... existing code ...
-
-export function LocationSection({ conveniences }: LocationSectionProps) {
+export function LocationSection({ conveniences, categories, content }: LocationSectionProps) {
     const [activeCategoryIndex, setActiveCategoryIndex] = useState<number | null>(null);
     const [isMobileWidgetVisible, setIsMobileWidgetVisible] = useState(false);
     const [hasMapLoaded, setHasMapLoaded] = useState(false);
@@ -82,112 +74,94 @@ export function LocationSection({ conveniences }: LocationSectionProps) {
         };
     }, [setFloatingWidgetVisible]);
 
-    const activeTypes = activeCategoryIndex !== null ? CATEGORIES[activeCategoryIndex].types : null;
+    const activeCategoryId = activeCategoryIndex !== null ? categories[activeCategoryIndex].id : null;
 
     return (
         <section ref={sectionRef} className="flex flex-col md:flex-row w-full h-auto md:h-[95vh] min-h-[600px] border-y border-[var(--color-sand)] relative">
 
             {/* Mobile-Only Heading */}
             <div className="md:hidden w-full bg-[var(--color-warm-white)] py-8 px-4 text-center border-b border-[var(--color-sand)]">
-                <h2 className="font-montserrat text-xl font-bold uppercase tracking-widest text-[var(--color-charcoal)] mb-2">Easy Access to Conveniences</h2>
+                <h2 className="font-montserrat text-xl font-bold uppercase tracking-widest text-[var(--color-charcoal)] mb-2">
+                    {content?.title || "Easy Access to Conveniences"}
+                </h2>
                 <div className="w-12 h-1 bg-[var(--color-aegean-blue)] mx-auto" />
                 <p className="font-inter text-sm text-[var(--color-charcoal)] opacity-70 mt-2">
-                    Discover local essentials just steps away.
+                    {content?.subtitle || "Discover local essentials just steps away."}
                 </p>
             </div>
 
             {/* Main: Interactive Map */}
             <div className="w-full md:flex-1 relative h-[80vh] md:h-full bg-[var(--color-sand)] overflow-hidden order-2 md:order-1">
-                {hasMapLoaded ? (
+                {hasMapLoaded && (
                     <InteractiveMap
                         conveniences={conveniences}
-                        center={[35.33965, 25.13285]}
-                        highlightedTypes={activeTypes}
+                        categories={categories}
+                        activeCategoryId={activeCategoryId}
                     />
-                ) : (
-                    <div className="relative w-full h-full bg-[var(--color-sand)] flex items-center justify-center">
-                        {/* Pulsing Background */}
-                        <div className="absolute inset-0 bg-white/20 animate-pulse" />
-
-                        {/* Static Text - High Contrast Always */}
-                        <span className="relative z-10 font-inter text-sm tracking-widest uppercase text-[var(--color-charcoal)] font-bold opacity-80">Loading Map...</span>
-                    </div>
                 )}
+
+                {/* Mobile Floating Category Widget (Bottom of Map) */}
+                <MapMobileWidget
+                    categories={categories}
+                    activeCategoryIndex={activeCategoryIndex}
+                    onCategoryClick={handleCategoryClick}
+                    isVisible={isMobileWidgetVisible}
+                />
             </div>
 
-            {/* Sidebar: Conveniences */}
-            <div className="w-full md:w-96 lg:w-[28rem] bg-[var(--color-warm-white)]/95 backdrop-blur h-auto md:h-full border-l border-[var(--color-sand)] overflow-y-auto order-1 md:order-2 z-10 shadow-lg md:shadow-none hidden md:block">
-                <div className="p-8 h-full flex flex-col">
-                    <div className="mb-8">
-                        <h2 className="font-montserrat text-xl font-bold uppercase tracking-widest text-[var(--color-charcoal)] mb-2">EASY ACCESS TO CONVENIENCES</h2>
-                        <div className="w-12 h-1 bg-[var(--color-aegean-blue)] mb-4" />
-                        <p className="font-inter text-sm text-[var(--color-charcoal)] opacity-70">
-                            Discover local essentials just steps away.
-                        </p>
-                    </div>
+            {/* Sidebar: Categories (Desktop) */}
+            <div className="hidden md:flex flex-col w-[380px] bg-[var(--color-warm-white)] border-l border-[var(--color-sand)] relative z-20 order-1 md:order-2">
+                <div className="p-12 pb-6 border-b border-[var(--color-sand)]">
+                    <h2 className="font-montserrat text-2xl font-bold uppercase tracking-widest text-[var(--color-charcoal)] mb-4">
+                        {content?.title || "Easy Access to Conveniences"}
+                    </h2>
+                    <div className="w-16 h-1 bg-[var(--color-aegean-blue)] mb-6" />
+                    <p className="font-inter text-[var(--color-charcoal)] opacity-70 leading-relaxed">
+                        {content?.subtitle || "Discover local essentials just steps away from your sanctuary."}
+                    </p>
+                </div>
 
-                    <div className="space-y-3 flex-1">
-                        {CATEGORIES.map((cat, index) => {
-                            const isActive = activeCategoryIndex === index;
+                <div className="flex-1 overflow-y-auto">
+                    {categories.map((cat, index) => {
+                        const Icon = iconMap[cat.icon] || MapPin;
+                        const isActive = activeCategoryIndex === index;
 
-                            // Dynamic styles for the button based on category color
-                            const buttonStyle = {
-                                borderColor: isActive ? cat.color : 'transparent',
-                                borderLeftWidth: '4px' // Fixed width to prevent layout shift (wobble)
-                            };
-
-                            // Dynamic style for the icon background
-                            const iconStyle = isActive ? {
-                                backgroundColor: cat.color,
-                                color: 'white'
-                            } : {
-                                color: cat.color,
-                                backgroundColor: 'rgba(0,0,0,0.03)' // Very subtle gray bg for inactive
-                            };
-
-                            return (
-                                <button
-                                    key={cat.label}
-                                    onClick={() => handleCategoryClick(index)}
-                                    style={buttonStyle}
-                                    className={cn(
-                                        "w-full flex items-center p-4 rounded-[var(--radius-subtle)] border transition-all duration-300 text-left group",
-                                        isActive
-                                            ? "bg-white shadow-lg scale-[1.02] z-10" // Deeper shadow and pop
-                                            : "bg-white/80 border-transparent shadow-sm hover:bg-white hover:border-[var(--color-sand)] hover:shadow-md" // Soft shadow base, deeper on hover
-                                    )}
-                                >
+                        return (
+                            <button
+                                key={cat.id}
+                                onClick={() => handleCategoryClick(index)}
+                                className={cn(
+                                    "w-full flex items-center justify-between p-6 border-b border-[var(--color-sand)] transition-all duration-300 group hover:bg-[var(--color-sand)]/20",
+                                    isActive ? "bg-[var(--color-sand)]/30 border-l-4 border-l-[var(--color-aegean-blue)] pl-[20px]" : "pl-6"
+                                )}
+                            >
+                                <div className="flex items-center gap-4">
                                     <div
-                                        style={iconStyle}
                                         className={cn(
-                                            "p-2 rounded-full mr-4 transition-colors shadow-inner flex items-center justify-center"
-                                        )}>
-                                        {cat.icon}
+                                            "w-10 h-10 rounded-full flex items-center justify-center transition-colors duration-300",
+                                            isActive ? "bg-[var(--color-aegean-blue)]" : "bg-white border border-[var(--color-sand)] group-hover:border-[var(--color-aegean-blue)]"
+                                        )}
+                                        style={{
+                                            backgroundColor: isActive ? cat.color : undefined,
+                                            borderColor: isActive ? undefined : 'var(--color-sand)'
+                                        }}
+                                    >
+                                        <Icon className={cn("h-5 w-5", isActive ? "text-white" : "text-[var(--color-charcoal)]")} />
                                     </div>
-                                    <div className="flex-1">
-                                        <h4
-                                            style={{ color: isActive ? cat.color : undefined }}
-                                            className={cn(
-                                                "font-montserrat text-sm font-bold uppercase tracking-wider transition-colors",
-                                                !isActive && "text-[var(--color-charcoal)]"
-                                            )}>
-                                            {cat.label}
-                                        </h4>
-                                        <span className="text-[10px] uppercase tracking-widest opacity-50 font-semibold group-hover:opacity-80">View Map</span>
-                                    </div>
-                                </button>
-                            );
-                        })}
-                    </div>
+                                    <span className={cn(
+                                        "font-montserrat font-bold text-sm uppercase tracking-wider transition-colors",
+                                        isActive ? "text-[var(--color-aegean-blue)]" : "text-[var(--color-charcoal)]"
+                                    )}
+                                        style={{ color: isActive ? cat.color : undefined }}
+                                    >
+                                        {cat.label}
+                                    </span>
+                                </div>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
-
-            <MapMobileWidget
-                isVisible={isMobileWidgetVisible}
-                categories={CATEGORIES}
-                activeCategoryIndex={activeCategoryIndex}
-                onCategorySelect={handleCategoryClick}
-            />
         </section>
     );
 }

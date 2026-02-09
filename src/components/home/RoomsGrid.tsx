@@ -5,7 +5,7 @@ import dynamic from "next/dynamic";
 
 import { useRef, useState, useMemo, useEffect } from "react";
 import { Room, RoomFilters, Booking, BlockedDate } from "@/types";
-import { DEFAULT_FILTERS } from "@/data/constants";
+import { DEFAULT_FILTERS } from "@/lib/constants";
 import { RoomCard } from "../rooms/RoomCard";
 import { DateSelectorBar } from "./DateSelectorBar";
 import { FilterWidget } from "./FilterWidget";

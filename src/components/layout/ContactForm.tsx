@@ -9,7 +9,7 @@ import { Input } from "../ui/Input";
 import { Calendar } from "../ui/Calendar";
 import { Search, Loader2, Check, Calendar as CalendarIcon } from "lucide-react";
 import { getBookingByIdAction, submitContactRequestAction, getRoomAvailabilityAction } from "@/app/actions";
-import { TIMEZONE_DISCLAIMER } from "@/data/constants";
+import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 
 const SUBJECTS: { value: RequestSubject; label: string }[] = [
     { value: "general", label: "General Question" },

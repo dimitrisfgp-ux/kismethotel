@@ -48,11 +48,8 @@ export interface Room {
     pricePerNight: number;
     images: string[];
     beds: RoomBed[];
-    // Deprecated: sections: RoomSection[];
-    // Deprecated: amenityIds: number[];
     layout: RoomLayoutCategory[];
     highlights: string[];
-    // Derived/Resolved fields can be added here if needed, but keeping it raw for now
 }
 
 export interface Booking {
@@ -85,10 +82,18 @@ export interface ContactRequest {
     createdAt: string;
 }
 
+export interface LocationCategory {
+    id: string;
+    label: string;
+    icon: string; // Lucide icon name
+    color: string;
+}
+
 export interface Convenience {
     id: number;
     name: string;
-    type: 'Supermarket' | 'Bus' | 'Pharmacy' | 'Beach' | 'Attraction' | 'Car Rental' | 'Restaurant' | 'Cafe' | 'Bar' | 'Other';
+    categoryId: string; // Links to LocationCategory.id
+    type?: string; // @deprecated - kept for backward compatibility during migration
     lat: number;
     lng: number;
     distanceLabel?: string;
@@ -150,6 +155,16 @@ export interface PageContent {
         title: string;
         subtitle: string;
         ctaText: string;
+        poster?: string;
+        videos?: {
+            ios?: string;
+            android?: string;
+            desktop?: string;
+        };
+    };
+    locationsSection: {
+        title: string;
+        subtitle: string;
     };
     sections: {
         rooms: { title: string; subtitle: string; };

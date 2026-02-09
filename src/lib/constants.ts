@@ -1,5 +1,15 @@
 import { RoomFilters } from "@/types";
 
+export const CONTACT_EMAIL = "info@kismethotel.com";
+
+// Map Constants
+export const HOTEL_LOCATION_ID = 999;
+export const HOTEL_COORDINATES: [number, number] = [35.3400, 25.1360];
+export const DEFAULT_HOTEL_COLOR = "var(--color-deep-med)";
+export const DEFAULT_CATEGORY_COLOR = "var(--color-charcoal)";
+export const FALLBACK_ICON_COLOR = "#000000"; // For color picker default
+
+// Filter Constants
 export const DEFAULT_FILTERS: RoomFilters = {
     priceRange: [0, 1000],
     occupancy: 0,

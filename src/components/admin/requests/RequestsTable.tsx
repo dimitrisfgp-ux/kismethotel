@@ -8,29 +8,13 @@ import { Eye, Check, X } from "lucide-react";
 import { approveRequestAction, discardRequestAction } from "@/app/actions";
 import { useToast } from "@/contexts/ToastContext";
 import { RequestDetailsModal } from "./RequestDetailsModal";
+import { SUBJECT_LABELS_SHORT, SUBJECT_COLORS } from "@/lib/constants/requestStyles";
+import { REQUEST_STATUS_COLORS } from "@/lib/constants/statusStyles";
 
 interface RequestsTableProps {
     requests: ContactRequest[];
     bookings: Booking[];
 }
-
-const SUBJECT_LABELS: Record<string, string> = {
-    general: "General",
-    reschedule: "Reschedule",
-    cancellation: "Cancellation"
-};
-
-const SUBJECT_COLORS: Record<string, string> = {
-    general: "bg-blue-100 text-blue-700 border-blue-200",
-    reschedule: "bg-amber-100 text-amber-700 border-amber-200",
-    cancellation: "bg-red-100 text-red-700 border-red-200"
-};
-
-const STATUS_COLORS: Record<string, string> = {
-    pending: "bg-yellow-100 text-yellow-700 border-yellow-200",
-    approved: "bg-green-100 text-green-700 border-green-200",
-    discarded: "bg-gray-100 text-gray-600 border-gray-200"
-};
 
 export function RequestsTable({ requests, bookings }: RequestsTableProps) {
     const [selectedRequest, setSelectedRequest] = useState<ContactRequest | null>(null);
@@ -100,7 +84,7 @@ export function RequestsTable({ requests, bookings }: RequestsTableProps) {
                                 >
                                     <td className="p-4">
                                         <Badge variant="outline" className={SUBJECT_COLORS[request.subject]}>
-                                            {SUBJECT_LABELS[request.subject]}
+                                            {SUBJECT_LABELS_SHORT[request.subject]}
                                         </Badge>
                                     </td>
                                     <td className="p-4">
@@ -120,7 +104,7 @@ export function RequestsTable({ requests, bookings }: RequestsTableProps) {
                                         {format(new Date(request.createdAt), "MMM d, yyyy")}
                                     </td>
                                     <td className="p-4">
-                                        <Badge variant="outline" className={STATUS_COLORS[request.status]}>
+                                        <Badge variant="outline" className={REQUEST_STATUS_COLORS[request.status]}>
                                             {request.status}
                                         </Badge>
                                     </td>

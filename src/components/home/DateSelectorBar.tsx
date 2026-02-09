@@ -3,7 +3,7 @@ import { DatePickerWithRange } from "../booking/DateRangePicker";
 import { Container } from "../ui/Container";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, BedDouble } from "lucide-react";
 import { BedSelector } from "../ui/BedSelector";
-import { MOBILE_FILTER_BTN_CLASS } from "@/data/constants";
+import { MOBILE_FILTER_BTN_CLASS } from "@/lib/constants";
 
 interface DateSelectorBarProps {
     onPrev?: () => void;

@@ -1,8 +1,11 @@
 import { MetadataRoute } from 'next'
-import { ROOMS } from '@/data/rooms'
+import { roomService } from '@/services/roomService'
 
-export default function sitemap(): MetadataRoute.Sitemap {
+export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const baseUrl = 'https://kismethotel.com'
+
+    // Fetch rooms from database
+    const rooms = await roomService.getRooms()
 
     // Static Routes
     const routes = [
@@ -17,7 +20,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
     }))
 
     // Dynamic Rooms
-    const roomRoutes = ROOMS.map((room) => ({
+    const roomRoutes = rooms.map((room) => ({
         url: `${baseUrl}/rooms/${room.slug}`,
         lastModified: new Date(),
         changeFrequency: 'weekly' as const,

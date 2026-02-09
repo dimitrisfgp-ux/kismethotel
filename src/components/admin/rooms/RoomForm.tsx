@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Room, RoomLayoutCategory, Amenity } from "@/types";
-// import { roomService } from "@/services/roomService"; // Removed client-side service
 import { createRoomAction, saveRoomAction, getAmenitiesAction } from "@/app/actions";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -233,12 +232,6 @@ export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
             updateField('layout', newLayout);
         }
     };
-
-    /* Deprecated old handler
-    const addAmenityToSection = (sectionIndex: number, amenityName: string) => {
-        ...
-    };
-    */
 
     const removeAmenityFromSection = (sectionIndex: number, amenityId: number) => {
         const newLayout = [...room.layout];

@@ -11,6 +11,7 @@ import { Button } from "@/components/ui/Button";
 import { Calendar as CalendarComponent } from "@/components/ui/Calendar";
 import { updateBookingDatesAction } from "@/app/actions";
 import { useToast } from "@/contexts/ToastContext";
+import { getStatusColor } from "@/lib/constants/statusStyles";
 
 interface BookingDetailsModalProps {
     booking: Booking;
@@ -74,11 +75,7 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
                             <p className="text-xs font-bold uppercase tracking-widest opacity-50 mb-1">Status</p>
                             <Badge
                                 variant="outline"
-                                className={
-                                    localBooking.status === 'confirmed' ? 'bg-green-100 text-green-700 border-green-200' :
-                                        localBooking.status === 'cancelled' ? 'bg-red-100 text-red-700 border-red-200' :
-                                            'bg-gray-100 text-gray-600 border-gray-200'
-                                }
+                                className={getStatusColor(localBooking.status, 'booking')}
                             >
                                 {localBooking.status.toUpperCase()}
                             </Badge>

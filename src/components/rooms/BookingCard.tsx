@@ -7,7 +7,7 @@ import { Button } from "../ui/Button";
 import { formatCurrency, calculateTotal } from "@/lib/priceCalculator";
 import { differenceInDays, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
-import { TIMEZONE_DISCLAIMER } from "@/data/constants";
+import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 
 interface BookingCardProps {
     room: Room;

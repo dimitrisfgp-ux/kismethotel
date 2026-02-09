@@ -8,7 +8,7 @@ import { X } from "lucide-react";
 import { useDateContext } from "@/contexts/DateContext";
 import { useFacetedOptions } from "@/hooks/useFacetedOptions";
 import { Calendar } from "../ui/Calendar";
-import { TIMEZONE_DISCLAIMER } from "@/data/constants";
+import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 import {
     PriceRangeSlider,
     BedConfigSelector,

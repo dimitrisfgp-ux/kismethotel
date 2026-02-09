@@ -1,132 +1,340 @@
-import { ROOMS } from "@/data";
+import { createServerClient } from "@/lib/supabase";
 import { Room, BlockedDate, Booking } from "@/types";
 
-// Global persistence hack for development to prevent data reset on HMR/Route changes
-const globalForMock = global as unknown as {
-    mockRooms: Room[],
-    mockBlockedDates: BlockedDate[],
-    mockBookings: Booking[]
-};
-
-if (!globalForMock.mockRooms) {
-    globalForMock.mockRooms = [...ROOMS];
+// Helper to transform Supabase room data to our Room type
+function transformRoom(dbRoom: Record<string, unknown>): Room {
+    return {
+        id: dbRoom.id as string,
+        slug: dbRoom.slug as string,
+        name: dbRoom.name as string,
+        description: dbRoom.description as string || '',
+        sizeSqm: dbRoom.size_sqm as number,
+        floor: dbRoom.floor as number,
+        maxOccupancy: dbRoom.max_occupancy as number,
+        pricePerNight: dbRoom.price_per_night as number,
+        images: (dbRoom.images as string[]) || [],
+        highlights: (dbRoom.highlights as string[]) || [],
+        beds: ((dbRoom.room_beds as Array<{ type: string; count: number }>) || []).map(b => ({
+            type: b.type as 'single' | 'double',
+            count: b.count
+        })),
+        layout: ((dbRoom.room_layout_sections as Array<Record<string, unknown>>) || []).map(section => ({
+            type: section.type as string,
+            title: section.title as string,
+            details: (section.details as string[]) || [],
+            amenities: ((section.room_layout_amenities as Array<{ amenities: { id: number; name: string; icon_name: string } }>) || [])
+                .map(a => ({
+                    id: a.amenities.id,
+                    name: a.amenities.name,
+                    iconName: a.amenities.icon_name
+                }))
+        }))
+    };
 }
-if (!globalForMock.mockBlockedDates) globalForMock.mockBlockedDates = [];
-if (!globalForMock.mockBookings) globalForMock.mockBookings = [];
-
-
 
 export const roomService = {
     getRooms: async (): Promise<Room[]> => {
-        return globalForMock.mockRooms;
+        const supabase = createServerClient();
+        const { data, error } = await supabase
+            .from('rooms')
+            .select(`
+                *,
+                room_beds (type, count),
+                room_layout_sections (
+                    type, title, details, sort_order,
+                    room_layout_amenities (
+                        amenities (id, name, icon_name)
+                    )
+                )
+            `)
+            .order('price_per_night', { ascending: true });
+
+        if (error) {
+            console.error('Error fetching rooms:', error);
+            return [];
+        }
+
+        return (data || []).map(transformRoom);
     },
 
     getRoomBySlug: async (slug: string): Promise<Room | undefined> => {
-        return globalForMock.mockRooms.find(room => room.slug === slug);
+        const supabase = createServerClient();
+        const { data, error } = await supabase
+            .from('rooms')
+            .select(`
+                *,
+                room_beds (type, count),
+                room_layout_sections (
+                    type, title, details, sort_order,
+                    room_layout_amenities (
+                        amenities (id, name, icon_name)
+                    )
+                )
+            `)
+            .eq('slug', slug)
+            .single();
+
+        if (error || !data) return undefined;
+        return transformRoom(data);
     },
 
     getFeaturedRooms: async (): Promise<Room[]> => {
-        return globalForMock.mockRooms.slice(0, 4);
+        const supabase = createServerClient();
+        const { data, error } = await supabase
+            .from('rooms')
+            .select(`
+                *,
+                room_beds (type, count),
+                room_layout_sections (
+                    type, title, details, sort_order,
+                    room_layout_amenities (
+                        amenities (id, name, icon_name)
+                    )
+                )
+            `)
+            .order('price_per_night', { ascending: false })
+            .limit(4);
+
+        if (error) return [];
+        return (data || []).map(transformRoom);
     },
 
     // --- Availability & Bookings ---
 
     getBookings: async (roomId?: string): Promise<Booking[]> => {
-        if (!roomId) return globalForMock.mockBookings;
-        return globalForMock.mockBookings.filter(b => b.roomId === roomId);
+        const supabase = createServerClient();
+        let query = supabase
+            .from('bookings')
+            .select('*')
+            .order('check_in', { ascending: false });
+
+        if (roomId) {
+            query = query.eq('room_id', roomId);
+        }
+
+        const { data, error } = await query;
+        if (error) return [];
+
+        return (data || []).map(b => ({
+            id: b.id,
+            roomId: b.room_id,
+            checkIn: b.check_in,
+            checkOut: b.check_out,
+            guestName: b.guest_name,
+            guestEmail: b.guest_email,
+            guestPhone: b.guest_phone,
+            guestsCount: b.guests_count,
+            totalPrice: b.total_price,
+            status: b.status,
+            createdAt: b.created_at
+        }));
     },
 
     getBlockedDates: async (roomId?: string): Promise<BlockedDate[]> => {
-        if (!roomId) return globalForMock.mockBlockedDates;
-        return globalForMock.mockBlockedDates.filter(b => b.roomId === roomId);
+        const supabase = createServerClient();
+        let query = supabase
+            .from('blocked_dates')
+            .select('*')
+            .order('from_date', { ascending: true });
+
+        if (roomId) {
+            query = query.eq('room_id', roomId);
+        }
+
+        const { data, error } = await query;
+        if (error) return [];
+
+        return (data || []).map(b => ({
+            id: b.id,
+            roomId: b.room_id,
+            from: b.from_date,
+            to: b.to_date,
+            reason: b.reason,
+            note: b.note
+        }));
     },
 
     addBlockedDate: async (block: BlockedDate): Promise<boolean> => {
-        globalForMock.mockBlockedDates.push(block);
-        return true;
+        const supabase = createServerClient();
+        const { error } = await supabase
+            .from('blocked_dates')
+            .insert({
+                id: block.id,
+                room_id: block.roomId,
+                from_date: block.from,
+                to_date: block.to,
+                reason: block.reason,
+                note: block.note
+            });
+
+        return !error;
     },
 
     removeBlockedDate: async (blockId: string): Promise<boolean> => {
-        globalForMock.mockBlockedDates = globalForMock.mockBlockedDates.filter(b => b.id !== blockId);
-        return true;
+        const supabase = createServerClient();
+        const { error } = await supabase
+            .from('blocked_dates')
+            .delete()
+            .eq('id', blockId);
+
+        return !error;
     },
 
     checkAvailability: async (roomId: string, start: Date, end: Date): Promise<boolean> => {
-        // Simple check: loops through all blocked dates and confirmed bookings
-        // In a real app, this would be a DB query
-        const startTime = start.getTime();
-        const endTime = end.getTime();
+        const supabase = createServerClient();
+        const startStr = start.toISOString().split('T')[0];
+        const endStr = end.toISOString().split('T')[0];
 
-        const hasBlock = globalForMock.mockBlockedDates
-            .filter(b => b.roomId === roomId)
-            .some(b => {
-                const bStart = new Date(b.from).getTime();
-                const bEnd = new Date(b.to).getTime();
-                return (startTime < bEnd && endTime > bStart); // Overlap
+        // Use the database function we created
+        const { data, error } = await supabase
+            .rpc('check_room_availability', {
+                p_room_id: roomId,
+                p_start: startStr,
+                p_end: endStr
             });
 
-        const hasBooking = globalForMock.mockBookings
-            .filter(b => b.roomId === roomId && b.status === "confirmed")
-            .some(b => {
-                const bStart = new Date(b.checkIn).getTime();
-                const bEnd = new Date(b.checkOut).getTime();
-                return (startTime < bEnd && endTime > bStart); // Overlap
-            });
+        if (error) {
+            console.error('Availability check error:', error);
+            return false;
+        }
 
-        return !hasBlock && !hasBooking;
+        return data === true;
     },
 
     createBooking: async (booking: Booking): Promise<boolean> => {
-        // SIMULATION: Always treat as confirmed for now since we have no Stripe
-        const simulatedBooking = { ...booking, status: 'confirmed' as const };
-        globalForMock.mockBookings.push(simulatedBooking);
-        return true;
+        const supabase = createServerClient();
+        const { error } = await supabase
+            .from('bookings')
+            .insert({
+                id: booking.id,
+                room_id: booking.roomId,
+                check_in: booking.checkIn,
+                check_out: booking.checkOut,
+                guest_name: booking.guestName,
+                guest_email: booking.guestEmail,
+                guest_phone: booking.guestPhone,
+                guests_count: booking.guestsCount,
+                total_price: booking.totalPrice,
+                status: 'confirmed'
+            });
+
+        return !error;
     },
 
     cancelBooking: async (bookingId: string): Promise<boolean> => {
-        const booking = globalForMock.mockBookings.find(b => b.id === bookingId);
-        if (booking) {
-            booking.status = 'cancelled';
-            return true;
-        }
-        return false;
+        const supabase = createServerClient();
+        const { error } = await supabase
+            .from('bookings')
+            .update({ status: 'cancelled' })
+            .eq('id', bookingId);
+
+        return !error;
     },
 
-    // --- Mock CRUD Operations ---
+    // --- Room CRUD Operations ---
 
     createRoom: async (room: Room): Promise<boolean> => {
-        globalForMock.mockRooms.push(room);
+        const supabase = createServerClient();
+
+        // Insert room
+        const { data: newRoom, error: roomError } = await supabase
+            .from('rooms')
+            .insert({
+                id: room.id,
+                slug: room.slug,
+                name: room.name,
+                description: room.description,
+                size_sqm: room.sizeSqm,
+                floor: room.floor,
+                max_occupancy: room.maxOccupancy,
+                price_per_night: room.pricePerNight,
+                images: room.images,
+                highlights: room.highlights
+            })
+            .select()
+            .single();
+
+        if (roomError || !newRoom) return false;
+
+        // Insert beds
+        if (room.beds?.length) {
+            await supabase.from('room_beds').insert(
+                room.beds.map(b => ({
+                    room_id: room.id,
+                    type: b.type,
+                    count: b.count
+                }))
+            );
+        }
+
         return true;
     },
 
-    saveRoom: async (updatedRoom: Room): Promise<boolean> => {
-        const index = globalForMock.mockRooms.findIndex(r => r.id === updatedRoom.id);
-        if (index !== -1) {
-            globalForMock.mockRooms[index] = updatedRoom;
-            return true;
-        }
-        return false;
+    saveRoom: async (room: Room): Promise<boolean> => {
+        const supabase = createServerClient();
+
+        const { error } = await supabase
+            .from('rooms')
+            .update({
+                name: room.name,
+                slug: room.slug,
+                description: room.description,
+                size_sqm: room.sizeSqm,
+                floor: room.floor,
+                max_occupancy: room.maxOccupancy,
+                price_per_night: room.pricePerNight,
+                images: room.images,
+                highlights: room.highlights
+            })
+            .eq('id', room.id);
+
+        return !error;
     },
 
     deleteRoom: async (roomId: string): Promise<boolean> => {
-        const initialLength = globalForMock.mockRooms.length;
-        globalForMock.mockRooms = globalForMock.mockRooms.filter(r => r.id !== roomId);
-        return globalForMock.mockRooms.length < initialLength;
+        const supabase = createServerClient();
+        const { error } = await supabase
+            .from('rooms')
+            .delete()
+            .eq('id', roomId);
+
+        return !error;
     },
 
     // --- Booking Management ---
 
     getBookingById: async (bookingId: string): Promise<Booking | undefined> => {
-        return globalForMock.mockBookings.find(b => b.id === bookingId);
+        const supabase = createServerClient();
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('id', bookingId)
+            .single();
+
+        if (error || !data) return undefined;
+
+        return {
+            id: data.id,
+            roomId: data.room_id,
+            checkIn: data.check_in,
+            checkOut: data.check_out,
+            guestName: data.guest_name,
+            guestEmail: data.guest_email,
+            guestPhone: data.guest_phone,
+            guestsCount: data.guests_count,
+            totalPrice: data.total_price,
+            status: data.status,
+            createdAt: data.created_at
+        };
     },
 
     updateBookingDates: async (bookingId: string, checkIn: string, checkOut: string): Promise<boolean> => {
-        const booking = globalForMock.mockBookings.find(b => b.id === bookingId);
-        if (booking) {
-            booking.checkIn = checkIn;
-            booking.checkOut = checkOut;
-            return true;
-        }
-        return false;
+        const supabase = createServerClient();
+        const { error } = await supabase
+            .from('bookings')
+            .update({ check_in: checkIn, check_out: checkOut })
+            .eq('id', bookingId);
+
+        return !error;
     }
 };

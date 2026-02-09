@@ -77,6 +77,57 @@ export function PageContentForm({ initialContent }: PageContentFormProps) {
                         onChange={(e) => updateHero('ctaText', e.target.value)}
                     />
                 </div>
+
+                {/* Hero Media Section */}
+                <div className="space-y-4">
+                    <h3 className="font-medium text-[var(--color-aegean-blue)] border-b pb-1">Hero Media</h3>
+
+                    <Input
+                        label="Poster Image URL"
+                        value={content.hero.poster || ''}
+                        onChange={(e) => updateHero('poster', e.target.value)}
+                        placeholder="/images/frame-1.webp"
+                    />
+
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <Input
+                            label="iOS Video URL"
+                            value={content.hero.videos?.ios || ''}
+                            onChange={(e) => setContent(prev => ({
+                                ...prev,
+                                hero: {
+                                    ...prev.hero,
+                                    videos: { ...prev.hero.videos, ios: e.target.value }
+                                }
+                            }))}
+                            placeholder="/Videos/ios/hero-ios.mp4"
+                        />
+                        <Input
+                            label="Android Video URL"
+                            value={content.hero.videos?.android || ''}
+                            onChange={(e) => setContent(prev => ({
+                                ...prev,
+                                hero: {
+                                    ...prev.hero,
+                                    videos: { ...prev.hero.videos, android: e.target.value }
+                                }
+                            }))}
+                            placeholder="/Videos/android/hero-android.mp4"
+                        />
+                        <Input
+                            label="Desktop Video URL"
+                            value={content.hero.videos?.desktop || ''}
+                            onChange={(e) => setContent(prev => ({
+                                ...prev,
+                                hero: {
+                                    ...prev.hero,
+                                    videos: { ...prev.hero.videos, desktop: e.target.value }
+                                }
+                            }))}
+                            placeholder="/Videos/desktop/hero-desktop.mp4"
+                        />
+                    </div>
+                </div>
             </div>
         </form>
     );

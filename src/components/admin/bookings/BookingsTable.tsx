@@ -12,6 +12,7 @@ import { FilterableHeader } from "./FilterableHeader";
 import { RequestBadge } from "./RequestBadge";
 import { RequestDetailsModal } from "../requests/RequestDetailsModal";
 import { DateRange } from "react-day-picker";
+import { getStatusColor } from "@/lib/constants/statusStyles";
 import {
     BookingIdFilter,
     DetailsFilter,
@@ -302,11 +303,7 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
                                             <td className="p-4 whitespace-nowrap">
                                                 <Badge
                                                     variant="outline"
-                                                    className={booking.status === 'confirmed'
-                                                        ? 'bg-green-100 text-green-700 border-green-200'
-                                                        : booking.status === 'cancelled'
-                                                            ? 'bg-red-100 text-red-700 border-red-200'
-                                                            : 'bg-gray-100 text-gray-600 border-gray-200'}
+                                                    className={getStatusColor(booking.status, 'booking')}
                                                 >
                                                     {booking.status}
                                                 </Badge>

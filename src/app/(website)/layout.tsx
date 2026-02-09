@@ -47,13 +47,26 @@ import { ScrollToTop } from "@/components/layout/ScrollToTop";
 
 // ...
 import { contentService } from "@/services/contentService";
+import { roomService } from "@/services/roomService";
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const settings = await contentService.getSettings();
+  const [settings, rooms] = await Promise.all([
+    contentService.getSettings(),
+    roomService.getRooms()
+  ]);
+
+  // Map to minimal room summary for header
+  const roomSummaries = rooms.map(r => ({
+    id: r.id,
+    slug: r.slug,
+    name: r.name,
+    sizeSqm: r.sizeSqm,
+    maxOccupancy: r.maxOccupancy
+  }));
 
   return (
     <html lang="en" className={`${montserrat.variable} ${inter.variable}`} data-scroll-behavior="smooth">
@@ -62,7 +75,7 @@ export default async function RootLayout({
           <DateProvider>
             <ToastProvider>
               <ScrollToTop />
-              <Header settings={settings} />
+              <Header settings={settings} rooms={roomSummaries} />
               <main className="min-h-screen">
                 {children}
               </main>
@@ -75,3 +88,4 @@ export default async function RootLayout({
     </html>
   );
 }
+

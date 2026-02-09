@@ -2,7 +2,7 @@
 
 import { Filter } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { FAB_BOTTOM_OFFSET } from "@/data/constants";
+import { FAB_BOTTOM_OFFSET } from "@/lib/constants";
 
 interface FilterWidgetProps {
     onOpen: () => void;

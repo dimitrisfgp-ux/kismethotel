@@ -3,7 +3,8 @@ import {
     Armchair, Bath, BookOpen, Utensils, Monitor, Smartphone, Speaker, Wine,
     Refrigerator, MapPin, Music, Dumbbell, Flower2, Gamepad2, Laptop,
     UtensilsCrossed, Calendar, CheckCircle, CreditCard, DollarSign,
-    Lock, Mail, Phone, Search, Trash2, User, Users, X, Menu
+    Lock, Mail, Phone, Search, Trash2, User, Users, X, Menu,
+    ShoppingCart, Pill, Fish, Bus
 } from "lucide-react";
 import { LucideIcon } from "lucide-react";
 
@@ -15,5 +16,6 @@ export const iconMap: Record<string, LucideIcon> = {
     Armchair, Bath, BookOpen, Utensils, Monitor, Smartphone, Speaker, Wine,
     Refrigerator, MapPin, Music, Dumbbell, Flower2, Gamepad2, Laptop,
     UtensilsCrossed, Calendar, CheckCircle, CreditCard, DollarSign,
-    Lock, Mail, Phone, Search, Trash2, User, Users, X, Menu
+    Lock, Mail, Phone, Search, Trash2, User, Users, X, Menu,
+    ShoppingCart, Pill, Fish, Bus
 };

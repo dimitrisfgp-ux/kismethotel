@@ -9,11 +9,20 @@ import { BurgerIcon } from "./BurgerIcon";
 import { Container } from "../ui/Container";
 import { useScroll } from "@/hooks/useScroll";
 
-export interface HeaderProps {
-    settings?: { name: string }; // Optional because layout might not pass it initially
+interface RoomSummary {
+    id: string;
+    slug: string;
+    name: string;
+    sizeSqm: number;
+    maxOccupancy: number;
 }
 
-export function Header({ settings }: HeaderProps) {
+export interface HeaderProps {
+    settings?: { name: string };
+    rooms: RoomSummary[];
+}
+
+export function Header({ settings, rooms }: HeaderProps) {
     const { isScrolled } = useScroll({ threshold: 50 });
     const [isMobileOpen, setIsMobileOpen] = useState(false);
     const hotelName = settings?.name || "Kismet";
@@ -44,7 +53,7 @@ export function Header({ settings }: HeaderProps) {
                 </Link>
 
                 {/* Desktop Nav */}
-                <DesktopNav dark={isDark} />
+                <DesktopNav dark={isDark} rooms={rooms} />
 
                 {/* Mobile Trigger */}
                 <div className="lg:hidden z-50 h-full flex items-center">
@@ -56,7 +65,7 @@ export function Header({ settings }: HeaderProps) {
                 </div>
 
                 {/* Mobile Menu Panel */}
-                <MobileMenu isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} />
+                <MobileMenu isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} rooms={rooms} />
             </Container>
         </header>
     );

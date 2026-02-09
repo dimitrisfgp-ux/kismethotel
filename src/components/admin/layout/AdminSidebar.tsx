@@ -80,7 +80,7 @@ export function AdminSidebar() {
                 </Link>
 
                 <a
-                    href="/admin/login"
+                    href="/login"
                     onClick={() => {
                         // Simple logout by clearing cookie client-side or just redirecting
                         document.cookie = "admin_session=; path=/; expires=Thu, 01 Jan 1970 00:00:01 GMT";

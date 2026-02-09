@@ -1,19 +1,25 @@
 "use client";
 
 import Link from "next/link";
-import { ROOMS } from "@/data/rooms";
 import { cn } from "@/lib/utils";
 import { useEffect, useState } from "react";
 import { createPortal } from "react-dom";
 import { ChevronDown, ChevronUp } from "lucide-react";
 import { NAV_LINKS } from "@/config/navigation";
 
+interface RoomSummary {
+    id: string;
+    slug: string;
+    name: string;
+}
+
 interface MobileMenuProps {
     isOpen: boolean;
     onClose: () => void;
+    rooms: RoomSummary[];
 }
 
-export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
+export function MobileMenu({ isOpen, onClose, rooms }: MobileMenuProps) {
     const [mounted, setMounted] = useState(false);
     const [isRoomsOpen, setIsRoomsOpen] = useState(false);
 
@@ -57,7 +63,7 @@ export function MobileMenu({ isOpen, onClose }: MobileMenuProps) {
                                         isRoomsOpen ? "max-h-[500px] opacity-100 mt-2" : "max-h-0 opacity-0"
                                     )}
                                 >
-                                    {ROOMS.map(room => (
+                                    {rooms.map(room => (
                                         <Link
                                             key={room.id}
                                             href={`/rooms/${room.slug}`}

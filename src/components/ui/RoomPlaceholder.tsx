@@ -1,30 +1,29 @@
-import { Key, BedDouble } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { BedDouble, KeyRound } from "lucide-react";
 
-interface RoomPlaceholderProps {
-    className?: string;
-}
-
-export function RoomPlaceholder({ className }: RoomPlaceholderProps) {
+export function RoomPlaceholder() {
     return (
-        <div className={cn("relative w-full h-full bg-gradient-to-br from-sand to-accent-gold flex flex-col items-center justify-center text-charcoal/60 p-6 text-center border border-sand overflow-hidden", className)}>
-
-            <div className="z-10 flex flex-col items-center gap-4">
-                {/* Composed Icon Illustration */}
-                <div className="relative w-16 h-12">
-                    <BedDouble className="absolute left-0 bottom-0 w-10 h-10 opacity-60 stroke-1" />
-                    <Key className="absolute right-0 top-0 w-8 h-8 opacity-80 stroke-1 -rotate-12 bg-[var(--color-sand)] rounded-full p-1" />
-                </div>
-
-                <div className="space-y-1 mt-2">
-                    <h3 className="font-montserrat font-bold uppercase tracking-[0.2em] text-sm">
-                        Available Soon
-                    </h3>
-                    <p className="font-inter text-xs opacity-60">
-                        Room imagery coming shortly
-                    </p>
-                </div>
+        <div className="absolute inset-0 w-full h-full flex flex-col items-center justify-center text-center p-8"
+            style={{
+                background: "linear-gradient(135deg, #f5e6c8 0%, #e8d4a8 35%, #d4bc82 70%, #c9a85a 100%)"
+            }}
+        >
+            {/* Decorative Icons */}
+            <div className="flex items-center gap-4 mb-6">
+                <BedDouble className="w-12 h-12 text-[#a68a4a]" strokeWidth={1.2} />
+                <div className="w-px h-10 bg-[#a68a4a]/40" />
+                <KeyRound className="w-10 h-10 text-[#a68a4a]" strokeWidth={1.2} />
             </div>
+
+            {/* Text */}
+            <p className="font-montserrat text-sm uppercase tracking-[0.3em] text-[#6b5a32] mb-2">
+                Coming Soon
+            </p>
+            <p className="font-inter text-xs text-[#6b5a32]/70 max-w-[220px]">
+                Photos are being prepared for this room
+            </p>
+
+            {/* Subtle animated shimmer overlay */}
+            <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-shimmer pointer-events-none" />
         </div>
     );
 }

@@ -6,11 +6,20 @@ import { RoomsDropdown } from "./RoomsDropdown";
 import { cn } from "@/lib/utils";
 import { NAV_LINKS } from "@/config/navigation";
 
-interface DesktopNavProps {
-    dark?: boolean;
+interface RoomSummary {
+    id: string;
+    slug: string;
+    name: string;
+    sizeSqm: number;
+    maxOccupancy: number;
 }
 
-export function DesktopNav({ dark = false }: DesktopNavProps) {
+interface DesktopNavProps {
+    dark?: boolean;
+    rooms: RoomSummary[];
+}
+
+export function DesktopNav({ dark = false, rooms }: DesktopNavProps) {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const linkClass = cn(
         "font-inter text-sm font-medium uppercase tracking-widest hover:text-[var(--color-accent-gold)] transition-colors py-8",
@@ -45,7 +54,7 @@ export function DesktopNav({ dark = false }: DesktopNavProps) {
                         >
                             {link.label}
                         </Link>
-                        {isDropdownOpen && <RoomsDropdown />}
+                        {isDropdownOpen && <RoomsDropdown rooms={rooms} />}
                     </div>
                 ) : (
                     <Link

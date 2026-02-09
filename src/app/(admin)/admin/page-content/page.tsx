@@ -1,9 +1,12 @@
 import { contentService } from "@/services/contentService";
 import { PageContentForm } from "@/components/admin/forms/PageContentForm";
+import { LocationsManager } from "@/components/admin/forms/LocationsManager";
 import { FAQManager } from "@/components/admin/forms/FAQManager";
 
 export default async function PageContentPage() {
     const pageContent = await contentService.getPageContent();
+    const conveniences = await contentService.getConveniences();
+    const categories = await contentService.getCategories();
     const faqs = await contentService.getFAQs();
 
     return (
@@ -14,6 +17,11 @@ export default async function PageContentPage() {
             </div>
 
             <PageContentForm initialContent={pageContent} />
+            <LocationsManager
+                initialLocations={conveniences}
+                initialCategories={categories}
+                initialPageContent={pageContent}
+            />
             <FAQManager initialFAQs={faqs} />
         </div>
     );

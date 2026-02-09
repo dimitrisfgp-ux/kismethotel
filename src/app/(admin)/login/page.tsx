@@ -4,10 +4,14 @@ import { redirect } from 'next/navigation';
 export default function LoginPage() {
     async function login(formData: FormData) {
         "use server";
+        const username = formData.get('username');
         const password = formData.get('password');
 
-        // Simple mock authentication
-        if (password === '123') {
+        // Authenticate against environment variables
+        const validUsername = process.env.ADMIN_USERNAME || 'admin';
+        const validPassword = process.env.ADMIN_PASSWORD || '123';
+
+        if (username === validUsername && password === validPassword) {
             const cookieStore = await cookies();
             cookieStore.set('admin_session', 'true', {
                 httpOnly: true,
@@ -34,6 +38,24 @@ export default function LoginPage() {
                 <form action={login} className="space-y-6">
                     <div>
                         <label
+                            htmlFor="username"
+                            className="block text-sm font-medium text-[var(--color-charcoal)] mb-2"
+                        >
+                            Username
+                        </label>
+                        <input
+                            type="text"
+                            name="username"
+                            id="username"
+                            required
+                            autoComplete="username"
+                            className="w-full h-11 px-3 rounded-[var(--radius-subtle)] border border-[var(--color-sand)] focus:ring-1 focus:ring-[var(--color-aegean-blue)] focus:border-[var(--color-aegean-blue)] outline-none transition-all"
+                            placeholder="admin"
+                        />
+                    </div>
+
+                    <div>
+                        <label
                             htmlFor="password"
                             className="block text-sm font-medium text-[var(--color-charcoal)] mb-2"
                         >
@@ -44,6 +66,7 @@ export default function LoginPage() {
                             name="password"
                             id="password"
                             required
+                            autoComplete="current-password"
                             className="w-full h-11 px-3 rounded-[var(--radius-subtle)] border border-[var(--color-sand)] focus:ring-1 focus:ring-[var(--color-aegean-blue)] focus:border-[var(--color-aegean-blue)] outline-none transition-all"
                             placeholder="••••••••"
                         />
@@ -60,3 +83,4 @@ export default function LoginPage() {
         </div>
     );
 }
+

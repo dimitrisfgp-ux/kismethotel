@@ -1,0 +1,1401 @@
+swagger: "2.0"
+info:
+  version: "1.6.4"
+  title: Hosthub API
+  description: "All calls should be made to https://app.hosthub.com/api/2019-03-01 adding the resource path.<br />
+              **2019** in the url means that our api didn't have any backwards breaking changes since that version.<br />
+              If we ever introduce breaking changes, we will do that in a new api version (e.g. 2024) and keep the old version working for enough time so everyone updates."
+host: app.hosthub.com
+basePath: /api/2019-03-01
+schemes:
+  - https
+consumes:
+  - application/json
+produces:
+  - application/json
+security:
+  - ApiKeyAuth: []
+securityDefinitions:
+  ApiKeyAuth:
+    type: apiKey
+    description: Get your API key from Hosthub interface (Settings page). Use it in every request Header in key Authorization.
+    in: header
+    name: Authorization
+tags:
+  - name: Rates
+    description: Rate mandates allow you to update the daily rates for your property. Add 1 object for each day you would like to update.
+      Once created you can check the status of the created update action by following the URL.
+paths:
+  /rate-mandates/{encodedId}:
+    x-swagger-router-controller: rates
+    get:
+      tags:
+        - "Rates"
+      description: Returns a specific rate-mandate by encoded id.
+      operationId: "Get rate mandate"
+      parameters:
+        - name: "encodedId"
+          in: "path"
+          description: "ID rate mandate to return"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/RateMandate"
+  /rate-plans/{encodedId}/rate-mandates:
+    post:
+      tags:
+        - "Rates"
+      description: "Create a new rate mandate for the specified rate plan (in url)."
+      operationId: "Create Rate Mandate"
+      parameters:
+        - name: "encodedId"
+          in: "path"
+          description: "ID of rate plan"
+          required: true
+          type: "string"
+        - in: body
+          name: rateMandate
+          required: true
+          schema:
+            type: array
+            items:
+              $ref: "#/definitions/MandateDay"
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/RateMandate"
+        "400":
+          description: Bad request
+  /rate-plans/{encodedId}:
+    x-swagger-router-controller: rate_plans
+    get:
+      tags:
+        - "Rate plans"
+      description: Returns a specific rate plan by encoded id.
+      operationId: "Get rate plan"
+      parameters:
+        - name: "encodedId"
+          in: "path"
+          description: "ID rate plan to return"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/RatePlan"
+  /rate-plans/{encodedId}/rates:
+    x-swagger-router-controller: rate_plans
+    get:
+      tags:
+        - "Rate plans"
+      description: Returns daily rates for a specific rate plan.
+      operationId: "Get rate plan daily rates"
+      parameters:
+        - name: "encodedId"
+          in: "path"
+          description: "ID rate plan to return rates for"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/RentalDailyRateList"
+  /users:
+    x-swagger-router-controller: users
+    get:
+      tags:
+        - "Users"
+      description: Returns list of users you have access to. Most of the times this will be only you.
+      operationId: "List Users"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/UsersList"
+  /users/{userId}:
+    x-swagger-router-controller: users_id
+    get:
+      tags:
+        - "Users"
+      description: Returns a specific User by id.
+      operationId: "Get User"
+      parameters:
+        - name: "userId"
+          in: "path"
+          description: "ID of user to return"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/User"
+          examples:
+            application/json:
+              id: xgt534
+              object: User
+              name: Petros
+              email: petros@google.com
+              url: /api/2019-03-01/users/xxx
+  /rentals:
+    x-swagger-router-controller: Rentals
+    get:
+      tags:
+        - "Rentals"
+      description: Returns list rentals you have access to.
+      operationId: "List Rentals"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/RentalsList"
+  /rentals/{rentalId}:
+    x-swagger-router-controller: rentals_id
+    get:
+      tags:
+        - "Rentals"
+      description: Returns a specific rental by id.
+      operationId: "Get Rental"
+      parameters:
+        - name: "rentalId"
+          in: "path"
+          description: "ID of rental to return"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/Rental"
+  /rentals/{rentalId}/channels:
+    x-swagger-router-controller: rentals_id
+    get:
+      tags:
+        - "Rentals"
+      description: Returns list of Channels your rental is linked on Hosthub.
+      operationId: "List Channels"
+      parameters:
+        - name: "rentalId"
+          in: "path"
+          description: The `id` of the rental which channels you what to get.
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/ChannelList"
+  /rentals/{rentalId}/rate-plans:
+    x-swagger-router-controller: rentals_id
+    get:
+      tags:
+        - "Rentals"
+      description: Returns list of rate plans for your rental on Hosthub.
+      operationId: "List Rate plans"
+      parameters:
+        - name: "rentalId"
+          in: "path"
+          description: The `id` of the rental which rate plans you what to get.
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/RatePlans"
+  /calendar-events:
+    x-swagger-router-controller: calendar_events
+    get:
+      tags:
+        - "Calendar Events"
+      description: Returns a list of calendar events for all rentals that you have access to. By default only visible (not cancelled or deleted) events are returned.
+      operationId: "List Calendar Events"
+      parameters:
+        - name: "updated_gt"
+          in: "query"
+          description: "Use this to get calendar events where the updated field is greater than this value. The value can be a string with an integer Unix timestamp."
+          type: integer
+        - name: "updated_gte"
+          in: "query"
+          description: "Use this to get calendar events where the updated field is greater or equal to this value. The value can be a string with an integer Unix timestamp."
+          type: integer
+        - name: "created_gt"
+          in: "query"
+          description: "Use this to get calendar events where the created field is greater than this value. The value can be a string with an integer Unix timestamp."
+          type: integer
+        - name: "created_gte"
+          in: "query"
+          description: "Use this to get calendar events where the created field is greater or equal to this value. The value can be a string with an integer Unix timestamp."
+          type: integer
+        - name: "is_visible"
+          in: "query"
+          description: "Use this to filter calendar events by the is_visible field."
+          type: string
+          enum: ["all","true","false"]
+          default: "true"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/CalendarEventList"
+  /rentals/{rentalId}/calendar-events:
+    x-swagger-router-controller: rentals_calendar_events
+    get:
+      tags:
+        - "Calendar Events"
+      description: Returns a list of calendar events for the specific rental. By default only visible (not cancelled or deleted) events are returned.
+      operationId: "List Calendar Events for Rental"
+      parameters:
+        - name: "rentalId"
+          in: "path"
+          description: "ID of parent rental"
+          required: true
+          type: "string"
+        - name: "updated_gt"
+          in: "query"
+          description: "Use this to get calendar events where the updated field is greater than this value. The value can be a string with an integer Unix timestamp."
+          type: integer
+        - name: "updated_gte"
+          in: "query"
+          description: "Use this to get calendar events where the updated field is greater or equal to this value. The value can be a string with an integer Unix timestamp."
+          type: integer
+        - name: "created_gt"
+          in: "query"
+          description: "Use this to get calendar events where the created field is greater than this value. The value can be a string with an integer Unix timestamp."
+          type: integer
+        - name: "created_gte"
+          in: "query"
+          description: "Use this to get calendar events where the created field is greater or equal to this value. The value can be a string with an integer Unix timestamp."
+          type: integer
+        - name: "is_visible"
+          in: "query"
+          description: "Use this to filter calendar events by the is_visible field."
+          type: string
+          enum: ["all","true","false"]
+          default: "true"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/CalendarEventList"
+    post:
+      tags:
+        - "Calendar Events"
+      description: "Create a new calendar event for the specified rental (in url). You can create either a booking
+      of type Hold or of Booking. Each type is using different fields. For example you can not send any price information for an event of type Hold."
+      operationId: "Create Calendar Event for Rental"
+      parameters:
+        - name: "rentalId"
+          in: "path"
+          description: "ID of parent rental"
+          required: true
+          type: "string"
+        - in: body
+          name: CalendarEvent
+          required: true
+          schema:
+            type: object
+            required:
+              - type
+              - date_from
+              - date_to
+            properties:
+              type:
+                type: string
+                enum:
+                  - Booking
+                  - Hold
+              date_from:
+                type: string
+                format: date
+                example: "2019-03-01"
+                description: Can not be greater than 730 days from today and the distance between `date_from` and `date_to` can not be greater than 365 days
+              date_to:
+                type: string
+                format: date
+                example: "2019-03-04"
+                description: Can not be greater than 730 days from today and the distance between `date_from` and `date_to` can not be greater than 365 days
+              check_in_time:
+                type: string
+                format: time
+                example: "13:00"
+                description: The time of the check-in. Available for Calendar Events of type Booking.
+              check_out_time:
+                type: string
+                format: time
+                example: "11:00"
+                description: The time of the check-out. Available for Calendar Events of type Booking.
+              created_on_channel:
+                type: integer
+                example: 1254885548
+                description: Time at which the object was initially created on the source booking platform. Measured in seconds since the Unix epoch.
+              reservation_id:
+                type: string
+                maxLength: 200
+                example: "AB67782136778"
+                description: Available for Calendar Events of type Booking.
+              guest_name:
+                type: string
+                maxLength: 200
+                example: "Petros Ziogas"
+                description: Available for Calendar Events of type Booking.
+              guest_adults:
+                type: integer
+                example: 3
+                description: Available for Calendar Events of type Booking.
+              guest_children:
+                type: integer
+                example: 1
+                description: Available for Calendar Events of type Booking.
+              guest_email:
+                type: string
+                example: "guest-email@hosthub.com"
+                maxLength: 200
+                description: Available for Calendar Events of type Booking.
+              guest_phone:
+                type: string
+                maxLength: 20
+                example: "+30998985891"
+                description: Available for Calendar Events of type Booking.
+              guest_city:
+                type: string
+                maxLength: 250
+                example: "London"
+                description: Available for Calendar Events of type Booking.
+              identification_type:
+                type: [ 'string', 'null' ]
+                enum:
+                  - naid
+                  - pano
+                  - vatn
+                example: 'naid'
+                description: National ID (naid), Passport number (pano), VAT number (vatn)
+              identification_number:
+                type: string
+                example: 'ABC123456'
+                description: Depending on the identification_type provide the appropriate number.
+              notes:
+                type: string
+                example: "Don't forget that the guest likes tea. Make sure he has some waiting."
+              source_id:
+                type: string
+                example: "As7a1G"
+                description: Available for Calendar Events of type Booking.
+              booking_value:
+                $ref: '#/definitions/Money'
+              cleaning_fee:
+                $ref: '#/definitions/Money'
+              other_fees:
+                $ref: '#/definitions/Money'
+              total_payout:
+                $ref: '#/definitions/Money'
+              service_fee_guest:
+                $ref: '#/definitions/Money'
+              service_fee_host:
+                $ref: '#/definitions/Money'
+              taxes:
+                $ref: '#/definitions/Money'
+              guest_paid:
+                $ref: '#/definitions/Money'
+              hold_reason:
+                type: string
+                enum:
+                  - housekeeping
+                  - repairs
+                  - personal_use
+                  - other
+                description: Available for Calendar Events of type Hold.
+                additionalProperties: true
+              title:
+                type: string
+                maxLength: 200
+                example: "Title of your Hold event."
+                description: "Available for Hold events only."
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: "#/definitions/CalendarEvent"
+        "400":
+          description: Bad request
+          schema:
+            $ref: "#/definitions/Error"
+  /calendar-events/{calendarEventKey}:
+    x-swagger-router-controller: calendar_event_edit
+    post:
+      tags:
+        - "Calendar Events"
+      description: "In effect updates a calendar event. You can update calendar events of type
+      Hold or of Booking. Updating date_from and date_to will require to pass both in the request body."
+      operationId: "Update Calendar Event"
+      schema:
+        $ref: '#/definitions/CalendarEvent'
+      consumes:
+        - application/json
+      parameters:
+        - in: body
+          name: CalendarEvent
+          required: false
+          schema:
+            properties:
+              reservation_id:
+                type: string
+                maxLength: 200
+                example: "AB67782136778"
+                description: Available for Calendar Events of type Booking.
+              date_from:
+                type: string
+                format: date
+                example: "2019-03-01"
+                description: When you want to change `date_from` you also need to provide `date_to`,
+                  also `date_from` can not be greater than 730 days from now and
+                  the distance between `date_from` and `date_to` can not be greater than 365 days
+              date_to:
+                type: string
+                format: date
+                example: "2019-03-04"
+                description: When you want to change `date_to` you also need to provide `date_from`,
+                  also `date_to` can not be greater than 730 days from now and
+                  the distance between `date_from` and `date_to` can not be greater than 365 days
+              check_in_time:
+                type: string
+                format: time
+                example: "13:00"
+                description: The time of the check-in. Available for Calendar Events of type Booking.
+              check_out_time:
+                type: string
+                format: time
+                example: "11:00"
+                description: The time of the check-out. Available for Calendar Events of type Booking.
+              created_on_channel:
+                type: integer
+                example: 1254885548
+                description: Time at which the object was initially created on the source booking platform. Measured in seconds since the Unix epoch.
+              guest_name:
+                type: string
+                maxLength: 200
+                example: "Petros Ziogas"
+                description: Available for Calendar Events of type Booking.
+              guest_email:
+                type: string
+                example: petros.travel@hosthub.com
+                maxLength: 200
+                description: Available for Calendar Events of type Booking.
+              guest_phone:
+                type: string
+                example: '+30998985891'
+                maxLength: 20
+                description: Available for Calendar Events of type Booking.
+              guest_city:
+                type: string
+                example: 'London'
+                maxLength: 250
+                description: Available for Calendar Events of type Booking.
+              guest_adults:
+                type: integer
+                example: 3
+                description: Available for Calendar Events of type Booking.
+              guest_children:
+                type: integer
+                example: 1
+                description: Available for Calendar Events of type Booking.
+              identification_type:
+                type: [ 'string', 'null' ]
+                enum:
+                  - naid
+                  - pano
+                  - vatn
+                example: 'naid'
+                description: National ID (naid), Passport number (pano), VAT number (vatn)
+              identification_number:
+                type: string
+                example: 'ABC123456'
+                description: Depending on the identification_type provide the appropriate number.
+              notes:
+                type: string
+                example: "Hello"
+              booking_value:
+                $ref: '#/definitions/Money'
+              cleaning_fee:
+                $ref: '#/definitions/Money'
+              other_fees:
+                $ref: '#/definitions/Money'
+              total_payout:
+                $ref: '#/definitions/Money'
+              service_fee_guest:
+                $ref: '#/definitions/Money'
+              service_fee_host:
+                $ref: '#/definitions/Money'
+              taxes:
+                $ref: '#/definitions/Money'
+              guest_paid:
+                $ref: '#/definitions/Money'
+              hold_reason:
+                type: string
+                enum:
+                  - housekeeping
+                  - repairs
+                  - personal_use
+                  - other
+                description: Available for Calendar Events of type Hold.
+              title:
+                type: string
+                maxLength: 200
+                description: Available for Calendar Events of type Hold.
+      responses:
+        "200":
+          description: Updated
+          schema:
+            $ref: "#/definitions/CalendarEvent"
+        "400":
+          description: Bad request
+          schema:
+            $ref: "#/definitions/Error"
+
+  /calendar-events/{calendarEventId}:
+    x-swagger-router-controller: calendar_events
+    delete:
+      tags:
+        - "Calendar Events"
+      description: In effect deletes a calendar event. It will turn its is_visible to false and the event will stop blocking your calendar. Once you delete a calendar event you can't make it visible again.
+      operationId: "Delete Calendar Event"
+      parameters:
+        - name: "calendarEventId"
+          in: "path"
+          description: "ID of calendar event to delete"
+          required: true
+          type: "string"
+      responses:
+        "204":
+          description: Success
+        "404":
+          description: Not found, or no access.
+  /calendar-events/{calendarEventId}/calendar-event-gr-taxes:
+    x-swagger-router-controller: calendar_events
+    get:
+      tags:
+        - "Calendar Events"
+      description: Returns the greek taxes for the given booking.
+      operationId: "Get Greek Taxes for Calendar Event"
+      parameters:
+        - name: "calendarEventId"
+          in: "path"
+          description: "ID of the calendar event to get the taxes for"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/CalendarEventGrTax"
+  /calendar-events/{calendarEventId}/notes:
+    x-swagger-router-controller: calendar_events
+    get:
+      tags:
+        - "Calendar Events"
+      description: Returns the notes for the given Calendar Event.
+      operationId: "Get notes for Calendar Event"
+      parameters:
+        - name: "calendarEventId"
+          in: "path"
+          description: "ID of the calendar event to get the notes for"
+          required: true
+          type: "string"
+      responses:
+        "200":
+          description: Success
+          schema:
+            $ref: "#/definitions/NoteCalendarEventList"
+definitions:
+  Error:
+    properties:
+      errors:
+        type: array
+  RentalsList:
+    properties:
+      object:
+        type: string
+        example: Rental
+        description: The object type data contains. In this case always Rental.
+      data:
+        type: array
+        description: An array of Rental objects.
+        items:
+          $ref: '#/definitions/Rental'
+  Rental:
+    properties:
+      id:
+        type: string
+        example: w54dWRE
+        description: The unique id of the resource in Hosthub system.
+      object:
+        type: string
+        example: Rental
+        description: The object type of this resource. Here it will be User.
+      name:
+        type: string
+        description: The name of the Rental in Hosthub system.
+        example: The home of Tassos and Luis
+      postal_code:
+        type: string
+        description: Postal code stored in Hosthub system.
+        example: 14231
+      latitude:
+        type: string
+        description: The latitude of the Rental stored in Hosthub system.
+        example: 12.458745
+      longitude:
+        type: string
+        description: The longitude of the Rental stored in Hosthub system.
+        example: 31.684515
+      url:
+        type: string
+        description: A url that can be used to retrieve this Rental from the API.
+        example: /api/2019-03-01/rental/w54dWRE
+  RentalDailyRateList:
+    properties:
+      object:
+        type: string
+        description: The object type data contains. In this case always RentalDailyRate.
+        example: RentalDailyRate
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/RentalDailyRate'
+  RentalDailyRate:
+    properties:
+      object:
+        type: string
+        description: The object type data contains. In this case always RentalDailyRate.
+        example: RentalDailyRate
+      date:
+        type: string
+        format: date
+        example: "2019-03-01"
+        description: The date of the rate.
+      amount:
+        $ref: '#/definitions/DailyPrice'
+      block_arrival:
+        type: ['boolean', 'null']
+        x-nullable: true
+        example: true
+      block_departure:
+        type: ['boolean', 'null']
+        example: false
+      is_available:
+        type: boolean
+        example: true
+      type:
+        type: string
+        example: 'daily_rate'
+      rate_type:
+        type: string
+        example: 'base'
+        enum:
+          - 'base'
+          - 'custom'
+      minimum_length_of_stay:
+        type: ["integer", "null"]
+        example: 2
+      maximum_length_of_stay:
+        type: [ "integer", "null" ]
+        example: 4
+      extra_cost_per_person:
+        $ref: '#/definitions/ExtraPersonAmount'
+      amount_of_people_threshold:
+        type: integer
+        example: 2
+        description: After this number of guests the extra_cost_per_person takes effect
+  UsersList:
+    properties:
+      object:
+        type: string
+        description: The object type data contains. In this case always User.
+      data:
+        type: array
+        description: An array of User objects.
+        items:
+          $ref: '#/definitions/User'
+    example:
+      object: User
+      data:
+        - id: asdf1sd
+          object: User
+          name: Petros
+          email: petros@google.com
+          url: /api/2019-03-01/users/asdf1sd
+        - id: a234sd
+          object: User
+          name: Lefty
+          email: lefty@google.com
+          url: /api/2019-03-01/users/a234sd
+  ChannelList:
+    properties:
+      object:
+        type: string
+        description: The object type data contains. In this case always Channel.
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/Channel'
+      navigation:
+        type: object
+        description: |
+          Pagination links to navigate through paged Channels results.
+          Results are returned in limited batches to improve performance and reliability.
+        
+          - **next**: Use this URL to load the next set of results after the current page. It includes a `cursor_gt` parameter, pointing to the ID of the last item in the current result.
+          - **previous**: Use this URL to load the previous set of results before the current page. It includes a `cursor_lt` parameter, pointing to the ID of the first item in the current result.
+        
+          These URLs are dynamically generated. Always use them as provided by the API for accurate and efficient pagination.
+        properties:
+          next:
+            type: string
+            example: '/api/2019-03-01/rental/jkDeqQ/channels?cursor_gt=eyJpZCI6Ik5wRE9CNm5nWngifQ=='
+          previous:
+            type: string
+            example: '/api/2019-03-01/rental/jkDeqQ/channel?cursor_lt=eyJpZCI6ImJveERNNGd2MjYifQ=='
+    example:
+      object: Channel
+      data:
+        - id: asDf1Sd
+          name: Airbnb - Athens Account
+          base_channel:
+            id: kosQ5Zd
+            name: Airbnb
+        - id: ksQf1Zd
+          name: Agoda - John account
+          base_channel:
+            id: iesW59Zo
+            name: Agoda
+      navigation:
+        next: '/api/2019-03-01/rentals/asDf1Sd/channels?cursor_gt=eyJpZCI6Ik5wRE9CNm5nWngifQ=='
+        previous: '/api/2019-03-01/rentals/ksQf1Zd/channels?cursor_lt=eyJpZCI6ImJveERNNGd2MjYifQ=='
+  RatePlans:
+    properties:
+      object:
+        type: string
+        description: The object type data contains. In this case always RatePlan.
+      data:
+        type: array
+        items:
+          $ref: '#/definitions/RatePlan'
+    example:
+      object: RatePlan
+      data:
+        - id: xEadpJrLqo
+          name: Default rate plan
+          default: true
+          status: active
+          url: '/api/2019-03-01/rate-plans/xEadpJrLqo'
+        - id: ksQf1Zd
+          name: Non refundable plan
+          default: false
+          status: active
+          url: '/api/2019-03-01/rate-plans/ksQf1Zd'
+  User:
+    properties:
+      id:
+        type: string
+        description: The unique id of the resource in Hosthub system.
+        example: asdf1sd
+      object:
+        type: string
+        example: User
+        description: The object type of this resource. Here it will be User.
+      name:
+        type: string
+        description: The name of the user stored in Hosthub.
+        example: Petros
+      email:
+        type: string
+        description: The email of the user that is used to login to Hosthub.
+        example: petros@google.com
+      url:
+        type: string
+        description: A url that can be used to retrieve only this user from the API.
+        example: /api/2019-03-01/users/asdf1sd
+  CalendarEventList:
+    properties:
+      object:
+        type: string
+        description: The object type data contains. In this case always CalendarEvent.
+        example: CalendarEvent
+      data:
+        type: array
+        description: An array of CalendarEvent objects.
+        items:
+          $ref: '#/definitions/CalendarEvent'
+      navigation:
+        type: object
+        description: |
+          Pagination links to navigate through paged CalendarEvents results.
+          Results are returned in limited batches to improve performance and reliability.
+        
+          - **next**: Use this URL to load the next set of results after the current page. It includes a `cursor_gt` parameter, pointing to the ID of the last item in the current result.
+          - **previous**: Use this URL to load the previous set of results before the current page. It includes a `cursor_lt` parameter, pointing to the ID of the first item in the current result.
+        
+          These URLs are dynamically generated. Always use them as provided by the API for accurate and efficient pagination.
+        properties:
+          next:
+            type: string
+            example: '/api/2019-03-01/calendar-events?cursor_gt=eyJpZCI6Ik5wRE9CNm5nWngifQ=='
+          previous:
+            type: string
+            example: '/api/2019-03-01/calendar-events?cursor_lt=eyJpZCI6ImJveERNNGd2MjYifQ=='
+  NoteCalendarEventList:
+    properties:
+      object:
+        type: string
+        description: The object type data contains. In this case always NoteCalendarEvent.
+        example: NoteCalendarEvent
+      data:
+        type: array
+        description: An array of NoteCalendarEvent objects.
+        items:
+          $ref: '#/definitions/NoteCalendarEvent'
+  UserShort:
+    title: User
+    properties:
+      id:
+        type: string
+        description: The unique id of the resource in Hosthub system.
+        example: trg5342
+      object:
+        type: string
+        example: User
+        description: The object type of this resource. Here it will be User.
+      name:
+        type: string
+        description: The name of user stored in Hosthub.
+        example: Dimitris
+      url:
+        type: string
+        description: A url that can be used to retrieve only this user from the API.
+        example: /api/2019-03-01/users/trg5342
+  CalendarEventShort:
+    title: Calendar Event
+    properties:
+      id:
+        type: string
+        example: ce23321
+        description: The unique id of the resource in Hosthub system.
+      object:
+        type: string
+        example: CalendarEvent
+        description: The object type of this resource. Here it will be CalendarEvent.
+  CalendarEvent:
+    properties:
+      id:
+        type: string
+        example: er23321
+        description: The unique id of the resource in Hosthub system.
+      object:
+        type: string
+        example: CalendarEvent
+        description: The object type of this resource. Here it will be CalendarEvent.
+      type:
+        type: string
+        example: CalendarEventBooking
+        description: The type of calendar event this is.
+      master_calendar_event_id:
+        type: integer
+        example: ew1221a
+        description: The id of the parent calendar event if one exists. This will be filled for satellite calendar events. For example when a booking in a house also creates calendar events for the rooms that are rented also individually.
+      created:
+        type: integer
+        example: 1254885548
+        description: Time at which the object was created on Hosthub. Measured in seconds since the Unix epoch.
+      updated:
+        type: integer
+        example: 1254888548
+        description: Time at which the object was updated. Measured in seconds since the Unix epoch.
+      created_on_channel:
+        type: integer
+        example: 1254885548
+        description: Time at which the object was initially created on the source booking platform. Measured in seconds since the Unix epoch.
+      cancelled_at:
+        type: integer
+        example: 1254885548
+        description: Time at which the object was cancelled. Measured in seconds since the Unix epoch.
+      date_from:
+        type: string
+        format: date
+        example: "2019-03-01"
+        description: The date of the check-in (in cases of a booking) or the first day that the rental block will start (cases of hold events).
+      date_to:
+        type: string
+        format: date
+        example: "2019-03-04"
+        description: The date of the checkout (in cases of a booking) or the day that the rental block will finish. This always means that the house will be bookable for this day.
+      check_in_time:
+        type: string
+        format: time
+        example: "13:00"
+        description: The time of the check-in. If the object is not a booking, it will be null.
+      check_out_time:
+        type: string
+        format: time
+        example: "11:00"
+        description: The time of the check-out. If the object is not a booking, it will be null.
+      nights:
+        type: integer
+        example: 3
+        description: Number of nights this hold/booking is taking.
+      rental:
+        properties:
+          id:
+            type: string
+            example: oku721
+            description: The unique id of the Rental in Hosthub system.
+          object:
+            type: string
+            example: Rental
+            description: The object type of this resource. Here it will be Rental.
+          name:
+            type: string
+            example: Ampelos Villa
+            description: The name of rental stored in Hosthub.
+          url:
+            type: string
+            example: /api/2019-03-01/rental/oku721
+            description: A url that can be used to retrieve this rental from the API.
+      is_visible:
+        type: boolean
+        example: true
+        description: If this hold event is visible or not. For now only visible events are returned via the API.
+      title:
+        type: string
+        example: Petros Ziogas
+        description: Title of this Calendar Event. Depending on the type, this can be a different data element. For bookings, most of the times it will be the guest name.
+      guest_name:
+        type: string
+        example: Petros Ziogas
+        description: The name of the guest if available.
+      location:
+        type: string
+        example: Athens
+        description: The location if available. Most channels don't provide this data.
+      guest_number:
+        type: integer
+        example: 4
+        description: The total number of guests (adults+children).
+      guest_adults:
+        type: integer
+        example: 3
+        description: The number of adults, if available.
+      guest_children:
+        type: integer
+        example: 1
+        description: The number of children, if available.
+      guest_email:
+        type: string
+        example: petros.travel@fly.com
+        description: The guest email, if provided. A lot of times this will be a forward email provided by the channel.
+      guest_phone:
+        type: string
+        example: '+30998985891'
+        description: The phone number of the guest, if available.
+      guest_city:
+        type: string
+        example: 'London'
+        description: The city of the guest, if available.
+      guest_address:
+        type: string
+        example: '221B Baker Street'
+        description: The address of the guest, if available.
+      guest_zip_code:
+        type: string
+        example: 'NW1 6XE'
+        description: The zip code of the guest, if available.
+      guest_country_code:
+        type: string
+        example: 'GB'
+        description: The country code of the guest, if available.
+      guest_remarks:
+        type: string
+        example: 'This customer requires the receipt of the stay.'
+        description: Remarks of the guest, if available.
+      identification_type:
+        type: ['string', 'null']
+        enum:
+          - naid
+          - pano
+          - vatn
+        example: 'naid'
+        description: National ID (naid), Passport number (pano), VAT number (vatn)
+      identification_number:
+        type: string
+        example: 'ABC123456'
+        description: Depending on the identification_type provide the appropriate number.
+      meal_plan:
+        type: string
+        example: 'Veggie'
+        description: Meal plan preference, if available.
+      room_remarks:
+        type: string
+        example: 'Booked rate: Non Refundable Rate'
+        description: Remarks for the room, if available.
+      smoking_preference:
+        type: boolean
+        example: false
+        description: Smoking preference, if available.
+      booking_value:
+        $ref: '#/definitions/Money'
+        description: The cost of the bookings nights not including any extra fees. Most of the times this equals to the cost per night * the total nights. If available.
+      cleaning_fee:
+        $ref: '#/definitions/Money'
+        description: The cost of the cleaning that was charged for the booking. If available.
+      other_fees:
+        $ref: '#/definitions/Money'
+        description: Other fees not included in more specific fees. If available.
+      service_fee_host:
+        $ref: '#/definitions/Money'
+        description: The fees that the host paid. Also known as the channel commision that the host pays. If available.
+      total_payout:
+        $ref: '#/definitions/Money'
+        description: The money the host will get. Roughly this equals [guest_paid]-[taxes]-[service_fee_guest]-[service_fee_host]. If available.
+      service_fee_guest:
+        $ref: '#/definitions/Money'
+        description: The fee the guest paid. For some channels this is completely hidden from the host (Airbnb). If available.
+      taxes:
+        $ref: '#/definitions/Money'
+        description: Taxes that were added to the booking. Depending on the country and channel, this can be always null. If available.
+      total_reservation_price:
+        $ref: '#/definitions/Money'
+        description: Sum of the price of each booking contained in the same reservation. If available.
+      guest_paid:
+        $ref: '#/definitions/Money'
+        description: What the guest paid after all fees. For some channels this is completely hidden from the host (Airbnb). If available.
+      payment_charges:
+        $ref: '#/definitions/Money'
+        description: What the host was charged for the channel facilitating the payment process. If available.
+      manager_fee:
+        $ref: '#/definitions/Money'
+        description: The fee that the rental manager charges for managing the booking, based on the manager fee formula set by the rental manager. If available.
+      owner_payout:
+        $ref: '#/definitions/Money'
+        description: The money that the rental owner will get, based on the payout formula set by the rental manager. If available.
+      notes:
+        type: string
+        example: Don't forget that the guest likes tea. Make sure he has some waiting.
+        description: Any notes added to the Calendar Event. Host can add notes via Hosthub interface.
+      reservation_id:
+        type: string
+        example: AB67782136778
+        description: The external id of the reservation given by the channel. If available. Notice that this is not unique by design. A user can have a calendar event with reservation id 999 from booking.com and another one with reservation id 999 from Airbnb. The unique property you can use is the one called "id".
+      created_by:
+        $ref: '#/definitions/UserShort'
+        description: The user that created this CalendarEvent. Relevant only for Hold events and Offline Bookings that a user can create via the Hosthub app.
+      source:
+        $ref: '#/definitions/Source'
+      hold_reason:
+        type: string
+        example: Deep cleaning
+        description: A text provided by the user when she creates a manual Hold.
+      url:
+        type: string
+        example: /api/2019-03-01/calendar-events/er23321
+        description: A url that can be used to retrieve this Calendar Event from the API.
+  CalendarEventGrTax:
+    properties:
+      id:
+        type: string
+        example: er23321
+        description: The unique id of the resource in Hosthub system.
+      object:
+        type: string
+        example: CalendarEventGrTax
+        description: The object type of this resource. Here it will be CalendarEventGrTax.
+      created:
+        type: integer
+        example: 1254885548
+        description: Time at which the object was created on Hosthub. Measured in seconds since the Unix epoch.
+      updated:
+        type: integer
+        example: 1254888548
+        description: Time at which the object was updated. Measured in seconds since the Unix epoch.
+      total_booking_value:
+        description: The total booking value as recorded on the source booking platform.
+        properties:
+          cents:
+            type: integer
+            description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+            example: 12245
+          currency:
+            type: string
+            description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+            example: USD
+      climate_tax:
+        description: The climate tax fee enforce by the greek government.
+        properties:
+          cents:
+            type: integer
+            description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+            example: 12245
+          currency:
+            type: string
+            description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+            example: USD
+      gross_booking_value:
+        description: The total booking value without the climate tax fee, including the VAT. Used in receipt or invoices.
+        properties:
+          cents:
+            type: integer
+            description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+            example: 12245
+          currency:
+            type: string
+            description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+            example: USD
+      booking_value_pre_vat:
+        description: The gross booking value without the VAT. Used in receipt or invoices.
+        properties:
+          cents:
+            type: integer
+            description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+            example: 12245
+          currency:
+            type: string
+            description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+            example: USD
+      vat:
+        description: The greek value-added tax amount for the booking.
+        properties:
+          cents:
+            type: integer
+            description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+            example: 12245
+          currency:
+            type: string
+            description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+            example: USD
+      accommodation_tax:
+        description: Calculated as [Accommodation tax rate] * [Booking value pre VAT] / (1 + [Accommodation tax rate]).
+        properties:
+          cents:
+            type: integer
+            description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+            example: 12245
+          currency:
+            type: string
+            description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+            example: USD
+      net_value:
+        description: The total booking value without the VAT and accommodation tax amounts.
+        properties:
+          cents:
+            type: integer
+            description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+            example: 12245
+          currency:
+            type: string
+            description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+            example: USD
+      aade_value:
+        description: The total value sent to the greek Independent Public Revenue Authority (AADE).
+        properties:
+          cents:
+            type: integer
+            description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+            example: 12245
+          currency:
+            type: string
+            description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+            example: USD
+  Money:
+    description: Available for Calendar Events of type Booking.
+    properties:
+      cents:
+        type: integer
+        description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+        example: 12245
+      currency:
+        type: string
+        description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+        example: USD
+  DailyPrice:
+    description: The price for this day. This can be net or gross depending on your settings, so it might not be the exact amount you will receive.
+    properties:
+      cents:
+        type: integer
+        description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+        example: 12245
+      currency:
+        type: string
+        description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+        example: USD
+  ExtraPersonAmount:
+    description: Extra cost that will be applied after the extra_person_treshold has been reached
+    properties:
+      cents:
+        type: integer
+        description: "The value of this amount of money in cents (100 is 1 unit of currency). eg if you want to send $7 you need to send {cents: 700, currency: \"USD\"}."
+        example: 12245
+      currency:
+        type: string
+        description: "The currency of this amount. This is using the ISO 4217 format. Details here https://en.wikipedia.org/wiki/ISO_4217"
+        example: USD
+  Channel:
+    type: object
+    description: ''
+    properties:
+      id:
+        type: string
+        example: iesW59Zo
+      name:
+        type: string
+        example: Airbnb - Athens Account
+      base_channel:
+        $ref: '#/definitions/BaseChannel'
+  NoteCalendarEvent:
+    properties:
+      id:
+        type: string
+        example: nce3321
+        description: The unique id of the resource in Hosthub system.
+      object:
+        type: string
+        example: NoteCalendarEvent
+        description: The object type data contains. In this case always NoteCalendarEvent.
+      created:
+        type: integer
+        example: 1254885548
+        description: Time at which the object was created on Hosthub. Measured in seconds since the Unix epoch.
+      updated:
+        type: integer
+        example: 1254888548
+        description: Time at which the object was updated. Measured in seconds since the Unix epoch.
+      status:
+        type: string
+        example: 'active'
+        enum:
+          - 'active'
+          - 'deleted'
+      content:
+        type: string
+        example: "Don't forget that the guest likes tea. Make sure he has some waiting."
+      created_by:
+        $ref: '#/definitions/UserShort'
+        description: The user that created this NoteCalendarEvent.
+      calendar_event:
+        $ref: '#/definitions/CalendarEventShort'
+        description: The Calendar event the note belongs to.
+  RatePlan:
+    type: object
+    description: 'RatePlan'
+    properties:
+      object:
+        type: string
+        example: RatePlan
+        description: The object type data contains. In this case always RatePlan.
+      id:
+        type: string
+        example: xEadpJrLqo
+      name:
+        type: string
+        example:
+      default:
+        type: boolean
+        example: true
+      status:
+        type: string
+        example: 'active'
+        enum:
+          - 'active'
+          - 'inactive'
+      url:
+        type: string
+        example: "/api/2019-03-01/rate-plans/xEadpJrLqo"
+  BaseChannel:
+    type: object
+    properties:
+      id:
+        type: string
+        example: iesW59Zo
+      name:
+        type: string
+        example: Agoda
+    x-examples:
+      example-1: {}
+    description: 'BaseChannel represent the a platforms AirBnb, Booking.com, Agoda etc on Hosthub.'
+    title: ''
+  Source:
+    properties:
+      id:
+        type: string
+        example: VAZPkQNRlE
+        description: 'The id of the source in the Hosthub system. Use this for reference since it will not change for a given channel/source.'
+      name:
+        type: string
+        example: Booking.com
+        description: 'Name of the channel (this can change in the future for a specific channel)'
+      channel_type_code:
+        type: string
+        example: booking.com
+        description: 'The code of the channel (this can change in the future for a specific channel, but only if a channel changes its name completely e.g. from SantaVillas to SaintVillas)'
+    description: 'The source of this CalendarEvent'
+  RateMandate:
+    properties:
+      object:
+        type: string
+        example: "RateMandate"
+      id:
+        type: string
+        example: "xEadpJrLqo"
+      url:
+        type: string
+        example: "/api/2019-03-01/rate-mandate/xEadpJrLqo"
+      status:
+        type: string
+        enum:
+          - pending
+          - in progress
+          - executed
+        example: "executed"
+      days:
+        type: array
+        description: An array of Mandate day objects.
+        items:
+          $ref: '#/definitions/MandateDay'
+  MandateDay:
+    properties:
+      date:
+        type: string
+        format: date
+        example: "2022-03-01"
+        description: Can not be greater than 730 days from today
+      price:
+        description: Price and currency to be applied to this day. (Currency has to be the same for each day)
+        $ref: '#/definitions/DailyPrice'
+      extra_person_amount:
+        $ref: '#/definitions/ExtraPersonAmount'
+      extra_person_threshold:
+        type: integer
+        example: 2
+        description: After this number of guests the extra_person_amount takes effect
+      block_arrival:
+        type: boolean
+        example: false
+        description: Wether to allow arrival on this day or not
+      block_departure:
+        type: boolean
+        example: false
+        description: Wether to allow departure on this day or not
+      minimum_length_of_stay:
+        type: integer
+        example: 1
+        description: Minimum number of days a guest can book
+      maximum_length_of_stay:
+        type: integer
+        example: 1
+        description: Maximum number of days a guest can book
+    required:
+      - date
+      - price

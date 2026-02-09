@@ -6,7 +6,7 @@ import { Calendar as CalendarIcon } from "lucide-react";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
-import { TIMEZONE_DISCLAIMER } from "@/data/constants";
+import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 import { useClickOutside } from "@/hooks/useClickOutside";
 
 // Dynamic import for Calendar to avoid initial bundle weight & CSS blocking

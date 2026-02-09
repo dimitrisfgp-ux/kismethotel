@@ -1,24 +1,83 @@
+import { createServerClient } from "@/lib/supabase";
 import { ContactRequest, RequestStatus } from "@/types";
-
-// Global persistence for mock data (same pattern as roomService)
-const globalForMock = global as unknown as {
-    mockRequests: ContactRequest[]
-};
-
-if (!globalForMock.mockRequests) globalForMock.mockRequests = [];
 
 export const requestService = {
     getRequests: async (): Promise<ContactRequest[]> => {
-        return globalForMock.mockRequests;
+        const supabase = createServerClient();
+        const { data, error } = await supabase
+            .from('contact_requests')
+            .select('*')
+            .order('created_at', { ascending: false });
+
+        if (error) {
+            console.error('Error fetching requests:', error);
+            return [];
+        }
+
+        return (data || []).map(r => ({
+            id: r.id,
+            subject: r.subject,
+            name: r.name,
+            email: r.email,
+            phone: r.phone,
+            message: r.message,
+            bookingId: r.booking_id,
+            newCheckIn: r.new_check_in,
+            newCheckOut: r.new_check_out,
+            originalCheckIn: r.original_check_in,
+            originalCheckOut: r.original_check_out,
+            status: r.status,
+            createdAt: r.created_at
+        }));
     },
 
     getRequest: async (id: string): Promise<ContactRequest | undefined> => {
-        return globalForMock.mockRequests.find(r => r.id === id);
+        const supabase = createServerClient();
+        const { data, error } = await supabase
+            .from('contact_requests')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error || !data) return undefined;
+
+        return {
+            id: data.id,
+            subject: data.subject,
+            name: data.name,
+            email: data.email,
+            phone: data.phone,
+            message: data.message,
+            bookingId: data.booking_id,
+            newCheckIn: data.new_check_in,
+            newCheckOut: data.new_check_out,
+            originalCheckIn: data.original_check_in,
+            originalCheckOut: data.original_check_out,
+            status: data.status,
+            createdAt: data.created_at
+        };
     },
 
     createRequest: async (request: ContactRequest): Promise<boolean> => {
-        globalForMock.mockRequests.push(request);
-        return true;
+        const supabase = createServerClient();
+        const { error } = await supabase
+            .from('contact_requests')
+            .insert({
+                id: request.id,
+                subject: request.subject,
+                name: request.name,
+                email: request.email,
+                phone: request.phone,
+                message: request.message,
+                booking_id: request.bookingId,
+                new_check_in: request.newCheckIn,
+                new_check_out: request.newCheckOut,
+                original_check_in: request.originalCheckIn,
+                original_check_out: request.originalCheckOut,
+                status: request.status || 'pending'
+            });
+
+        return !error;
     },
 
     updateRequestStatus: async (
@@ -26,16 +85,19 @@ export const requestService = {
         status: RequestStatus,
         originalDates?: { originalCheckIn: string; originalCheckOut: string }
     ): Promise<boolean> => {
-        const request = globalForMock.mockRequests.find(r => r.id === id);
-        if (request) {
-            request.status = status;
-            // Store original dates when approving a reschedule
-            if (originalDates) {
-                request.originalCheckIn = originalDates.originalCheckIn;
-                request.originalCheckOut = originalDates.originalCheckOut;
-            }
-            return true;
+        const supabase = createServerClient();
+
+        const updateData: Record<string, unknown> = { status };
+        if (originalDates) {
+            updateData.original_check_in = originalDates.originalCheckIn;
+            updateData.original_check_out = originalDates.originalCheckOut;
         }
-        return false;
+
+        const { error } = await supabase
+            .from('contact_requests')
+            .update(updateData)
+            .eq('id', id);
+
+        return !error;
     }
 };
