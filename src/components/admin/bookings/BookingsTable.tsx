@@ -5,7 +5,7 @@ import { Booking, Room, ContactRequest, BookingStatus } from "@/types";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/priceCalculator";
 import { Badge } from "@/components/ui/Badge";
-import { Eye, XCircle, RotateCcw } from "lucide-react";
+import { Eye, XCircle, RotateCcw, X } from "lucide-react";
 import { cancelBookingAction } from "@/app/actions";
 import { BookingDetailsModal } from "./BookingDetailsModal";
 import { FilterableHeader } from "./FilterableHeader";
@@ -188,6 +188,86 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
         setFilters(INITIAL_FILTERS);
     };
 
+    // Helper to remove a specific filter
+    const removeFilter = (type: string, value?: any) => {
+        const newFilters = { ...filters };
+        switch (type) {
+            case "bookingId":
+                newFilters.bookingId = "";
+                break;
+            case "details":
+                if (value && typeof value === 'string') newFilters.details = { ...newFilters.details, [value]: undefined };
+                else newFilters.details = {};
+                break;
+            case "room":
+                newFilters.roomIds = newFilters.roomIds.filter(id => id !== value);
+                break;
+            case "guests":
+                newFilters.guests = null;
+                break;
+            case "cost":
+                newFilters.cost = null;
+                break;
+            case "status":
+                newFilters.statuses = newFilters.statuses.filter(s => s !== value);
+                break;
+            case "requests":
+                newFilters.requestOptions = newFilters.requestOptions.filter(o => o !== value);
+                break;
+            case "bookedDate":
+                newFilters.bookedDate = null;
+                break;
+        }
+        setFilters(newFilters);
+    };
+
+    // Generate tags for active filters
+    const activeTags = useMemo(() => {
+        const tags: { id: string; label: React.ReactNode; onRemove: () => void }[] = [];
+
+        if (filters.bookingId) {
+            tags.push({ id: 'bid', label: `ID: ${filters.bookingId}`, onRemove: () => removeFilter("bookingId") });
+        }
+        if (filters.details.name) tags.push({ id: 'd-name', label: `Name: ${filters.details.name}`, onRemove: () => removeFilter("details", "name") });
+        if (filters.details.email) tags.push({ id: 'd-email', label: `Email: ${filters.details.email}`, onRemove: () => removeFilter("details", "email") });
+        if (filters.details.phone) tags.push({ id: 'd-phone', label: `Phone: ${filters.details.phone}`, onRemove: () => removeFilter("details", "phone") });
+
+        filters.roomIds.forEach(id => {
+            const roomName = rooms.find(r => r.id === id)?.name || id;
+            tags.push({ id: `room-${id}`, label: roomName, onRemove: () => removeFilter("room", id) });
+        });
+
+        if (filters.guests) {
+            const { operator, value, value2 } = filters.guests;
+            let label = `Guests ${operator} ${value}`;
+            if (operator === "between") label = `Guests: ${value}-${value2}`;
+            tags.push({ id: 'guests', label, onRemove: () => removeFilter("guests") });
+        }
+
+        if (filters.cost) {
+            const { operator, value, value2 } = filters.cost;
+            let label = `Total ${operator} ${formatCurrency(value)}`;
+            if (operator === "between") label = `Total: ${formatCurrency(value)} - ${formatCurrency(value2 || 0)}`;
+            tags.push({ id: 'cost', label, onRemove: () => removeFilter("cost") });
+        }
+
+        filters.statuses.forEach(status => {
+            tags.push({ id: `status-${status}`, label: status, onRemove: () => removeFilter("status", status) });
+        });
+
+        filters.requestOptions.forEach(opt => {
+            tags.push({ id: `req-${opt}`, label: `Request: ${opt}`, onRemove: () => removeFilter("requests", opt) });
+        });
+
+        if (filters.bookedDate && filters.bookedDate.from) {
+            let label = `Booked: ${format(filters.bookedDate.from, "MMM d")}`;
+            if (filters.bookedDate.to) label += ` - ${format(filters.bookedDate.to, "MMM d")}`;
+            tags.push({ id: 'date', label, onRemove: () => removeFilter("bookedDate") });
+        }
+
+        return tags;
+    }, [filters, rooms]);
+
     if (bookings.length === 0) {
         return (
             <div className="text-center py-12 border border-dashed border-[var(--color-sand)] rounded-lg">
@@ -200,17 +280,38 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
         <>
             {/* Filter Status Bar */}
             {hasActiveFilters && (
-                <div className="mb-4 flex items-center justify-between bg-[var(--color-aegean-blue)]/5 border border-[var(--color-aegean-blue)]/20 rounded-lg px-4 py-2">
-                    <span className="text-sm text-[var(--color-aegean-blue)]">
-                        Showing <strong>{filteredBookings.length}</strong> of <strong>{bookings.length}</strong> bookings
-                    </span>
-                    <button
-                        onClick={resetFilters}
-                        className="flex items-center gap-1 text-sm text-[var(--color-aegean-blue)] hover:underline"
-                    >
-                        <RotateCcw className="h-3 w-3" />
-                        Clear all filters
-                    </button>
+                <div className="mb-4 space-y-3 bg-[var(--color-aegean-blue)]/5 border border-[var(--color-aegean-blue)]/20 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm text-[var(--color-aegean-blue)] font-medium">
+                            Showing <strong>{filteredBookings.length}</strong> of <strong>{bookings.length}</strong> bookings
+                        </span>
+                        <button
+                            onClick={resetFilters}
+                            className="flex items-center gap-1 text-xs font-bold text-[var(--color-aegean-blue)] hover:underline uppercase tracking-wider"
+                        >
+                            <RotateCcw className="h-3 w-3" />
+                            Clear all
+                        </button>
+                    </div>
+
+                    {/* Active Filter Chips */}
+                    <div className="flex flex-wrap gap-2">
+                        {activeTags.map(tag => (
+                            <span
+                                key={tag.id}
+                                className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-white border border-[var(--color-aegean-blue)]/30 text-[var(--color-aegean-blue)] text-xs font-medium shadow-sm transition-all hover:border-[var(--color-aegean-blue)]"
+                            >
+                                {tag.label}
+                                <button
+                                    onClick={tag.onRemove}
+                                    className="p-0.5 hover:bg-[var(--color-aegean-blue)]/10 rounded-full transition-colors"
+                                    aria-label="Remove filter"
+                                >
+                                    <X className="h-3 w-3" />
+                                </button>
+                            </span>
+                        ))}
+                    </div>
                 </div>
             )}
 

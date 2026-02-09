@@ -25,11 +25,6 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     // Check if credentials are configured
     if (!process.env.GMAIL_USER || !process.env.GMAIL_APP_PASSWORD) {
         console.warn('📧 Email not configured - GMAIL_USER or GMAIL_APP_PASSWORD missing');
-        console.log('📧 Would have sent:', {
-            to: options.to,
-            subject: options.subject,
-            preview: options.html.substring(0, 100) + '...'
-        });
         return false;
     }
 
@@ -43,8 +38,6 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
             html: options.html
         });
 
-        console.log(`📧 Email sent successfully to: ${Array.isArray(options.to) ? options.to.join(', ') : options.to}`);
-        console.log(`   Subject: ${options.subject}`);
         return true;
     } catch (error) {
         console.error('📧 Email sending failed:', error);

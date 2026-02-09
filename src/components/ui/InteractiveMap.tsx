@@ -125,7 +125,7 @@ export default function InteractiveMap({ conveniences, categories, activeCategor
         ? [activeLocations[0].lat, activeLocations[0].lng]
         : HOTEL_COORDINATES;
 
-    const activeZoom = activeCategoryId ? 15 : 14;
+    const activeZoom = activeCategoryId ? 17 : 16;
 
     // --- Dynamic Icon Creator ---
     const createCustomIcon = useCallback((location: Convenience, isDimmed: boolean) => {
@@ -192,7 +192,7 @@ export default function InteractiveMap({ conveniences, categories, activeCategor
     return (
         <MapContainer
             center={HOTEL_COORDINATES}
-            zoom={14}
+            zoom={16}
             scrollWheelZoom={false}
             zoomControl={false} // Disable default zoom control
             className="w-full h-full z-10 relative" // Added relative for overlay positioning

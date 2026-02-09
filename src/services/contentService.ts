@@ -143,14 +143,18 @@ export const contentService = {
             return {
                 name: 'Kismet Hotel',
                 description: 'Boutique Accommodations',
+                websiteUrl: 'https://kismethotel.com',
+                holdDurationMinutes: 5,
                 contact: { address: '', phone: '', email: '' },
-                socials: { whatsapp: '', viber: '', instagram: '', facebook: '' }
+                socials: { whatsapp: '', viber: '', instagram: '', facebook: '', googleReviews: '' }
             };
         }
 
         return {
             name: data.name,
             description: data.description,
+            websiteUrl: data.website_url || 'https://kismethotel.com',
+            holdDurationMinutes: data.hold_duration_minutes || 5,
             contact: data.contact as HotelSettings['contact'],
             socials: data.socials as HotelSettings['socials']
         };
@@ -164,6 +168,8 @@ export const contentService = {
                 id: 1,
                 name: settings.name,
                 description: settings.description,
+                website_url: settings.websiteUrl,
+                hold_duration_minutes: settings.holdDurationMinutes,
                 contact: settings.contact,
                 socials: settings.socials
             });

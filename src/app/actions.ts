@@ -10,7 +10,8 @@ import {
     newRequestAlertEmail,
     requestApprovedEmail
 } from "@/services/emailTemplates";
-import { Room, HotelSettings, PageContent, FAQ, BlockedDate, Booking, Convenience, LocationCategory } from "@/types";
+import { Room, HotelSettings, PageContent, FAQ, BlockedDate, Booking, Convenience, LocationCategory, BookingHold } from "@/types";
+import { createServerClient } from "@/lib/supabase";
 
 // --- Room Actions ---
 
@@ -298,4 +299,110 @@ export async function deleteCategoryAction(categoryId: string) {
         revalidatePath("/");
     }
     return success;
+}
+
+// --- Booking Hold Actions ---
+
+export async function createHoldAction(
+    roomId: string,
+    checkIn: string,
+    checkOut: string,
+    sessionId: string
+): Promise<{ success: boolean; holdId?: string; expiresAt?: string; error?: string }> {
+    const supabase = createServerClient();
+
+    // Get hold duration from settings
+    const settings = await contentService.getSettings();
+    const durationMs = (settings.holdDurationMinutes || 5) * 60 * 1000;
+    const expiresAt = new Date(Date.now() + durationMs);
+
+    // Check if room is available (includes existing holds)
+    const checkInDate = new Date(checkIn);
+    const checkOutDate = new Date(checkOut);
+    const isAvailable = await roomService.checkAvailability(roomId, checkInDate, checkOutDate);
+
+    if (!isAvailable) {
+        return { success: false, error: 'Room no longer available for these dates' };
+    }
+
+    // Create hold
+    const { data, error } = await supabase
+        .from('booking_holds')
+        .insert({
+            room_id: roomId,
+            check_in: checkIn.split('T')[0],
+            check_out: checkOut.split('T')[0],
+            session_id: sessionId,
+            expires_at: expiresAt.toISOString()
+        })
+        .select('id')
+        .single();
+
+    if (error) {
+        console.error('Failed to create hold:', error);
+        return { success: false, error: 'Failed to reserve room. Please try again.' };
+    }
+
+    return {
+        success: true,
+        holdId: data.id,
+        expiresAt: expiresAt.toISOString()
+    };
+}
+
+export async function releaseHoldAction(holdId: string): Promise<boolean> {
+    const supabase = createServerClient();
+    const { error } = await supabase
+        .from('booking_holds')
+        .delete()
+        .eq('id', holdId);
+
+    if (error) {
+        console.error('Failed to release hold:', error);
+    }
+    return !error;
+}
+
+export async function pingHoldAction(holdId: string): Promise<void> {
+    const supabase = createServerClient();
+    await supabase
+        .from('booking_holds')
+        .update({ has_contention: true })
+        .eq('id', holdId);
+}
+
+export async function getActiveHoldAction(
+    roomId: string,
+    checkIn: string,
+    checkOut: string,
+    excludeSessionId?: string
+): Promise<BookingHold | null> {
+    const supabase = createServerClient();
+
+    let query = supabase
+        .from('booking_holds')
+        .select('*')
+        .eq('room_id', roomId)
+        .lt('check_in', checkOut.split('T')[0])
+        .gt('check_out', checkIn.split('T')[0])
+        .gt('expires_at', new Date().toISOString());
+
+    if (excludeSessionId) {
+        query = query.neq('session_id', excludeSessionId);
+    }
+
+    const { data, error } = await query.maybeSingle();
+
+    if (error || !data) return null;
+
+    return {
+        id: data.id,
+        roomId: data.room_id,
+        checkIn: data.check_in,
+        checkOut: data.check_out,
+        sessionId: data.session_id,
+        expiresAt: data.expires_at,
+        hasContention: data.has_contention,
+        createdAt: data.created_at
+    };
 }

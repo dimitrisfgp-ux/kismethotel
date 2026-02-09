@@ -66,6 +66,17 @@ export interface Booking {
     createdAt: string;
 }
 
+export interface BookingHold {
+    id: string;
+    roomId: string;
+    checkIn: string;      // ISO Date
+    checkOut: string;     // ISO Date
+    sessionId: string;
+    expiresAt: string;    // ISO DateTime
+    hasContention: boolean;
+    createdAt: string;
+}
+
 export interface ContactRequest {
     id: string;
     subject: RequestSubject;
@@ -137,6 +148,8 @@ export interface RoomFilters {
 export interface HotelSettings {
     name: string;
     description: string;
+    websiteUrl: string; // For QR Code generation
+    holdDurationMinutes: number; // For booking hold system
     contact: {
         address: string;
         phone: string;
@@ -147,6 +160,7 @@ export interface HotelSettings {
         viber: string;
         instagram: string;
         facebook: string;
+        googleReviews: string; // For QR Code generation
     };
 }
 

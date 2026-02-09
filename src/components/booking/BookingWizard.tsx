@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { Room, Booking } from "@/types";
 import { DateRange } from "react-day-picker";
 import { Button } from "../ui/Button";
@@ -11,8 +11,10 @@ import { useRouter } from "next/navigation";
 import { StepItinerary } from "./steps/StepItinerary";
 import { StepGuestDetails, GuestData } from "./steps/StepGuestDetails";
 import { BookingSummary } from "./BookingSummary";
-import { createBookingAction } from "@/app/actions";
+import { ContentionTimer } from "./ContentionTimer";
+import { createBookingAction, createHoldAction, releaseHoldAction } from "@/app/actions";
 import { useToast } from "@/contexts/ToastContext";
+import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
 
 interface BookingWizardProps {
     room: Room;
@@ -25,6 +27,67 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
     const [guestData, setGuestData] = useState<GuestData>({ firstName: "", lastName: "", email: "", phone: "" });
     const router = useRouter();
     const { showToast } = useToast();
+
+    // Hold management state
+    const [holdId, setHoldId] = useState<string | null>(null);
+    const [holdExpiresAt, setHoldExpiresAt] = useState<string | null>(null);
+    const holdCreated = useRef(false);
+
+    // Generate session ID
+    const sessionId = useMemo(() => {
+        if (typeof window === 'undefined') return '';
+        let id = localStorage.getItem('booking_session_id');
+        if (!id) {
+            id = crypto.randomUUID();
+            localStorage.setItem('booking_session_id', id);
+        }
+        return id;
+    }, []);
+
+    // Subscribe to realtime contention updates
+    const { hasContention } = useRealtimeHolds({
+        roomId: room.id,
+        checkIn: dateRange.from!,
+        checkOut: dateRange.to!,
+        mySessionId: sessionId
+    });
+
+    // Create hold on mount
+    useEffect(() => {
+        if (holdCreated.current || !sessionId || !dateRange.from || !dateRange.to) return;
+        holdCreated.current = true;
+
+        createHoldAction(
+            room.id,
+            dateRange.from.toISOString(),
+            dateRange.to.toISOString(),
+            sessionId
+        ).then(result => {
+            if (result.success) {
+                setHoldId(result.holdId!);
+                setHoldExpiresAt(result.expiresAt!);
+            } else {
+                showToast(result.error || "Could not reserve room", "error");
+                router.push('/rooms');
+            }
+        });
+    }, [room.id, dateRange.from, dateRange.to, sessionId, showToast, router]);
+
+    // Cleanup on unmount - release the hold
+    useEffect(() => {
+        const currentHoldId = holdId;
+        return () => {
+            if (currentHoldId) {
+                releaseHoldAction(currentHoldId);
+            }
+        };
+    }, [holdId]);
+
+    // Handle hold expiration
+    const handleHoldExpired = () => {
+        showToast("Your booking session has expired. Please start again.", "error");
+        router.push('/rooms');
+    };
 
     const nights = dateRange.from && dateRange.to ? differenceInDays(dateRange.to, dateRange.from) : 0;
     const total = calculateTotal(room.pricePerNight, nights);
@@ -59,6 +122,10 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
 
             try {
                 await createBookingAction(booking);
+                // Release hold after successful booking (cleanup)
+                if (holdId) {
+                    await releaseHoldAction(holdId);
+                }
                 showToast("Booking Confirmed!", "success");
                 router.push("/book/success");
             } catch (_error) {
@@ -75,7 +142,14 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Main Form Area */}
             <div className="lg:col-span-2">
-                {/* Steps Indicator */}
+                {/* Contention Timer - shown when someone else is interested */}
+                {hasContention && holdExpiresAt && (
+                    <ContentionTimer
+                        expiresAt={holdExpiresAt}
+                        onExpired={handleHoldExpired}
+                    />
+                )}
+
                 {/* Steps Indicator (Mobile) */}
                 <div className="md:hidden mb-8">
                     <div className="flex justify-between items-end mb-2">
