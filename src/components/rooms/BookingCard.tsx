@@ -11,7 +11,7 @@ import { differenceInDays, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
 import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
-import { HoldBlockedModal } from "../booking/HoldBlockedModal";
+import { HoldBlockedModal, HoldStatus } from "../booking/HoldBlockedModal";
 import { DiscreetHoldTimer } from "../booking/DiscreetHoldTimer";
 import { useToast } from "@/contexts/ToastContext";
 import { checkBookingStatusAction } from "@/app/actions";
@@ -34,44 +34,57 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         checkOut: dateRange?.to
     });
 
-    // Manage modal dismissal state
-    const [isModalDismissed, setIsModalDismissed] = useState(false);
+    // Modal State Management
+    const [modalStatus, setModalStatus] = useState<HoldStatus | 'idle'>('idle');
+    const [isHeldDismissed, setIsHeldDismissed] = useState(false);
 
     // Store previous hold to detect when it's released
     const previousHoldRef = useRef(activeHold);
 
-    // Effect for Hold Release Notification
+    // Effect: Handle State Transitions
     useEffect(() => {
         const prevHold = previousHoldRef.current;
+        const currentHold = activeHold;
 
-        // Case: Hold WAS present, and now is NULL (Released)
-        if (prevHold && !activeHold) {
+        // 1. New Hold Detected
+        if (currentHold && !prevHold) {
+            setModalStatus('held');
+            setIsHeldDismissed(false);
+        }
+        // 1b. Hold ID changed (new hold replaced old one)
+        else if (currentHold && prevHold && currentHold.id !== prevHold.id) {
+            setModalStatus('held');
+            setIsHeldDismissed(false);
+        }
 
-            // Check if it was booked or just abandoned
+        // 2. Hold Released (Active -> Null)
+        if (prevHold && !currentHold) {
+            // Check if it resulted in a booking
             checkBookingStatusAction(
                 room.id,
                 prevHold.checkIn,
                 prevHold.checkOut
             ).then(({ isBooked }) => {
                 if (isBooked) {
-                    showToast("These dates were just booked by another guest.", "error");
+                    setModalStatus('booked');
                 } else {
-                    showToast("Dates are now available!", "success");
+                    setModalStatus('released');
                 }
-                router.refresh(); // Refresh to update calendar (fetch new bookings)
+                router.refresh();
             });
         }
 
-        // Update ref
         previousHoldRef.current = activeHold;
-    }, [activeHold, room.id, router, showToast]);
+    }, [activeHold, room.id, router]);
 
-    // Reset dismissal when a new hold appears (different ID)
-    useEffect(() => {
-        if (activeHold && activeHold.id !== previousHoldRef.current?.id) {
-            setIsModalDismissed(false);
+    // Close Handler
+    const handleCloseModal = () => {
+        if (modalStatus === 'held') {
+            setIsHeldDismissed(true); // Don't close, just dismiss to discreet mode
+        } else {
+            setModalStatus('idle'); // Close completely for other states
         }
-    }, [activeHold?.id]); // Depend on ID to discern new holds
+    };
 
     // Prepare disabled dates for DayPicker (including past dates)
     const disabledDates = [
@@ -142,21 +155,24 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
 
     return (
         <div className="sticky top-28 bg-white border border-[var(--color-sand)] rounded-card shadow-xl animate-slide-up overflow-hidden">
-            {activeHold && !isModalDismissed && (
+
+            {/* Modal Logic */}
+            {(modalStatus !== 'idle') && !(modalStatus === 'held' && isHeldDismissed) && (
                 <HoldBlockedModal
-                    expiresAt={activeHold.expiresAt}
+                    status={modalStatus as HoldStatus}
+                    expiresAt={activeHold?.expiresAt} // Only needed for 'held'
                     onExpired={() => {
-                        // Optional: trigger re-verify or just let realtime clear it
+                        // Let the effect handle the transition to 'released' when activeHold becomes null
                     }}
-                    onClose={() => setIsModalDismissed(true)}
+                    onClose={handleCloseModal}
                 />
             )}
 
-            {/* Discreet Timer (shown when modal is dismissed) */}
-            {activeHold && isModalDismissed && (
+            {/* Discreet Timer (only when held & dismissed) */}
+            {modalStatus === 'held' && isHeldDismissed && activeHold && (
                 <DiscreetHoldTimer
                     expiresAt={activeHold.expiresAt}
-                    onExpired={() => { /* Handle expiry if needed */ }}
+                    onExpired={() => { /* Effect handles removal */ }}
                 />
             )}
             {/* Header: Price */}
