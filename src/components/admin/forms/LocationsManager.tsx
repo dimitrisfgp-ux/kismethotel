@@ -28,6 +28,8 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
     const [editingLocationId, setEditingLocationId] = useState<number | null>(null);
     const [editingCategoryId, setEditingCategoryId] = useState<string | null>(null);
     const [deletedCategoryIds, setDeletedCategoryIds] = useState<string[]>([]);
+    // Track IDs that are known to be in the database
+    const [persistedIds, setPersistedIds] = useState<Set<string>>(new Set(initialCategories.map(c => c.id)));
 
     const { showToast } = useToast();
 
@@ -59,8 +61,8 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
 
     const deleteCategory = (id: string) => {
         if (confirm("Delete this category? Locations inside will be deleted or need reassignment.")) {
-            // Track for deletion on Save if it's an existing category
-            if (!id.startsWith('cat_')) {
+            // Track for deletion on Save if it's a persisted category
+            if (persistedIds.has(id)) {
                 setDeletedCategoryIds(prev => [...prev, id]);
             }
             setCategories(prev => prev.filter(c => c.id !== id));
@@ -128,6 +130,8 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
 
             if (results.every(r => r)) {
                 showToast("All changes saved successfully", "success");
+                // Update persisted IDs: All current categories are now saved
+                setPersistedIds(new Set(categories.map(c => c.id)));
             } else {
                 showToast("Saved with some errors", "error");
             }
