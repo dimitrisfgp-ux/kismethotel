@@ -14,10 +14,12 @@ export async function GET() {
 
     const supabase = createServerClient();
 
-    // Attempt a simple count query
-    const { count, error } = await supabase
-        .from('bookings')
-        .select('*', { count: 'exact', head: true });
+    // Check counts for multiple tables
+    const [bookings, rooms, requests] = await Promise.all([
+        supabase.from('bookings').select('*', { count: 'exact', head: true }),
+        supabase.from('rooms').select('*', { count: 'exact', head: true }),
+        supabase.from('contact_requests').select('*', { count: 'exact', head: true })
+    ]);
 
     return NextResponse.json({
         env: {
@@ -25,10 +27,17 @@ export async function GET() {
             hasServiceKey: !!serviceKey,
             serviceKeyPreview: keyPreview,
         },
+        counts: {
+            bookings: bookings.count,
+            rooms: rooms.count,
+            requests: requests.count
+        },
         connection: {
-            success: !error,
-            itemCount: count,
-            error: error ? error.message : null
+            success: !bookings.error && !rooms.error,
+            errors: {
+                bookings: bookings.error?.message,
+                rooms: rooms.error?.message
+            }
         },
         timestamp: new Date().toISOString()
     });
