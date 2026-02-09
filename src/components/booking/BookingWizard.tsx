@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Room, Booking } from "@/types";
 import { DateRange } from "react-day-picker";
 import { Button } from "../ui/Button";
@@ -12,9 +12,10 @@ import { StepItinerary } from "./steps/StepItinerary";
 import { StepGuestDetails, GuestData } from "./steps/StepGuestDetails";
 import { BookingSummary } from "./BookingSummary";
 import { ContentionTimer } from "./ContentionTimer";
-import { createBookingAction, createHoldAction, releaseHoldAction } from "@/app/actions";
+import { createBookingAction, createHoldAction, releaseHoldAction, extendHoldAction } from "@/app/actions";
 import { useToast } from "@/contexts/ToastContext";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
+import { useSession } from "@/contexts/SessionContext";
 
 interface BookingWizardProps {
     room: Room;
@@ -27,6 +28,7 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
     const [guestData, setGuestData] = useState<GuestData>({ firstName: "", lastName: "", email: "", phone: "" });
     const router = useRouter();
     const { showToast } = useToast();
+    const { sessionId } = useSession();
 
     // Hold management state
     const [holdId, setHoldId] = useState<string | null>(null);
@@ -34,22 +36,14 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
     const holdCreated = useRef(false);
 
     // Generate session ID
-    const sessionId = useMemo(() => {
-        if (typeof window === 'undefined') return '';
-        let id = localStorage.getItem('booking_session_id');
-        if (!id) {
-            id = crypto.randomUUID();
-            localStorage.setItem('booking_session_id', id);
-        }
-        return id;
-    }, []);
+
 
     // Subscribe to realtime contention updates
     const { hasContention } = useRealtimeHolds({
         roomId: room.id,
         checkIn: dateRange.from!,
         checkOut: dateRange.to!,
-        mySessionId: sessionId
+        mySessionId: sessionId || undefined
     });
 
     // Create hold on mount
@@ -78,7 +72,19 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
         return () => { isMounted = false; };
     }, [room.id, room.slug, dateRange.from, dateRange.to, sessionId, showToast, router]);
 
-    // Cleanup on unmount - release the hold
+    // HEARTBEAT: Extend hold every 30 seconds
+    useEffect(() => {
+        if (!holdId) return;
+
+        const interval = setInterval(() => {
+            // Keep the hold alive
+            extendHoldAction(holdId);
+        }, 30000);
+
+        return () => clearInterval(interval);
+    }, [holdId]);
+
+    // Explicit Cleanup on unmount (Navigation)
     useEffect(() => {
         const currentHoldId = holdId;
         return () => {

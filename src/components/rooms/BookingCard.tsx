@@ -14,6 +14,7 @@ import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
 import { HoldBlockedModal, HoldStatus } from "../booking/HoldBlockedModal";
 import { DiscreetHoldTimer } from "../booking/DiscreetHoldTimer";
 import { useToast } from "@/contexts/ToastContext";
+import { useSession } from "@/contexts/SessionContext";
 import { checkBookingStatusAction } from "@/app/actions";
 
 interface BookingCardProps {
@@ -26,12 +27,14 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
     const { dateRange, setDateRange } = useDateContext();
     const router = useRouter();
     const { showToast } = useToast();
+    const { sessionId } = useSession();
 
     // Subscribe to realtime holds for this room
     const { allHolds, activeHold } = useRealtimeHolds({
         roomId: room.id,
         checkIn: dateRange?.from,
-        checkOut: dateRange?.to
+        checkOut: dateRange?.to,
+        mySessionId: sessionId || undefined
     });
 
     // Modal State Management

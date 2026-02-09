@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { supabase } from "@/lib/supabase";
 import { BookingHold } from "@/types";
 import { getActiveHoldAction, pingHoldAction, getRoomHoldsAction } from "@/app/actions";
@@ -77,7 +77,14 @@ export function useRealtimeHolds({
         return () => { isMounted = false; };
     }, [roomId, checkIn, checkOut, mySessionId, datesOverlap]);
 
-    // Realtime subscription
+    // Refs for stable access inside the effect without triggering re-runs
+    const stateRef = useRef({ checkIn, checkOut, mySessionId, activeHold, datesOverlap });
+    // Update refs on every render
+    useEffect(() => {
+        stateRef.current = { checkIn, checkOut, mySessionId, activeHold, datesOverlap };
+    });
+
+    // Realtime subscription - Depends ONLY on roomId to prevent thrashing
     useEffect(() => {
         const channel = supabase
             .channel(`room-${roomId}-holds`)
@@ -88,6 +95,7 @@ export function useRealtimeHolds({
                 filter: `room_id=eq.${roomId}`
             }, async (payload) => {
                 const eventType = payload.eventType;
+                const current = stateRef.current; // Access fresh state via ref
 
                 if (eventType === 'INSERT') {
                     // Type hack for payload.new because the types are loose in supabase-js
@@ -111,7 +119,7 @@ export function useRealtimeHolds({
                     });
 
                     // Check overlap with MY dates
-                    if (datesOverlap(newRecord) && newRecord.session_id !== mySessionId) {
+                    if (current.datesOverlap(newRecord) && newRecord.session_id !== current.mySessionId) {
                         setActiveHold(hold);
                         await pingHoldAction(hold.id);
                     }
@@ -126,7 +134,7 @@ export function useRealtimeHolds({
                     } : h));
 
                     // Contention check
-                    if (newRecord.session_id === mySessionId && newRecord.has_contention) {
+                    if (newRecord.session_id === current.mySessionId && newRecord.has_contention) {
                         setHasContention(true);
                     }
                 }
@@ -135,7 +143,8 @@ export function useRealtimeHolds({
                     const oldRecord = payload.old as { id: string };
                     setAllHolds(prev => prev.filter(h => h.id !== oldRecord.id));
 
-                    if (oldRecord.id === activeHold?.id) {
+                    // STALE CLOSURE FIXED: Check against ref, not captured variable
+                    if (oldRecord.id === current.activeHold?.id) {
                         setActiveHold(null);
                     }
                 }
@@ -147,7 +156,7 @@ export function useRealtimeHolds({
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [roomId, checkIn, checkOut, mySessionId, datesOverlap, activeHold?.id]);
+    }, [roomId]); // <-- Only roomId!
 
     return { activeHold, allHolds, hasContention, isConnected, isLoading };
 }

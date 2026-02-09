@@ -311,29 +311,65 @@ export async function createHoldAction(
 ): Promise<{ success: boolean; holdId?: string; expiresAt?: string; error?: string }> {
     const supabase = createServerClient();
 
-    // Get hold duration from settings
-    const settings = await contentService.getSettings();
-    const durationMs = (settings.holdDurationMinutes || 5) * 60 * 1000;
+    // SHORT TTL for Heartbeat Pattern (1 minute)
+    // If client is present, they will ping every 30s to extend this.
+    const durationMs = 60 * 1000;
     const expiresAt = new Date(Date.now() + durationMs);
 
-    // Check if room is available (includes existing holds)
-    const checkInDate = new Date(checkIn);
-    const checkOutDate = new Date(checkOut);
-    const isAvailable = await roomService.checkAvailability(roomId, checkInDate, checkOutDate);
+    const checkInDate = checkIn.split('T')[0];
+    const checkOutDate = checkOut.split('T')[0];
 
-    if (!isAvailable) {
-        return { success: false, error: 'Room no longer available for these dates' };
+    // 1. Check for CONFIRMED bookings (Manual check to avoid RPC rigidness)
+    const { data: existingBookings, error: bookingError } = await supabase
+        .from('bookings')
+        .select('id')
+        .eq('room_id', roomId)
+        .eq('status', 'confirmed')
+        .lt('check_in', checkOutDate)
+        .gt('check_out', checkInDate)
+        .maybeSingle();
+
+    if (bookingError) {
+        console.error('Error checking bookings:', bookingError);
+        return { success: false, error: 'System error checking availability' };
     }
 
-    // Create hold
+    if (existingBookings) {
+        return { success: false, error: 'Room is already booked for these dates' };
+    }
+
+    // 2. Check for OTHER active holds (Excluding my session)
+    const { data: overlappingHolds, error: holdError } = await supabase
+        .from('booking_holds')
+        .select('id')
+        .eq('room_id', roomId)
+        .gt('expires_at', new Date().toISOString()) // Only active holds
+        .lt('check_in', checkOutDate)
+        .gt('check_out', checkInDate)
+        .neq('session_id', sessionId) // <--- CRITICAL: Exclude myself
+        .maybeSingle();
+
+    if (holdError) {
+        console.error('Error checking holds:', holdError);
+        return { success: false, error: 'System error checking holds' };
+    }
+
+    if (overlappingHolds) {
+        return { success: false, error: 'Room is currently held by someone else' };
+    }
+
+    // 3. Create (or Update?) Hold
+    // A fresh create is safer to ensure we have a valid ID for this flow.
+    // Ideally we might want to UPSERT if we already have one, but INSERT is fine as old one expires.
     const { data, error } = await supabase
         .from('booking_holds')
         .insert({
             room_id: roomId,
-            check_in: checkIn.split('T')[0],
-            check_out: checkOut.split('T')[0],
+            check_in: checkInDate,
+            check_out: checkOutDate,
             session_id: sessionId,
-            expires_at: expiresAt.toISOString()
+            expires_at: expiresAt.toISOString(),
+            has_contention: false
         })
         .select('id')
         .single();
@@ -361,6 +397,18 @@ export async function releaseHoldAction(holdId: string): Promise<boolean> {
         console.error('Failed to release hold:', error);
     }
     return !error;
+}
+
+// Named 'extend' to be clear about its purpose (Heartbeat)
+export async function extendHoldAction(holdId: string): Promise<void> {
+    const supabase = createServerClient();
+    // Extend by 1 minute from NOW
+    const newExpiry = new Date(Date.now() + 60 * 1000).toISOString();
+
+    await supabase
+        .from('booking_holds')
+        .update({ expires_at: newExpiry })
+        .eq('id', holdId);
 }
 
 export async function pingHoldAction(holdId: string): Promise<void> {

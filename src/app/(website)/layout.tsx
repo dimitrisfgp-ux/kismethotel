@@ -4,6 +4,7 @@ import "../globals.css";
 import { DateProvider } from "@/contexts/DateContext";
 import { UIProvider } from "@/contexts/UIContext";
 import { ToastProvider } from "@/contexts/ToastContext";
+import { SessionProvider } from "@/contexts/SessionContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWidget } from "@/components/layout/FloatingWidget";
@@ -74,17 +75,19 @@ export default async function RootLayout({
     <html lang="en" className={`${montserrat.variable} ${inter.variable}`} data-scroll-behavior="smooth">
       <body className="antialiased bg-[var(--color-warm-white)] text-[var(--color-charcoal)]">
         <UIProvider>
-          <DateProvider>
-            <ToastProvider>
-              <ScrollToTop />
-              <Header settings={settings} rooms={roomSummaries} />
-              <main className="min-h-screen">
-                {children}
-              </main>
-              <Footer settings={settings} />
-              <FloatingWidget settings={settings} />
-            </ToastProvider>
-          </DateProvider>
+          <SessionProvider>
+            <DateProvider>
+              <ToastProvider>
+                <ScrollToTop />
+                <Header settings={settings} rooms={roomSummaries} />
+                <main className="min-h-screen">
+                  {children}
+                </main>
+                <Footer settings={settings} />
+                <FloatingWidget settings={settings} />
+              </ToastProvider>
+            </DateProvider>
+          </SessionProvider>
         </UIProvider>
       </body>
     </html>
