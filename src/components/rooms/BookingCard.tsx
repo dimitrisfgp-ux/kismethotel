@@ -8,6 +8,8 @@ import { formatCurrency, calculateTotal } from "@/lib/priceCalculator";
 import { differenceInDays, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
 import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
+import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
+import { HoldBlockedModal } from "../booking/HoldBlockedModal";
 
 interface BookingCardProps {
     room: Room;
@@ -18,6 +20,13 @@ interface BookingCardProps {
 export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingCardProps) {
     const { dateRange, setDateRange } = useDateContext();
     const router = useRouter();
+
+    // Subscribe to realtime holds for this room
+    const { allHolds, activeHold } = useRealtimeHolds({
+        roomId: room.id,
+        checkIn: dateRange?.from,
+        checkOut: dateRange?.to
+    });
 
     // Prepare disabled dates for DayPicker (including past dates)
     const disabledDates = [
@@ -36,6 +45,11 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
     const handleBookNow = () => {
         if (!dateRange?.from) {
             alert("Please select dates first."); // Or use Toast
+            return;
+        }
+
+        if (isSelectionHeld) {
+            // Should be handled by disabled state, but extra safety
             return;
         }
 
@@ -73,8 +87,24 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         .filter(b => b.reason === "Other")
         .map(b => ({ from: new Date(b.from), to: new Date(b.to) }));
 
+    const heldMatchers = allHolds.map(h => ({
+        from: new Date(h.checkIn),
+        to: new Date(h.checkOut)
+    }));
+
+    // Smart Blocking Logic: Only disable if SELECTION overlaps with a hold
+    const isSelectionHeld = !!activeHold;
+
     return (
         <div className="sticky top-28 bg-white border border-[var(--color-sand)] rounded-card shadow-xl animate-slide-up overflow-hidden">
+            {activeHold && (
+                <HoldBlockedModal
+                    expiresAt={activeHold.expiresAt}
+                    onExpired={() => {
+                        // Optional: trigger re-verify or just let realtime clear it
+                    }}
+                />
+            )}
             {/* Header: Price */}
             <div className="p-6 bg-[var(--color-warm-white)] border-b border-[var(--color-sand)] text-center">
                 <span className="font-montserrat text-3xl font-bold text-[var(--color-aegean-blue)]">{formatCurrency(room.pricePerNight)}</span>
@@ -96,14 +126,16 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
                             maintenance: maintenanceMatchers,
                             renovation: renovationMatchers,
                             season: seasonMatchers,
-                            other: otherMatchers
+                            other: otherMatchers,
+                            held: heldMatchers
                         }}
                         modifiersClassNames={{
                             booked: "rdp-day_booked",
                             maintenance: "rdp-day_maintenance",
                             renovation: "rdp-day_renovation",
                             season: "rdp-day_season",
-                            other: "rdp-day_other"
+                            other: "rdp-day_other",
+                            held: "rdp-day_held"
                         }}
                     />
                 </div>
@@ -131,9 +163,12 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
                     <Button
                         onClick={handleBookNow}
                         className="w-full rounded-subtle h-14 text-lg"
-                        disabled={nights === 0}
+                        disabled={nights === 0 || isSelectionHeld}
                     >
-                        {nights > 0 ? "Book Now" : "Select Dates"}
+                        {isSelectionHeld
+                            ? "Dates Currently Held"
+                            : (nights > 0 ? "Book Now" : "Select Dates")
+                        }
                     </Button>
 
                     <p className="text-center text-[10px] opacity-50 uppercase tracking-widest">You won&apos;t be charged yet</p>
