@@ -44,7 +44,7 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
             // Submit
             setIsLoading(true);
             const booking: Booking = {
-                id: Math.random().toString(36).substr(2, 9),
+                id: crypto.randomUUID(),
                 roomId: room.id,
                 checkIn: dateRange.from!.toISOString(),
                 checkOut: dateRange.to!.toISOString(),
