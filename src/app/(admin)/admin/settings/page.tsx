@@ -3,12 +3,22 @@ import { SettingsForm } from "@/components/admin/forms/SettingsForm";
 import { UserManagementSection } from "@/components/admin/settings/UserManagementSection";
 import { RoleManagementSection } from "@/components/admin/settings/RoleManagementSection";
 import { createClient } from "@/lib/supabase/server";
+import { getUsersAction } from "@/app/actions/auth";
+import { getRolesAction, getPermissionsAction } from "@/app/actions/roles";
 
 export default async function SettingsPage() {
-    const settings = await contentService.getSettings();
     const supabase = await createClient();
 
-    const { data: { user } } = await supabase.auth.getUser();
+    // Parallel Data Fetching (Server-Side)
+    const [settings, userResult, usersResult, rolesResult, permissionsResult] = await Promise.all([
+        contentService.getSettings(),
+        supabase.auth.getUser(),
+        getUsersAction().catch((err: any) => { console.error('Failed to fetch users:', err); return []; }),
+        getRolesAction().catch((err: any) => { console.error('Failed to fetch roles:', err); return []; }),
+        getPermissionsAction().catch((err: any) => { console.error('Failed to fetch permissions:', err); return []; })
+    ]);
+
+    const user = userResult.data.user;
 
     let userRole = 'viewer';
     if (user) {
@@ -31,13 +41,21 @@ export default async function SettingsPage() {
             {/* User Management (Admin Only - Component handles internal guard, but we pass props) */}
             {user && (
                 <div className="pb-8 border-b border-[var(--color-sand)]">
-                    <UserManagementSection currentUserRole={userRole} currentUserId={user.id} />
+                    <UserManagementSection
+                        currentUserRole={userRole}
+                        currentUserId={user.id}
+                        initialUsers={usersResult}
+                        initialRoles={rolesResult}
+                    />
                 </div>
             )}
 
             {/* Role Management (Protected Section) */}
             <div className="pb-8 border-b border-[var(--color-sand)]">
-                <RoleManagementSection />
+                <RoleManagementSection
+                    initialRoles={rolesResult}
+                    initialPermissions={permissionsResult}
+                />
             </div>
 
             {/* General Settings */}

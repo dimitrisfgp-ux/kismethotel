@@ -19,15 +19,19 @@ interface UserProfile {
 }
 
 interface UserManagementSectionProps {
-    currentUserRole: string; // Legacy role name passed from parent
+    currentUserRole: string;
     currentUserId: string;
+    initialUsers?: any[];
+    initialRoles?: Role[];
 }
 
-export function UserManagementSection({ currentUserRole, currentUserId }: UserManagementSectionProps) {
+export function UserManagementSection({ currentUserRole, currentUserId, initialUsers = [], initialRoles = [] }: UserManagementSectionProps) {
     const { showToast } = useToast();
-    const [users, setUsers] = useState<UserProfile[]>([]);
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+
+    // Filter out current user immediately from initial data if present
+    const [users, setUsers] = useState<any[]>(initialUsers.filter(u => u.id !== currentUserId));
+    const [roles, setRoles] = useState<Role[]>(initialRoles);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -42,12 +46,10 @@ export function UserManagementSection({ currentUserRole, currentUserId }: UserMa
     const [isSaving, setIsSaving] = useState(false);
     const [showPassword, setShowPassword] = useState(false);
 
-    // Initial Load
-    useEffect(() => {
-        loadData();
-    }, []);
+    // Removed automatic useEffect loadData.
 
     async function loadData() {
+        setIsLoading(true);
         try {
             const [usersData, rolesData] = await Promise.all([
                 getUsersAction(),

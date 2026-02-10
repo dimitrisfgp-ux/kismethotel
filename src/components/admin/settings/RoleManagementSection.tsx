@@ -13,11 +13,16 @@ import {
 import { useToast } from '@/contexts/ToastContext';
 import { Loader2, Plus, Shield, Edit2, Trash2, Check, X } from 'lucide-react';
 
-export function RoleManagementSection() {
+interface RoleManagementSectionProps {
+    initialRoles?: Role[];
+    initialPermissions?: Permission[];
+}
+
+export function RoleManagementSection({ initialRoles = [], initialPermissions = [] }: RoleManagementSectionProps) {
     const { showToast } = useToast();
-    const [roles, setRoles] = useState<Role[]>([]);
-    const [permissions, setPermissions] = useState<Permission[]>([]);
-    const [isLoading, setIsLoading] = useState(true);
+    const [roles, setRoles] = useState<Role[]>(initialRoles);
+    const [permissions, setPermissions] = useState<Permission[]>(initialPermissions);
+    const [isLoading, setIsLoading] = useState(false);
 
     // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
@@ -25,12 +30,12 @@ export function RoleManagementSection() {
     const [formData, setFormData] = useState({ name: '', description: '', permissionIds: [] as string[] });
     const [isSaving, setIsSaving] = useState(false);
 
-    // Initial Load
-    useEffect(() => {
-        loadData();
-    }, []);
+    // Removed automatic useEffect loadData since we pass initial data
+    // effectively making this instant.
+    // We only load data if explicitly refreshing or after an action.
 
     async function loadData() {
+        setIsLoading(true);
         try {
             const [rolesData, permsData] = await Promise.all([
                 getRolesAction(),
