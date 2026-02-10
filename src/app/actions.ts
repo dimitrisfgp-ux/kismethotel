@@ -13,9 +13,12 @@ import {
 import { Room, HotelSettings, PageContent, FAQ, BlockedDate, Booking, Convenience, LocationCategory, BookingHold } from "@/types";
 import { createServerClient } from "@/lib/supabase";
 
+import { requirePermission } from "@/lib/auth/guards";
+
 // --- Room Actions ---
 
 export async function createRoomAction(room: Room) {
+    await requirePermission('rooms.manage');
     const success = await roomService.createRoom(room);
     if (success) {
         revalidatePath("/admin/rooms");
@@ -26,6 +29,7 @@ export async function createRoomAction(room: Room) {
 }
 
 export async function saveRoomAction(room: Room) {
+    await requirePermission('rooms.manage');
     const success = await roomService.saveRoom(room);
     if (success) {
         revalidatePath("/admin/rooms");
@@ -36,6 +40,7 @@ export async function saveRoomAction(room: Room) {
 }
 
 export async function deleteRoomAction(roomId: string) {
+    await requirePermission('rooms.manage');
     const success = await roomService.deleteRoom(roomId);
     if (success) {
         revalidatePath("/admin/rooms");
@@ -47,6 +52,7 @@ export async function deleteRoomAction(roomId: string) {
 // --- Content Actions ---
 
 export async function updateSettingsAction(settings: HotelSettings) {
+    await requirePermission('content.manage');
     const success = await contentService.updateSettings(settings);
     if (success) {
         revalidatePath("/admin/settings");
@@ -56,6 +62,7 @@ export async function updateSettingsAction(settings: HotelSettings) {
 }
 
 export async function updatePageContentAction(content: PageContent) {
+    await requirePermission('content.manage');
     const success = await contentService.updatePageContent(content);
     if (success) {
         revalidatePath("/admin/settings");
@@ -67,6 +74,7 @@ export async function updatePageContentAction(content: PageContent) {
 // --- FAQ Actions ---
 
 export async function updateFAQsAction(faqs: FAQ[]) {
+    await requirePermission('content.manage');
     const success = await contentService.updateFAQs(faqs);
     if (success) {
         revalidatePath("/admin/page-content");
@@ -76,6 +84,7 @@ export async function updateFAQsAction(faqs: FAQ[]) {
 }
 
 export async function updateLocationsAction(locations: Convenience[]) {
+    await requirePermission('content.manage');
     const success = await contentService.updateConveniences(locations);
     if (success) {
         revalidatePath("/admin/page-content");
@@ -85,6 +94,7 @@ export async function updateLocationsAction(locations: Convenience[]) {
 }
 
 export async function updateCategoriesAction(categories: LocationCategory[]) {
+    await requirePermission('content.manage');
     const success = await contentService.updateCategories(categories);
     if (success) {
         revalidatePath("/admin/page-content");
@@ -96,6 +106,7 @@ export async function updateCategoriesAction(categories: LocationCategory[]) {
 // --- Blocked Dates Actions ---
 
 export async function addBlockedDateAction(block: BlockedDate) {
+    await requirePermission('rooms.availability');
     const success = await roomService.addBlockedDate(block);
     if (success) {
         revalidatePath("/admin/bookings");
@@ -106,6 +117,7 @@ export async function addBlockedDateAction(block: BlockedDate) {
 }
 
 export async function removeBlockedDateAction(blockId: string) {
+    await requirePermission('rooms.availability');
     const success = await roomService.removeBlockedDate(blockId);
     if (success) {
         revalidatePath("/admin/bookings");

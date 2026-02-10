@@ -6,8 +6,9 @@ import { Booking, Room, ContactRequest, BookingStatus } from "@/types";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/priceCalculator";
 import { Badge } from "@/components/ui/Badge";
-import { Eye, XCircle, RotateCcw, X } from "lucide-react";
-import { cancelBookingAction } from "@/app/actions";
+import { Eye, XCircle, RotateCcw, X, Trash2 } from "lucide-react";
+import { deleteBookingAction, cancelBookingAction } from "@/app/actions/bookings";
+import { useToast } from "@/contexts/ToastContext";
 import { BookingDetailsModal } from "./BookingDetailsModal";
 import { FilterableHeader } from "./FilterableHeader";
 import { RequestBadge } from "./RequestBadge";
@@ -31,6 +32,7 @@ interface BookingsTableProps {
     bookings: Booking[];
     rooms: Room[];
     requests?: ContactRequest[];
+    userRole: string;
     onApproveRequest?: (request: ContactRequest) => Promise<void>;
     onDiscardRequest?: (request: ContactRequest) => Promise<void>;
 }
@@ -59,7 +61,8 @@ const INITIAL_FILTERS: BookingFilters = {
     bookedDate: null
 };
 
-export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest, onDiscardRequest }: BookingsTableProps) {
+export function BookingsTable({ bookings, rooms, requests = [], userRole, onApproveRequest, onDiscardRequest }: BookingsTableProps) {
+    const { showToast } = useToast();
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<ContactRequest | null>(null);
     const [filters, setFilters] = useState<BookingFilters>(INITIAL_FILTERS);
@@ -454,8 +457,8 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
                                             <td className="p-4 text-sm text-[var(--color-charcoal)]/70 whitespace-nowrap">
                                                 {format(new Date(booking.createdAt), "MMM d, yyyy")}
                                             </td>
-                                            <td className="p-4 text-right">
-                                                <div className="flex justify-end items-center gap-2">
+                                            <td className="p-4 whitespace-nowrap text-right">
+                                                <div className="flex items-center justify-end gap-2">
                                                     <button
                                                         onClick={() => setSelectedBooking(booking)}
                                                         className="p-1.5 text-[var(--color-aegean-blue)] hover:bg-[var(--color-aegean-blue)]/5 rounded-md transition-colors"
@@ -463,6 +466,25 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
                                                     >
                                                         <Eye className="h-4 w-4" />
                                                     </button>
+
+                                                    {userRole === 'admin' && (
+                                                        <button
+                                                            onClick={async () => {
+                                                                if (confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
+                                                                    try {
+                                                                        await deleteBookingAction(booking.id);
+                                                                        showToast('Booking deleted successfully', 'success');
+                                                                    } catch (error: any) {
+                                                                        showToast(error.message, 'error');
+                                                                    }
+                                                                }
+                                                            }}
+                                                            className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
+                                                            title="Delete Booking (Admin Only)"
+                                                        >
+                                                            <Trash2 className="h-4 w-4" />
+                                                        </button>
+                                                    )}
 
                                                     {booking.status === 'confirmed' && (
                                                         <button

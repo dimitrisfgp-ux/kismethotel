@@ -187,3 +187,26 @@ export interface PageContent {
         faq: { title: string; subtitle: string; };
     };
 }
+
+// === Auth & RBAC ===
+
+export interface Role {
+    id: string;
+    name: string;
+    description?: string;
+    isSystem: boolean; // Cannot be deleted if true
+    createdAt: string;
+    permissions?: Permission[]; // Optional joined permissions
+}
+
+export interface Permission {
+    id: string;
+    slug: string; // e.g. "bookings.create"
+    description: string;
+    module: string; // e.g. "bookings"
+}
+
+export interface RolePermission {
+    roleId: string;
+    permissionId: string;
+}

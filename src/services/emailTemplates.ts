@@ -391,3 +391,48 @@ export function preCheckoutEmail(booking: Booking, room?: Room): { subject: stri
         html: emailWrapper(content, 'Thank you for staying at Kismet Hotel. We hope to see you again!')
     };
 }
+
+/**
+ * Email #6: Welcome / Staff Invitation
+ */
+export function welcomeEmail(email: string, password: string, name: string): { subject: string; html: string } {
+    const loginUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/login` : 'https://kismethotel.com/login';
+
+    const content = `
+        <h2 style="color: ${COLORS.aegeanBlue}; margin-top: 0;">Welcome to Kismet CMS</h2>
+        <p style="font-size: 16px; line-height: 1.5; color: ${COLORS.charcoal};">
+            Hello <strong>${name}</strong>,
+        </p>
+        <p style="font-size: 16px; line-height: 1.5; color: ${COLORS.charcoal};">
+            You have been invited to join the Kismet Hotel Content Management System.
+            Manage bookings, availability, and guest requests all in one place.
+        </p>
+        
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 30px 0; background-color: #F8F9FA; border-radius: 8px; border: 1px solid #E9ECEF;">
+            <tr>
+                <td style="padding: 20px;">
+                    <p style="margin: 0; font-size: 12px; font-weight: 600; text-transform: uppercase; color: ${COLORS.charcoal}; letter-spacing: 1px;">Your Credentials</p>
+                    <p style="margin: 10px 0 5px 0; font-size: 14px; color: ${COLORS.charcoal};"><strong>Email:</strong> ${email}</p>
+                    <p style="margin: 0; font-size: 14px; color: ${COLORS.charcoal};"><strong>Password:</strong> ${password}</p>
+                </td>
+            </tr>
+        </table>
+        
+        <p style="font-size: 14px; line-height: 1.5; color: ${COLORS.charcoal}; opacity: 0.8;">
+            *For security, please change your password after your first login.
+        </p>
+
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin-top: 30px;">
+            <tr>
+                <td align="center" style="background-color: ${COLORS.aegeanBlue}; border-radius: 6px;">
+                    <a href="${loginUrl}" style="display: inline-block; padding: 14px 30px; color: #ffffff; text-decoration: none; font-weight: 500; font-size: 16px; font-family: ${FONTS.body};">Log In to CMS &rarr;</a>
+                </td>
+            </tr>
+        </table>
+    `;
+
+    return {
+        subject: `Welcome to Kismet Team`,
+        html: emailWrapper(content, "Your access credentials for Kismet CMS")
+    };
+}
