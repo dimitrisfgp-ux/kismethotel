@@ -14,29 +14,29 @@ export const dynamic = 'force-dynamic';
 export const metadata: Metadata = {
   title: {
     default: "Kismet - Boutique Accommodation in Crete",
-    template: "%s | Kismet Hotel"
+    template: "%s | Kismet"
   },
-  description: "Experience luxury and serenity at Kismet Hotel, Crete. Curated suites, breathtaking views, and authentic Greek hospitality.",
+  description: "Experience luxury and serenity at Kismet, Crete. Curated suites, breathtaking views, and authentic Greek hospitality.",
   keywords: ["hotel", "crete", "luxury", "accommodation", "boutique", "greece", "vacation"],
   openGraph: {
     type: "website",
     locale: "en_IE",
     url: "https://kismethotel.com",
-    siteName: "Kismet Hotel",
+    siteName: "Kismet",
     images: [
       {
-        url: "https://placehold.co/1200x630/E8DCC4/2F3437?text=Kismet+Hotel",
+        url: "https://placehold.co/1200x630/E8DCC4/2F3437?text=Kismet",
         width: 1200,
         height: 630,
-        alt: "Kismet Hotel Hero",
+        alt: "Kismet Hero",
       }
     ]
   },
   twitter: {
     card: "summary_large_image",
-    title: "Kismet Hotel - Crete",
+    title: "Kismet - Crete",
     description: "Curated luxury accommodations.",
-    images: ["https://placehold.co/1200x630/E8DCC4/2F3437?text=Kismet+Hotel"],
+    images: ["https://placehold.co/1200x630/E8DCC4/2F3437?text=Kismet"],
   }
 };
 

@@ -141,7 +141,7 @@ export const contentService = {
         if (error || !data) {
             // Return default settings if not found
             return {
-                name: 'Kismet Hotel',
+                name: 'Kismet',
                 description: 'Boutique Accommodations',
                 websiteUrl: 'https://kismethotel.com',
                 holdDurationMinutes: 5,

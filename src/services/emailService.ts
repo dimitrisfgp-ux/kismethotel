@@ -32,7 +32,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
         const transporter = createTransporter();
 
         await transporter.sendMail({
-            from: `"Kismet Hotel" <${process.env.GMAIL_USER}>`,
+            from: `"Kismet" <${process.env.GMAIL_USER}>`,
             to: options.to,
             subject: options.subject,
             html: options.html

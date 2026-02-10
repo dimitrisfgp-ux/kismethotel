@@ -104,7 +104,7 @@ export function bookingConfirmationEmail(booking: Booking, room?: Room): { subje
         
         <p style="margin:0 0 25px;color:${COLORS.charcoal};font-size:16px;line-height:1.6;">
             Dear ${booking.guestName},<br><br>
-            Thank you for choosing Kismet Hotel. We are delighted to confirm your reservation.
+            Thank you for choosing Kismet. We are delighted to confirm your reservation.
         </p>
         
         <!-- Booking ID Box -->
@@ -388,7 +388,7 @@ export function preCheckoutEmail(booking: Booking, room?: Room): { subject: stri
 
     return {
         subject: `Safe Travels, ${booking.guestName} 🌊`,
-        html: emailWrapper(content, 'Thank you for staying at Kismet Hotel. We hope to see you again!')
+        html: emailWrapper(content, 'Thank you for staying at Kismet. We hope to see you again!')
     };
 }
 
@@ -396,7 +396,7 @@ export function preCheckoutEmail(booking: Booking, room?: Room): { subject: stri
  * Email #6: Welcome / Staff Invitation
  */
 export function welcomeEmail(email: string, password: string, name: string): { subject: string; html: string } {
-    const loginUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/login` : 'https://kismethotel.com/login';
+    const loginUrl = process.env.NEXT_PUBLIC_APP_URL ? `${process.env.NEXT_PUBLIC_APP_URL}/login` : 'http://localhost:3000/login';
 
     const content = `
         <h2 style="color: ${COLORS.aegeanBlue}; margin-top: 0;">Welcome to Kismet CMS</h2>
@@ -404,7 +404,7 @@ export function welcomeEmail(email: string, password: string, name: string): { s
             Hello <strong>${name}</strong>,
         </p>
         <p style="font-size: 16px; line-height: 1.5; color: ${COLORS.charcoal};">
-            You have been invited to join the Kismet Hotel Content Management System.
+            You have been invited to join the Kismet Content Management System.
             Manage bookings, availability, and guest requests all in one place.
         </p>
         
