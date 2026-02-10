@@ -8,10 +8,12 @@ import { ContactRequest } from "@/types";
 export const dynamic = "force-dynamic";
 
 export default async function BookingsPage() {
-    const rooms = await roomService.getRooms();
-    const bookings = await roomService.getBookings();
-    const blockedDates = await roomService.getBlockedDates();
-    const requests = await requestService.getRequests();
+    const [rooms, bookings, blockedDates, requests] = await Promise.all([
+        roomService.getRooms(),
+        roomService.getBookings(),
+        roomService.getBlockedDates(),
+        requestService.getRequests()
+    ]);
 
     // Only pass pending requests related to bookings
     const bookingRequests = requests.filter(r => r.bookingId && r.status === "pending");

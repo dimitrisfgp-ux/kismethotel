@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { PaginationControls } from "@/components/ui/admin/PaginationControls";
 import { ContactRequest, Booking } from "@/types";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/Badge";
@@ -20,6 +21,10 @@ export function RequestsTable({ requests, bookings }: RequestsTableProps) {
     const [selectedRequest, setSelectedRequest] = useState<ContactRequest | null>(null);
     const [localRequests, setLocalRequests] = useState<ContactRequest[]>(requests);
     const { showToast } = useToast();
+
+    // Pagination State
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     const getLinkedBooking = (bookingId?: string) => {
         if (!bookingId) return undefined;
@@ -52,6 +57,14 @@ export function RequestsTable({ requests, bookings }: RequestsTableProps) {
         }
     };
 
+    // Pagination Logic
+    const totalItems = localRequests.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const paginatedRequests = localRequests.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
     if (localRequests.length === 0) {
         return (
             <div className="text-center py-12 border border-dashed border-[var(--color-sand)] rounded-lg">
@@ -63,6 +76,16 @@ export function RequestsTable({ requests, bookings }: RequestsTableProps) {
     return (
         <>
             <div className="bg-white rounded-lg border border-[var(--color-sand)] overflow-hidden">
+                {/* Top Pagination */}
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-[var(--color-warm-white)] border-b border-[var(--color-sand)]">
@@ -76,7 +99,7 @@ export function RequestsTable({ requests, bookings }: RequestsTableProps) {
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--color-sand)]">
-                            {localRequests.map((request) => (
+                            {paginatedRequests.map((request) => (
                                 <tr
                                     key={request.id}
                                     className="hover:bg-[var(--color-warm-white)]/20 transition-colors cursor-pointer"
@@ -100,51 +123,39 @@ export function RequestsTable({ requests, bookings }: RequestsTableProps) {
                                             <span className="text-[var(--color-charcoal)]/40 italic">—</span>
                                         )}
                                     </td>
-                                    <td className="p-4 text-sm">
+                                    <td className="p-4 text-[var(--color-charcoal)]/70">
                                         {format(new Date(request.createdAt), "MMM d, yyyy")}
                                     </td>
                                     <td className="p-4">
                                         <Badge variant="outline" className={REQUEST_STATUS_COLORS[request.status]}>
-                                            {request.status}
+                                            {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
                                         </Badge>
                                     </td>
                                     <td className="p-4 text-right">
                                         <div className="flex justify-end items-center gap-2">
                                             <button
-                                                onClick={(e) => { e.stopPropagation(); setSelectedRequest(request); }}
                                                 className="p-1.5 text-[var(--color-aegean-blue)] hover:bg-[var(--color-aegean-blue)]/5 rounded-md transition-colors"
                                                 title="View Details"
                                             >
                                                 <Eye className="h-4 w-4" />
                                             </button>
-
-                                            {request.status === 'pending' && request.subject !== 'general' && (
+                                            {request.status === 'pending' && (
                                                 <>
                                                     <button
                                                         onClick={(e) => handleApprove(request.id, e)}
                                                         className="p-1.5 text-green-600 hover:bg-green-50 rounded-md transition-colors"
-                                                        title="Approve"
+                                                        title="Approve Request"
                                                     >
                                                         <Check className="h-4 w-4" />
                                                     </button>
                                                     <button
                                                         onClick={(e) => handleDiscard(request.id, e)}
                                                         className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors"
-                                                        title="Discard"
+                                                        title="Discard Request"
                                                     >
                                                         <X className="h-4 w-4" />
                                                     </button>
                                                 </>
-                                            )}
-
-                                            {request.status === 'pending' && request.subject === 'general' && (
-                                                <button
-                                                    onClick={(e) => handleDiscard(request.id, e)}
-                                                    className="p-1.5 text-gray-400 hover:bg-gray-50 hover:text-gray-600 rounded-md transition-colors"
-                                                    title="Mark as Handled"
-                                                >
-                                                    <X className="h-4 w-4" />
-                                                </button>
                                             )}
                                         </div>
                                     </td>
@@ -153,29 +164,34 @@ export function RequestsTable({ requests, bookings }: RequestsTableProps) {
                         </tbody>
                     </table>
                 </div>
+
+                {/* Bottom Pagination */}
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
             </div>
 
-            {/* Details Modal */}
             {selectedRequest && (
                 <RequestDetailsModal
                     request={selectedRequest}
                     booking={getLinkedBooking(selectedRequest.bookingId)}
                     onClose={() => setSelectedRequest(null)}
                     onApprove={async () => {
-                        const success = await approveRequestAction(selectedRequest.id);
-                        if (success) {
-                            setLocalRequests(prev => prev.map(r => r.id === selectedRequest.id ? { ...r, status: 'approved' as const } : r));
-                            setSelectedRequest(null);
-                            showToast("Request approved", "success");
-                        }
+                        await approveRequestAction(selectedRequest.id);
+                        setLocalRequests(prev => prev.map(r => r.id === selectedRequest.id ? { ...r, status: 'approved' as const } : r));
+                        setSelectedRequest(null);
+                        showToast("Request approved successfully", "success");
                     }}
                     onDiscard={async () => {
-                        const success = await discardRequestAction(selectedRequest.id);
-                        if (success) {
-                            setLocalRequests(prev => prev.map(r => r.id === selectedRequest.id ? { ...r, status: 'discarded' as const } : r));
-                            setSelectedRequest(null);
-                            showToast("Request discarded", "success");
-                        }
+                        await discardRequestAction(selectedRequest.id);
+                        setLocalRequests(prev => prev.map(r => r.id === selectedRequest.id ? { ...r, status: 'discarded' as const } : r));
+                        setSelectedRequest(null);
+                        showToast("Request discarded", "success");
                     }}
                 />
             )}

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useMemo } from "react";
+import { PaginationControls } from "@/components/ui/admin/PaginationControls";
 import { Booking, Room, ContactRequest, BookingStatus } from "@/types";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/priceCalculator";
@@ -63,6 +64,10 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
     const [selectedRequest, setSelectedRequest] = useState<ContactRequest | null>(null);
     const [filters, setFilters] = useState<BookingFilters>(INITIAL_FILTERS);
     const [openFilter, setOpenFilter] = useState<FilterKey | null>(null);
+
+    // Pagination State
+    const [itemsPerPage, setItemsPerPage] = useState(10);
+    const [currentPage, setCurrentPage] = useState(1);
 
     // Get requests by booking ID for quick lookup
     const requestsByBookingId = useMemo(() => {
@@ -268,6 +273,24 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
         return tags;
     }, [filters, rooms]);
 
+    // Reset page when filtered count changes
+    useMemo(() => {
+        setCurrentPage(1);
+    }, [filteredBookings.length]);
+
+    // Pagination Logic
+    const totalItems = filteredBookings.length;
+    const totalPages = Math.ceil(totalItems / itemsPerPage);
+    const paginatedBookings = filteredBookings.slice(
+        (currentPage - 1) * itemsPerPage,
+        currentPage * itemsPerPage
+    );
+
+    const handleClearFilters = () => {
+        setFilters(INITIAL_FILTERS);
+        setOpenFilter(null);
+    };
+
     if (bookings.length === 0) {
         return (
             <div className="text-center py-12 border border-dashed border-[var(--color-sand)] rounded-lg">
@@ -316,6 +339,16 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
             )}
 
             <div className="bg-white rounded-lg border border-[var(--color-sand)] overflow-hidden">
+                {/* Top Pagination */}
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
+
                 <div className="overflow-x-auto">
                     <table className="w-full text-left text-sm">
                         <thead className="bg-[var(--color-warm-white)] border-b border-[var(--color-sand)]">
@@ -365,14 +398,14 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
                             </tr>
                         </thead>
                         <tbody className="divide-y divide-[var(--color-sand)]">
-                            {filteredBookings.length === 0 ? (
+                            {paginatedBookings.length === 0 ? (
                                 <tr>
                                     <td colSpan={10} className="p-8 text-center text-[var(--color-charcoal)]/60 italic">
                                         No bookings match the current filters.
                                     </td>
                                 </tr>
                             ) : (
-                                filteredBookings.map((booking) => {
+                                paginatedBookings.map((booking) => {
                                     const bookingRequests = requestsByBookingId.get(booking.id) || [];
                                     return (
                                         <tr key={booking.id} className="hover:bg-[var(--color-warm-white)]/20 transition-colors">
@@ -453,6 +486,16 @@ export function BookingsTable({ bookings, rooms, requests = [], onApproveRequest
                         </tbody>
                     </table>
                 </div>
+
+                {/* Bottom Pagination */}
+                <PaginationControls
+                    currentPage={currentPage}
+                    totalPages={totalPages}
+                    totalItems={totalItems}
+                    itemsPerPage={itemsPerPage}
+                    onPageChange={setCurrentPage}
+                    onItemsPerPageChange={setItemsPerPage}
+                />
             </div>
 
             {/* Filter Modals */}
