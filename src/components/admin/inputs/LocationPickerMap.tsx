@@ -86,7 +86,7 @@ export function LocationPicker({ value, onChange }: LocationPickerProps) {
                 {value && <MapCenterer center={[value.lat, value.lng]} />}
 
                 {/* Hotel Marker (Reference) */}
-                <Marker position={HOTEL_COORDINATES} icon={DefaultIcon} opacity={0.5} title="Kismet Hotel" />
+                <Marker position={HOTEL_COORDINATES} icon={DefaultIcon} opacity={0.5} title="Kismet" />
 
                 {/* Selected Location Marker */}
                 {value && (

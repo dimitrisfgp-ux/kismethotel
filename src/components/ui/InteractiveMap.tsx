@@ -185,7 +185,7 @@ export default function InteractiveMap({ conveniences, categories, activeCategor
 
     // Add Hotel Location
     const allLocations = [
-        { id: HOTEL_LOCATION_ID, name: "Kismet Hotel", lat: HOTEL_COORDINATES[0], lng: HOTEL_COORDINATES[1], categoryId: "hotel", type: "Hotel" } as unknown as Convenience,
+        { id: HOTEL_LOCATION_ID, name: "Kismet", lat: HOTEL_COORDINATES[0], lng: HOTEL_COORDINATES[1], categoryId: "hotel", type: "Hotel" } as unknown as Convenience,
         ...conveniences
     ];
 
