@@ -1,4 +1,5 @@
 import { roomService } from "@/services/roomService";
+import { bookingService } from "@/services/bookingService";
 import { requestService } from "@/services/requestService";
 import { approveRequestAction, discardRequestAction } from "@/app/actions";
 import { BookingsPageClient } from "@/components/admin/bookings/BookingsPageClient";
@@ -10,7 +11,7 @@ export default async function BookingsPage() {
     // 1. Fetch Key Data Parallel
     const [rooms, bookings, requests, supabase] = await Promise.all([
         roomService.getRooms(),
-        roomService.getBookings(),
+        bookingService.getBookings(),
         requestService.getRequests(),
         createClient()
     ]);

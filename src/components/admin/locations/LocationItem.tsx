@@ -7,8 +7,8 @@ import { useState } from "react";
 
 interface LocationItemProps {
     location: Convenience;
-    onUpdate: (id: number, field: keyof Convenience, value: any) => void;
-    onDelete: (id: number) => void;
+    onUpdate: (id: string, field: keyof Convenience, value: any) => void;
+    onDelete: (id: string) => void;
 }
 
 export function LocationItem({ location, onUpdate, onDelete }: LocationItemProps) {

@@ -11,7 +11,7 @@ import { iconMap } from "@/components/ui/icons/iconMap";
 import { MapPin } from "lucide-react";
 
 // Dynamic import for Map to avoid SSR issues
-const InteractiveMap = dynamic(() => import("../ui/InteractiveMap"), {
+const InteractiveMap = dynamic(() => import("../../components/locations/InteractiveMap"), {
     ssr: false,
     loading: () => <div className="w-full h-full bg-[var(--color-sand)] animate-pulse" />
 });

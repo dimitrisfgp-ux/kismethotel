@@ -28,6 +28,8 @@ import {
     RequestFilterOption
 } from "./filters";
 
+import { useBookingFilters, BookingFilters, FilterKey } from "@/hooks/useBookingFilters";
+
 interface BookingsTableProps {
     bookings: Booking[];
     rooms: Room[];
@@ -37,163 +39,39 @@ interface BookingsTableProps {
     onDiscardRequest?: (request: ContactRequest) => Promise<void>;
 }
 
-interface BookingFilters {
-    bookingId: string;
-    details: { name?: string; email?: string; phone?: string };
-    roomIds: string[];
-    guests: NumericFilterValue | null;
-    cost: NumericFilterValue | null;
-    statuses: BookingStatus[];
-    requestOptions: RequestFilterOption[];
-    bookedDate: DateRange | null;
-}
 
-type FilterKey = "bookingId" | "details" | "room" | "guests" | "cost" | "status" | "requests" | "bookedDate";
 
-const INITIAL_FILTERS: BookingFilters = {
-    bookingId: "",
-    details: {},
-    roomIds: [],
-    guests: null,
-    cost: null,
-    statuses: [],
-    requestOptions: [],
-    bookedDate: null
-};
+
 
 export function BookingsTable({ bookings, rooms, requests = [], userRole, onApproveRequest, onDiscardRequest }: BookingsTableProps) {
     const { showToast } = useToast();
+
+    // UI State
     const [selectedBooking, setSelectedBooking] = useState<Booking | null>(null);
     const [selectedRequest, setSelectedRequest] = useState<ContactRequest | null>(null);
-    const [filters, setFilters] = useState<BookingFilters>(INITIAL_FILTERS);
     const [openFilter, setOpenFilter] = useState<FilterKey | null>(null);
+
+    // Custom Hook for Filtering
+    const {
+        filters,
+        setFilters,
+        filteredBookings,
+        requestsByBookingId,
+        isFilterActive,
+        hasActiveFilters,
+        clearFilters
+    } = useBookingFilters(bookings, requests);
 
     // Pagination State
     const [itemsPerPage, setItemsPerPage] = useState(10);
     const [currentPage, setCurrentPage] = useState(1);
-
-    // Get requests by booking ID for quick lookup
-    const requestsByBookingId = useMemo(() => {
-        const map = new Map<string, ContactRequest[]>();
-        requests.forEach(req => {
-            if (req.bookingId) {
-                const existing = map.get(req.bookingId) || [];
-                map.set(req.bookingId, [...existing, req]);
-            }
-        });
-        return map;
-    }, [requests]);
-
-    // Filter active state checks
-    const isFilterActive = (key: FilterKey): boolean => {
-        switch (key) {
-            case "bookingId": return !!filters.bookingId;
-            case "details": return !!(filters.details.name || filters.details.email || filters.details.phone);
-            case "room": return filters.roomIds.length > 0;
-            case "guests": return filters.guests !== null;
-            case "cost": return filters.cost !== null;
-            case "status": return filters.statuses.length > 0;
-            case "requests": return filters.requestOptions.length > 0;
-            case "bookedDate": return filters.bookedDate !== null;
-            default: return false;
-        }
-    };
-
-    const hasActiveFilters = Object.keys(INITIAL_FILTERS).some(key => isFilterActive(key as FilterKey));
-
-    // Apply filters to bookings
-    const filteredBookings = useMemo(() => {
-        return bookings.filter(booking => {
-            // Booking ID filter
-            if (filters.bookingId && !booking.id.toLowerCase().includes(filters.bookingId.toLowerCase())) {
-                return false;
-            }
-
-            // Details filter (OR across fields)
-            const { name, email, phone } = filters.details;
-            if (name || email || phone) {
-                const matchesName = name ? booking.guestName.toLowerCase().includes(name.toLowerCase()) : true;
-                const matchesEmail = email ? booking.guestEmail.toLowerCase().includes(email.toLowerCase()) : true;
-                const matchesPhone = phone ? (booking.guestPhone?.includes(phone) || false) : true;
-                // If any filter is set, at least one must match
-                if (name && !matchesName) return false;
-                if (email && !matchesEmail) return false;
-                if (phone && !matchesPhone) return false;
-            }
-
-            // Room filter
-            if (filters.roomIds.length > 0 && !filters.roomIds.includes(booking.roomId)) {
-                return false;
-            }
-
-            // Guests filter
-            if (filters.guests) {
-                const { operator, value, value2 } = filters.guests;
-                const guests = booking.guestsCount;
-                switch (operator) {
-                    case "=": if (guests !== value) return false; break;
-                    case ">=": if (guests < value) return false; break;
-                    case "<=": if (guests > value) return false; break;
-                    case "between": if (value2 && (guests < value || guests > value2)) return false; break;
-                }
-            }
-
-            // Cost filter
-            if (filters.cost) {
-                const { operator, value, value2 } = filters.cost;
-                const cost = booking.totalPrice;
-                switch (operator) {
-                    case "=": if (cost !== value) return false; break;
-                    case ">=": if (cost < value) return false; break;
-                    case "<=": if (cost > value) return false; break;
-                    case "between": if (value2 && (cost < value || cost > value2)) return false; break;
-                }
-            }
-
-            // Status filter
-            if (filters.statuses.length > 0 && !filters.statuses.includes(booking.status)) {
-                return false;
-            }
-
-            // Requests filter
-            if (filters.requestOptions.length > 0) {
-                const bookingRequests = requestsByBookingId.get(booking.id) || [];
-                const pendingRequests = bookingRequests.filter(r => r.status === "pending");
-                const hasPending = pendingRequests.length > 0;
-
-                const wantsNone = filters.requestOptions.includes("none");
-                const wantsAny = filters.requestOptions.includes("any");
-                const wantsReschedule = filters.requestOptions.includes("reschedule");
-                const wantsCancellation = filters.requestOptions.includes("cancellation");
-
-                if (wantsNone && hasPending) return false;
-                if (wantsAny && !hasPending) return false;
-                if (wantsReschedule && !pendingRequests.some(r => r.subject === "reschedule")) return false;
-                if (wantsCancellation && !pendingRequests.some(r => r.subject === "cancellation")) return false;
-            }
-
-            // Booked Date filter
-            if (filters.bookedDate) {
-                const bookingDate = new Date(booking.createdAt);
-                const { from, to } = filters.bookedDate;
-                if (from && bookingDate < from) return false;
-                if (to) {
-                    const endOfDay = new Date(to);
-                    endOfDay.setHours(23, 59, 59, 999);
-                    if (bookingDate > endOfDay) return false;
-                }
-            }
-
-            return true;
-        });
-    }, [bookings, filters, requestsByBookingId]);
 
     const getRoomName = (id: string) => {
         return rooms.find(r => r.id === id)?.name || "Unknown Room";
     };
 
     const resetFilters = () => {
-        setFilters(INITIAL_FILTERS);
+        clearFilters();
     };
 
     // Helper to remove a specific filter
@@ -290,7 +168,7 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
     );
 
     const handleClearFilters = () => {
-        setFilters(INITIAL_FILTERS);
+        clearFilters();
         setOpenFilter(null);
     };
 

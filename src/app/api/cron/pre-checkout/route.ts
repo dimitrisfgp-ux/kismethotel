@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { bookingService } from "@/services/bookingService";
 import { roomService } from "@/services/roomService";
 import { sendEmail, getAdminEmail } from "@/services/emailService";
 import { preCheckoutEmail } from "@/services/emailTemplates";
@@ -25,7 +26,7 @@ export async function GET(request: Request) {
 
     try {
         // Get all confirmed bookings
-        const bookings = await roomService.getBookings();
+        const bookings = await bookingService.getBookings();
         const rooms = await roomService.getRooms();
 
         const now = new Date();

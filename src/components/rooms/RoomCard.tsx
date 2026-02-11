@@ -13,7 +13,7 @@ interface RoomCardProps {
 
 import { useRef, useState, useEffect } from "react";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
-import { RoomPlaceholder } from "@/components/ui/RoomPlaceholder";
+import { RoomPlaceholder } from "@/components/rooms/RoomPlaceholder";
 
 export function RoomCard({ room, index: _index }: RoomCardProps) {
     const cardRef = useRef<HTMLAnchorElement>(null);

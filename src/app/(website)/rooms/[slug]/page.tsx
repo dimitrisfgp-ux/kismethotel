@@ -1,5 +1,6 @@
 import { notFound } from "next/navigation";
 import { roomService } from "@/services/roomService";
+import { bookingService } from "@/services/bookingService";
 import { Container } from "@/components/ui/Container";
 import { ImageGallery } from "@/components/rooms/ImageGallery";
 import { RoomInfo } from "@/components/rooms/RoomInfo";
@@ -27,8 +28,8 @@ export default async function RoomPage({ params }: RoomPageProps) {
         notFound();
     }
 
-    const blockedDates = await roomService.getBlockedDates(room.id);
-    const bookings = await roomService.getBookings(room.id);
+    const blockedDates = await bookingService.getBlockedDates(room.id);
+    const bookings = await bookingService.getBookings(room.id);
 
     return (
         <article className="">

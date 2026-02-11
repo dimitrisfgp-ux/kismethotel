@@ -16,8 +16,8 @@ interface CategoryRowProps {
     onUpdate: (id: string, field: keyof LocationCategory, value: string) => void;
     onDelete: (id: string) => void;
     onAddLocation: (categoryId: string) => void;
-    onUpdateLocation: (id: number, field: keyof Convenience, value: any) => void;
-    onDeleteLocation: (id: number) => void;
+    onUpdateLocation: (id: string, field: keyof Convenience, value: any) => void;
+    onDeleteLocation: (id: string) => void;
 }
 
 export function CategoryRow({

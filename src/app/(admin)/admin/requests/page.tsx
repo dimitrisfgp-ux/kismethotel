@@ -1,12 +1,12 @@
 import { requestService } from "@/services/requestService";
-import { roomService } from "@/services/roomService";
+import { bookingService } from "@/services/bookingService";
 import { RequestsTable } from "@/components/admin/requests/RequestsTable";
 
 export const dynamic = "force-dynamic";
 
 export default async function RequestsPage() {
     const requests = await requestService.getRequests();
-    const bookings = await roomService.getBookings();
+    const bookings = await bookingService.getBookings();
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 pb-12">

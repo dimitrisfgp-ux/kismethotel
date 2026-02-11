@@ -2,7 +2,7 @@ import { useDateContext } from "@/contexts/DateContext";
 import { DatePickerWithRange } from "../booking/DateRangePicker";
 import { Container } from "../ui/Container";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon, BedDouble } from "lucide-react";
-import { BedSelector } from "../ui/BedSelector";
+import { BedSelector } from "./BedSelector";
 import { MOBILE_FILTER_BTN_CLASS } from "@/lib/constants";
 
 interface DateSelectorBarProps {

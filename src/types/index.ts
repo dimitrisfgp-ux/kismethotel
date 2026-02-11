@@ -112,6 +112,7 @@ export interface Convenience {
     type: string; // "Hotel", "Attraction", "Transport", etc.
     rating?: number;
     placeId?: string; // Google Place ID
+    distanceLabel?: string; // e.g. "5 min walk"
 }
 
 export type MediaType = 'image' | 'video';

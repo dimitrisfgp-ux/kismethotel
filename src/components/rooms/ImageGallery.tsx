@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
-import { RoomPlaceholder } from "@/components/ui/RoomPlaceholder";
+import { RoomPlaceholder } from "@/components/rooms/RoomPlaceholder";
 import { RoomMedia } from "@/types";
 import { Grid } from "lucide-react";
 
