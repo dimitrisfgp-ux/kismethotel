@@ -60,6 +60,7 @@ export async function getAmenitiesAction() {
 }
 
 export async function deleteCategoryAction(categoryId: string) {
+    await requirePermission('content.manage');
     const success = await contentService.deleteCategory(categoryId);
     if (success) {
         revalidatePath("/admin/page-content");

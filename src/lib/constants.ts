@@ -1,6 +1,6 @@
 import { RoomFilters } from "@/types";
 
-export const CONTACT_EMAIL = "info@kismethotel.com";
+
 
 // Map Constants
 export const HOTEL_LOCATION_ID = 999;

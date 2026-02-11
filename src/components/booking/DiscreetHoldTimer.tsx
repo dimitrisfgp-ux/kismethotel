@@ -1,8 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { differenceInSeconds } from "date-fns";
 import { Clock } from "lucide-react";
+import { useCountdown } from "@/hooks/useCountdown";
 
 interface DiscreetHoldTimerProps {
     expiresAt: string;
@@ -10,25 +9,7 @@ interface DiscreetHoldTimerProps {
 }
 
 export function DiscreetHoldTimer({ expiresAt, onExpired }: DiscreetHoldTimerProps) {
-    const [secondsLeft, setSecondsLeft] = useState(0);
-
-    useEffect(() => {
-        const updateTimer = () => {
-            const remaining = differenceInSeconds(new Date(expiresAt), new Date());
-            if (remaining <= 0) {
-                onExpired?.();
-            } else {
-                setSecondsLeft(remaining);
-            }
-        };
-
-        updateTimer();
-        const interval = setInterval(updateTimer, 1000);
-        return () => clearInterval(interval);
-    }, [expiresAt, onExpired]);
-
-    const minutes = Math.floor(secondsLeft / 60);
-    const seconds = secondsLeft % 60;
+    const { secondsLeft, formatted } = useCountdown(expiresAt, onExpired);
 
     if (secondsLeft <= 0) return null;
 
@@ -38,7 +19,7 @@ export function DiscreetHoldTimer({ expiresAt, onExpired }: DiscreetHoldTimerPro
             <span>
                 Dates held by another guest for{' '}
                 <span className="font-mono font-bold text-amber-700">
-                    {minutes}:{seconds.toString().padStart(2, '0')}
+                    {formatted}
                 </span>
             </span>
         </div>

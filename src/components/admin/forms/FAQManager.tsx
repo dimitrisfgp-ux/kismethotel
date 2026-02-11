@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { FAQ } from "@/types";
-import { updateFAQsAction } from "@/app/actions";
+import { updateFAQsAction } from "@/app/actions/content";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { TextArea } from "@/components/ui/admin/TextArea";

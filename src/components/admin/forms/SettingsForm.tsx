@@ -3,7 +3,7 @@
 import { useState } from "react";
 import { HotelSettings } from "@/types";
 // import { contentService } from "@/services/contentService"; // Removed client-side service
-import { updateSettingsAction } from "@/app/actions";
+import { updateSettingsAction } from "@/app/actions/content";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/contexts/ToastContext";

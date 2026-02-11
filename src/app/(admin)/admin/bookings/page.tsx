@@ -1,33 +1,22 @@
 import { roomService } from "@/services/roomService";
 import { bookingService } from "@/services/bookingService";
 import { requestService } from "@/services/requestService";
-import { approveRequestAction, discardRequestAction } from "@/app/actions";
+import { approveRequestAction, discardRequestAction } from "@/app/actions/request";
 import { BookingsPageClient } from "@/components/admin/bookings/BookingsPageClient";
-import { createClient } from "@/lib/supabase/server";
+import { getUserRole } from "@/lib/auth/guards";
 
 export const dynamic = "force-dynamic";
 
 export default async function BookingsPage() {
     // 1. Fetch Key Data Parallel
-    const [rooms, bookings, requests, supabase] = await Promise.all([
+    const [rooms, bookings, requests, roleResult] = await Promise.all([
         roomService.getRooms(),
         bookingService.getBookings(),
         requestService.getRequests(),
-        createClient()
+        getUserRole()
     ]);
 
-    // 2. Fetch User Role
-    const { data: { user } } = await supabase.auth.getUser();
-    let userRole = 'viewer';
-
-    if (user) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role')
-            .eq('id', user.id)
-            .single();
-        userRole = profile?.role || 'viewer';
-    }
+    const userRole = roleResult?.roleName ?? 'viewer';
 
     return (
         <BookingsPageClient
@@ -35,8 +24,8 @@ export default async function BookingsPage() {
             bookings={bookings}
             requests={requests}
             userRole={userRole}
-            approveFn={async (id) => { "use server"; await approveRequestAction(id); }}
-            discardFn={async (id) => { "use server"; await discardRequestAction(id); }}
+            approveFn={async (id: string) => { "use server"; await approveRequestAction(id); }}
+            discardFn={async (id: string) => { "use server"; await discardRequestAction(id); }}
         />
     );
 }

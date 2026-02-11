@@ -1,10 +1,17 @@
-import { createServerClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { Room } from "@/types";
+
+interface RoomMediaJoin {
+    display_order: number;
+    is_primary: boolean;
+    category?: string;
+    media_assets: Record<string, unknown>;
+}
 
 // Helper to transform Supabase room data to our Room type
 function transformRoom(dbRoom: Record<string, unknown>): Room {
     // Map new Media System
-    const media = ((dbRoom.room_media as Array<any>) || [])
+    const media = ((dbRoom.room_media as RoomMediaJoin[]) || [])
         .map(rm => ({
             ...rm.media_assets,
             id: rm.media_assets.id,
@@ -27,7 +34,7 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
             isPrimary: rm.is_primary,
             category: rm.category || (rm.is_primary ? 'primary' : (rm.display_order === 1 || rm.display_order === 2 ? 'secondary' : 'gallery'))
         }))
-        .sort((a, b) => a.displayOrder - b.displayOrder);
+        .sort((a, b) => (a.displayOrder as number) - (b.displayOrder as number));
 
     return {
         id: dbRoom.id as string,
@@ -38,7 +45,6 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
         floor: dbRoom.floor as number,
         maxOccupancy: dbRoom.max_occupancy as number,
         pricePerNight: dbRoom.price_per_night as number,
-        // images: legacyImages.length > 0 ? legacyImages : ((dbRoom.images as string[]) || []), // Removed Legacy
         highlights: (dbRoom.highlights as string[]) || [],
         beds: ((dbRoom.room_beds as Array<{ type: string; count: number }>) || []).map(b => ({
             type: b.type as 'single' | 'double',
@@ -59,25 +65,27 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
     };
 }
 
+const ROOM_SELECT_QUERY = `
+    *,
+    room_beds (type, count),
+    room_layout_sections (
+        type, title, details, sort_order,
+        room_layout_amenities (
+            amenities (id, name, icon_name)
+        )
+    ),
+    room_media (
+        display_order, is_primary, category,
+        media_assets (*)
+    )
+`;
+
 export const roomService = {
     getRooms: async (): Promise<Room[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('rooms')
-            .select(`
-            *,
-            room_beds (type, count),
-            room_layout_sections (
-                type, title, details, sort_order,
-                room_layout_amenities (
-                    amenities (id, name, icon_name)
-                )
-            ),
-            room_media (
-                display_order, is_primary,
-                media_assets (*)
-            )
-        `)
+            .select(ROOM_SELECT_QUERY)
             .order('price_per_night', { ascending: true });
 
         if (error) {
@@ -88,24 +96,42 @@ export const roomService = {
         return (data || []).map(transformRoom);
     },
 
-    getRoomBySlug: async (slug: string): Promise<Room | undefined> => {
-        const supabase = createServerClient();
+    getRoomById: async (roomId: string): Promise<Room | undefined> => {
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('rooms')
-            .select(`
-            *,
-            room_beds (type, count),
-            room_layout_sections (
-                type, title, details, sort_order,
-                room_layout_amenities (
-                    amenities (id, name, icon_name)
-                )
-            ),
-            room_media (
-                display_order, is_primary,
-                media_assets (*)
-            )
-        `)
+            .select(ROOM_SELECT_QUERY)
+            .eq('id', roomId)
+            .single();
+
+        if (error || !data) return undefined;
+        return transformRoom(data);
+    },
+
+    /**
+     * Lightweight query returning only basic room info (for admin lists, dropdowns, emails).
+     */
+    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number }[]> => {
+        const supabase = await createClient();
+        const { data, error } = await supabase
+            .from('rooms')
+            .select('id, name, slug, price_per_night')
+            .order('name');
+
+        if (error) return [];
+        return (data || []).map(r => ({
+            id: r.id,
+            name: r.name,
+            slug: r.slug,
+            pricePerNight: r.price_per_night
+        }));
+    },
+
+    getRoomBySlug: async (slug: string): Promise<Room | undefined> => {
+        const supabase = await createClient();
+        const { data, error } = await supabase
+            .from('rooms')
+            .select(ROOM_SELECT_QUERY)
             .eq('slug', slug)
             .single();
 
@@ -114,23 +140,10 @@ export const roomService = {
     },
 
     getFeaturedRooms: async (): Promise<Room[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('rooms')
-            .select(`
-            *,
-            room_beds (type, count),
-            room_layout_sections (
-                type, title, details, sort_order,
-                room_layout_amenities (
-                    amenities (id, name, icon_name)
-                )
-            ),
-            room_media (
-                display_order, is_primary,
-                media_assets (*)
-            )
-        `)
+            .select(ROOM_SELECT_QUERY)
             .order('price_per_night', { ascending: false })
             .limit(4);
 
@@ -138,14 +151,10 @@ export const roomService = {
         return (data || []).map(transformRoom);
     },
 
-    // --- Availability & Bookings ---
-    // Moved to bookingService.ts
-
-
     // --- Room CRUD Operations ---
 
     createRoom: async (room: Room): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
 
         // Insert room
         const { data: newRoom, error: roomError } = await supabase
@@ -159,7 +168,6 @@ export const roomService = {
                 floor: room.floor,
                 max_occupancy: room.maxOccupancy,
                 price_per_night: room.pricePerNight,
-                // images: room.images, // Removed
                 highlights: room.highlights
             })
             .select()
@@ -169,16 +177,64 @@ export const roomService = {
 
         // Insert beds
         if (room.beds?.length) {
-            await supabase.from('room_beds').insert(
+            const { error: bedsError } = await supabase.from('room_beds').insert(
                 room.beds.map(b => ({
                     room_id: room.id,
                     type: b.type,
                     count: b.count
                 }))
             );
+            if (bedsError) {
+                console.error('Error inserting beds:', bedsError);
+                return false;
+            }
         }
 
         // Insert Media Associations
+        if (room.media?.length) {
+            const mediaInserts = room.media.map((m, index) => ({
+                room_id: room.id,
+                media_id: m.id,
+                display_order: index,
+                is_primary: m.category === 'primary',
+                category: m.category
+            }));
+
+            const { error: mediaError } = await supabase
+                .from('room_media')
+                .insert(mediaInserts);
+
+            if (mediaError) {
+                console.error('Error linking media:', mediaError);
+                return false;
+            }
+        }
+
+        return true;
+    },
+
+    saveRoom: async (room: Room): Promise<boolean> => {
+        const supabase = await createClient();
+
+        const { error } = await supabase
+            .from('rooms')
+            .update({
+                name: room.name,
+                slug: room.slug,
+                description: room.description,
+                size_sqm: room.sizeSqm,
+                floor: room.floor,
+                max_occupancy: room.maxOccupancy,
+                price_per_night: room.pricePerNight,
+                highlights: room.highlights
+            })
+            .eq('id', room.id);
+
+        if (error) return false;
+
+        // Sync Media: Delete existing and re-insert
+        await supabase.from('room_media').delete().eq('room_id', room.id);
+
         if (room.media?.length) {
             const mediaInserts = room.media.map((m, index) => ({
                 room_id: room.id,
@@ -198,52 +254,8 @@ export const roomService = {
         return true;
     },
 
-    saveRoom: async (room: Room): Promise<boolean> => {
-        const supabase = createServerClient();
-
-        const { error } = await supabase
-            .from('rooms')
-            .update({
-                name: room.name,
-                slug: room.slug,
-                description: room.description,
-                size_sqm: room.sizeSqm,
-                floor: room.floor,
-                max_occupancy: room.maxOccupancy,
-                price_per_night: room.pricePerNight,
-                // images: room.images, // Removed
-                highlights: room.highlights
-            })
-            .eq('id', room.id);
-
-        if (error) return false;
-
-        // Sync Media: Delete existing and re-insert (simplest strategy to handle order/removals)
-        // 1. Delete all existing for this room
-        await supabase.from('room_media').delete().eq('room_id', room.id);
-
-        // 2. Insert new list
-        if (room.media?.length) {
-            const mediaInserts = room.media.map((m, index) => ({
-                room_id: room.id,
-                media_id: m.id,
-                display_order: index,
-                is_primary: m.category === 'primary',
-                category: m.category
-            }));
-
-            const { error: mediaError } = await supabase
-                .from('room_media')
-                .insert(mediaInserts);
-
-            if (mediaError) console.error("Error linking media:", mediaError);
-        }
-
-        return !error;
-    },
-
     deleteRoom: async (roomId: string): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('rooms')
             .delete()
@@ -251,6 +263,4 @@ export const roomService = {
 
         return !error;
     },
-
-
 };

@@ -1,9 +1,9 @@
-import { createServerClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { ContactRequest, RequestStatus } from "@/types";
 
 export const requestService = {
     getRequests: async (): Promise<ContactRequest[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('contact_requests')
             .select('*')
@@ -14,25 +14,25 @@ export const requestService = {
             return [];
         }
 
-        return (data || []).map(r => ({
-            id: r.id,
-            subject: r.subject,
-            name: r.name,
-            email: r.email,
-            phone: r.phone,
-            message: r.message,
-            bookingId: r.booking_id,
-            newCheckIn: r.new_check_in,
-            newCheckOut: r.new_check_out,
-            originalCheckIn: r.original_check_in,
-            originalCheckOut: r.original_check_out,
-            status: r.status,
-            createdAt: r.created_at
+        return (data || []).map((r: Record<string, unknown>) => ({
+            id: r.id as string,
+            subject: r.subject as ContactRequest['subject'],
+            name: r.name as string,
+            email: r.email as string,
+            phone: r.phone as string | undefined,
+            message: r.message as string,
+            bookingId: r.booking_id as string | undefined,
+            newCheckIn: r.new_check_in as string | undefined,
+            newCheckOut: r.new_check_out as string | undefined,
+            originalCheckIn: r.original_check_in as string | undefined,
+            originalCheckOut: r.original_check_out as string | undefined,
+            status: r.status as RequestStatus,
+            createdAt: r.created_at as string
         }));
     },
 
     getRequest: async (id: string): Promise<ContactRequest | undefined> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('contact_requests')
             .select('*')
@@ -59,7 +59,7 @@ export const requestService = {
     },
 
     createRequest: async (request: ContactRequest): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('contact_requests')
             .insert({
@@ -85,7 +85,7 @@ export const requestService = {
         status: RequestStatus,
         originalDates?: { originalCheckIn: string; originalCheckOut: string }
     ): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
 
         const updateData: Record<string, unknown> = { status };
         if (originalDates) {

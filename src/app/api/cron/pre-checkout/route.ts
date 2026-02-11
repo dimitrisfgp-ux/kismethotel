@@ -20,6 +20,15 @@ import { preCheckoutEmail } from "@/services/emailTemplates";
  * - test: If "true", just returns bookings without sending emails
  */
 export async function GET(request: Request) {
+    // Verify cron secret in production
+    const authHeader = request.headers.get("authorization");
+    if (
+        process.env.CRON_SECRET &&
+        authHeader !== `Bearer ${process.env.CRON_SECRET}`
+    ) {
+        return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const { searchParams } = new URL(request.url);
     const hoursAhead = parseInt(searchParams.get("hoursAhead") || "4");
     const testMode = searchParams.get("test") === "true";
@@ -27,7 +36,7 @@ export async function GET(request: Request) {
     try {
         // Get all confirmed bookings
         const bookings = await bookingService.getBookings();
-        const rooms = await roomService.getRooms();
+        const rooms = await roomService.getRoomsSummary();
 
         const now = new Date();
         const checkoutWindow = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);

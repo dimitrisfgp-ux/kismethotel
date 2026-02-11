@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Room, Booking } from "@/types";
 import { DateRange } from "react-day-picker";
 import { Button } from "../ui/Button";
@@ -12,7 +12,7 @@ import { StepItinerary } from "./steps/StepItinerary";
 import { StepGuestDetails, GuestData } from "./steps/StepGuestDetails";
 import { BookingSummary } from "./BookingSummary";
 import { ContentionTimer } from "./ContentionTimer";
-import { createBookingAction, createHoldAction, releaseHoldAction, extendHoldAction } from "@/app/actions";
+import { createBookingAction, createHoldAction, releaseHoldAction, extendHoldAction } from "@/app/actions/booking";
 import { useToast } from "@/contexts/ToastContext";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
 import { useSession } from "@/contexts/SessionContext";
@@ -72,17 +72,29 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
         return () => { isMounted = false; };
     }, [room.id, room.slug, dateRange.from, dateRange.to, sessionId, showToast, router]);
 
-    // HEARTBEAT: Extend hold every 30 seconds
+    // HEARTBEAT: Extend hold every 30 seconds with error handling (Fix #7)
+    const consecutiveFailures = useRef(0);
+
+    const heartbeat = useCallback(async () => {
+        if (!holdId) return;
+        const result = await extendHoldAction(holdId);
+        if (!result.success) {
+            consecutiveFailures.current++;
+            if (consecutiveFailures.current >= 2) {
+                showToast("Connection issue — your hold may expire soon.", "error");
+            }
+        } else {
+            consecutiveFailures.current = 0;
+        }
+    }, [holdId, showToast]);
+
     useEffect(() => {
         if (!holdId) return;
 
-        const interval = setInterval(() => {
-            // Keep the hold alive
-            extendHoldAction(holdId);
-        }, 30000);
+        const interval = setInterval(heartbeat, 30000);
 
         return () => clearInterval(interval);
-    }, [holdId]);
+    }, [holdId, heartbeat]);
 
     // Explicit Cleanup on unmount (Navigation)
     useEffect(() => {
@@ -132,11 +144,8 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
             };
 
             try {
-                await createBookingAction(booking);
-                // Release hold after successful booking (cleanup)
-                if (holdId) {
-                    await releaseHoldAction(holdId);
-                }
+                // Pass holdId for atomic server-side release (Fix #4)
+                await createBookingAction(booking, holdId ?? undefined);
                 showToast("Booking Confirmed!", "success");
                 router.push("/book/success");
             } catch (_error) {

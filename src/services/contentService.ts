@@ -1,9 +1,9 @@
-import { createServerClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { Amenity, Attraction, Convenience, FAQ, HotelSettings, PageContent, LocationCategory } from "@/types";
 
 export const contentService = {
     getAmenities: async (): Promise<Amenity[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('amenities')
             .select('*')
@@ -19,7 +19,7 @@ export const contentService = {
     },
 
     getConveniences: async (): Promise<Convenience[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('conveniences')
             .select('*')
@@ -39,14 +39,15 @@ export const contentService = {
     },
 
     updateConveniences: async (locations: Convenience[]): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
 
-        // Delete existing and re-insert (simpler than individual updates)
-        await supabase.from('conveniences').delete().neq('id', 0);
+        // NOTE: Non-atomic delete+insert. At this scale (boutique hotel CMS), the risk
+        // of partial failure is acceptable. For higher-scale apps, use a Postgres function.
+        await supabase.from('conveniences').delete().not('id', 'is', null);
 
         if (locations.length > 0) {
             const { error } = await supabase.from('conveniences').insert(
-                locations.map((c: any) => ({
+                locations.map((c: Convenience) => ({
                     id: c.id,
                     name: c.name,
                     category_id: c.categoryId,
@@ -62,7 +63,7 @@ export const contentService = {
     },
 
     getCategories: async (): Promise<LocationCategory[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('location_categories')
             .select('*')
@@ -79,7 +80,7 @@ export const contentService = {
     },
 
     updateCategories: async (categories: LocationCategory[]): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
 
         // Upsert categories
         const { error } = await supabase.from('location_categories').upsert(
@@ -96,7 +97,7 @@ export const contentService = {
     },
 
     getAttractions: async (): Promise<Attraction[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('attractions')
             .select('*')
@@ -114,7 +115,7 @@ export const contentService = {
     },
 
     getFAQs: async (): Promise<FAQ[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('faqs')
             .select('*')
@@ -131,7 +132,7 @@ export const contentService = {
     },
 
     getSettings: async (): Promise<HotelSettings> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('hotel_settings')
             .select('*')
@@ -161,7 +162,7 @@ export const contentService = {
     },
 
     updateSettings: async (settings: HotelSettings): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('hotel_settings')
             .upsert({
@@ -178,7 +179,7 @@ export const contentService = {
     },
 
     getPageContent: async (): Promise<PageContent> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('page_content')
             .select('*')
@@ -207,7 +208,7 @@ export const contentService = {
     },
 
     updatePageContent: async (content: PageContent): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('page_content')
             .upsert({
@@ -221,10 +222,10 @@ export const contentService = {
     },
 
     updateFAQs: async (faqs: FAQ[]): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
 
-        // Delete and re-insert
-        await supabase.from('faqs').delete().neq('id', 0);
+        // NOTE: Non-atomic delete+insert (acceptable at boutique hotel scale).
+        await supabase.from('faqs').delete().not('id', 'is', null);
 
         if (faqs.length > 0) {
             const { error } = await supabase.from('faqs').insert(
@@ -241,7 +242,7 @@ export const contentService = {
     },
 
     deleteCategory: async (id: string): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
 
         // 1. Delete associated conveniences first
         await supabase.from('conveniences').delete().eq('category_id', id);

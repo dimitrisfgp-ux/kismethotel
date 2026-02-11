@@ -1,10 +1,12 @@
 'use server';
 
-import { createClient } from '@/lib/supabase/server';
 import { revalidatePath } from 'next/cache';
-import { BookingStatus } from '@/types';
+import { bookingService } from '@/services/bookingService';
+import { BookingStatus, Booking } from '@/types';
+import { requirePermission } from '@/lib/auth/guards';
+import { createClient } from '@/lib/supabase/server';
 
-interface CreateBookingData {
+interface AdminCreateBookingData {
     roomId: string;
     checkIn: string;
     checkOut: string;
@@ -17,35 +19,42 @@ interface CreateBookingData {
     notes?: string;
 }
 
-import { requirePermission } from '@/lib/auth/guards';
-
 /**
- * Manually create a booking
+ * Manually create a booking (Admin)
+ * Includes availability conflict check to prevent double-booking.
  */
-export async function createBookingAction(data: CreateBookingData) {
+export async function adminCreateBookingAction(data: AdminCreateBookingData) {
     const user = await requirePermission('bookings.create');
-    const supabase = await createClient();
 
-    // 3. Insert Booking
-    const { error } = await supabase
-        .from('bookings')
-        .insert({
-            room_id: data.roomId,
-            check_in: data.checkIn,
-            check_out: data.checkOut,
-            guest_name: data.guestName,
-            guest_email: data.guestEmail,
-            guest_phone: data.guestPhone,
-            guests_count: data.guestsCount,
-            total_price: data.totalPrice,
-            status: data.status,
-            created_by: user.id, // Audit trail
-            // notes: data.notes // Assuming we might add a notes column later or store in JSON
-        });
+    // Availability conflict check (same as createBookingAction)
+    const isAvailable = await bookingService.checkAvailability(
+        data.roomId,
+        new Date(data.checkIn),
+        new Date(data.checkOut)
+    );
 
-    if (error) {
-        console.error('Create Booking Error:', error);
-        throw new Error(error.message);
+    if (!isAvailable) {
+        throw new Error('Room is not available for the selected dates.');
+    }
+
+    const booking: Booking = {
+        id: crypto.randomUUID(),
+        roomId: data.roomId,
+        checkIn: data.checkIn,
+        checkOut: data.checkOut,
+        guestName: data.guestName,
+        guestEmail: data.guestEmail,
+        guestPhone: data.guestPhone,
+        guestsCount: data.guestsCount,
+        totalPrice: data.totalPrice,
+        status: data.status,
+        createdAt: new Date().toISOString(),
+    };
+
+    const success = await bookingService.createBooking(booking);
+
+    if (!success) {
+        throw new Error('Failed to create booking.');
     }
 
     revalidatePath('/admin/bookings');
@@ -55,11 +64,12 @@ export async function createBookingAction(data: CreateBookingData) {
 /**
  * Delete a booking (Admin Only)
  */
-export async function deleteBookingAction(bookingId: string) {
+export async function adminDeleteBookingAction(bookingId: string) {
     await requirePermission('bookings.delete');
     const supabase = await createClient();
 
-    // 3. Delete
+    // bookingService doesn't have a deleteBooking method,
+    // so we use direct query (delete is admin-only, not cancel)
     const { error } = await supabase
         .from('bookings')
         .delete()
@@ -75,21 +85,15 @@ export async function deleteBookingAction(bookingId: string) {
 }
 
 /**
- * Cancel a booking
+ * Cancel a booking (Admin)
+ * Delegates to bookingService.cancelBooking for consistency.
  */
-export async function cancelBookingAction(bookingId: string) {
+export async function adminCancelBookingAction(bookingId: string) {
     await requirePermission('bookings.cancel');
-    const supabase = await createClient();
+    const success = await bookingService.cancelBooking(bookingId);
 
-    // 3. Update Status
-    const { error } = await supabase
-        .from('bookings')
-        .update({ status: 'cancelled' })
-        .eq('id', bookingId);
-
-    if (error) {
-        console.error('Cancel Booking Error:', error);
-        throw new Error(error.message);
+    if (!success) {
+        throw new Error('Failed to cancel booking.');
     }
 
     revalidatePath('/admin/bookings');

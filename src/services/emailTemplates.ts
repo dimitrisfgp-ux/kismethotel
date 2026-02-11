@@ -1,5 +1,8 @@
-import { Booking, ContactRequest, Room } from "@/types";
+import { Booking, ContactRequest } from "@/types";
 import { format } from "date-fns";
+
+/** Minimal room info needed by email templates (just the name) */
+type RoomInfo = { name: string };
 
 // Brand colors - matching globals.css
 const COLORS = {
@@ -95,7 +98,7 @@ function formatPrice(amount: number): string {
 /**
  * Email #1: Booking confirmation to guest
  */
-export function bookingConfirmationEmail(booking: Booking, room?: Room): { subject: string; html: string } {
+export function bookingConfirmationEmail(booking: Booking, room?: RoomInfo): { subject: string; html: string } {
     const checkInDate = format(new Date(booking.checkIn), "EEEE, MMMM d, yyyy");
     const checkOutDate = format(new Date(booking.checkOut), "EEEE, MMMM d, yyyy");
 
@@ -161,7 +164,7 @@ export function bookingConfirmationEmail(booking: Booking, room?: Room): { subje
 /**
  * Email #2: New booking alert to admin
  */
-export function newBookingAlertEmail(booking: Booking, room?: Room): { subject: string; html: string } {
+export function newBookingAlertEmail(booking: Booking, room?: RoomInfo): { subject: string; html: string } {
     const checkInDate = format(new Date(booking.checkIn), "MMM d, yyyy");
     const checkOutDate = format(new Date(booking.checkOut), "MMM d, yyyy");
 
@@ -347,7 +350,7 @@ export function requestApprovedEmail(request: ContactRequest, booking?: Booking 
 /**
  * Email #5: Pre-checkout goodbye email
  */
-export function preCheckoutEmail(booking: Booking, room?: Room): { subject: string; html: string } {
+export function preCheckoutEmail(booking: Booking, room?: RoomInfo): { subject: string; html: string } {
     const content = `
         <h2 style="margin:0 0 20px;color:${COLORS.aegeanBlue};font-size:24px;font-weight:400;">Thank You for Staying With Us</h2>
         

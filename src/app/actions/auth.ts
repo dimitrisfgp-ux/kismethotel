@@ -43,22 +43,12 @@ export async function inviteUserAction(formData: FormData) {
 
     const supabaseAdmin = createAdminClient();
 
-    // We need to fetch the role NAME for the metadata, for compatibility
-    // ...or just stop storing role in metadata. Let's store it for now.
-    const { data: roleData } = await supabaseAdmin
-        .from('roles')
-        .select('name')
-        .eq('id', roleId)
-        .single();
-
-    const roleName = roleData?.name || 'viewer';
-
     // 1. Create User in Auth
     const { data: { user }, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
         email_confirm: true, // Auto-confirm
-        user_metadata: { full_name: fullName, role: roleName }
+        user_metadata: { full_name: fullName }
     });
 
     if (createError) {
@@ -75,7 +65,6 @@ export async function inviteUserAction(formData: FormData) {
             email,
             full_name: fullName,
             role_id: roleId,
-            role: roleName // Keep legacy column in sync
         });
 
     if (profileError) {
@@ -157,19 +146,15 @@ export async function updateUserAction(userId: string, data: {
     const caller = await requirePermission('users.manage');
     const supabaseAdmin = createAdminClient();
 
-    // 1. Fetch Role Name for legacy sync
-    const { data: roleData } = await supabaseAdmin
-        .from('roles')
-        .select('name')
-        .eq('id', data.roleId)
-        .single();
-
-    const roleName = roleData?.name || 'viewer';
-
-    // 2. Prepare Auth Updates (Email, Password)
-    const authUpdates: any = {
+    // 1. Prepare Auth Updates (Email, Password)
+    const authUpdates: {
+        email: string;
+        user_metadata: Record<string, string>;
+        email_confirm: boolean;
+        password?: string;
+    } = {
         email: data.email,
-        user_metadata: { full_name: data.fullName, role: roleName },
+        user_metadata: { full_name: data.fullName },
         email_confirm: true // Auto-confirm email changes
     };
 
@@ -185,14 +170,13 @@ export async function updateUserAction(userId: string, data: {
 
     if (authError) throw new Error(`Auth Update Failed: ${authError.message}`);
 
-    // 4. Update Profile (Role ID, Name, Legacy Role)
+    // 4. Update Profile (Role ID, Name)
     const { error: profileError } = await supabaseAdmin
         .from('profiles')
         .update({
             full_name: data.fullName,
             email: data.email,
             role_id: data.roleId,
-            role: roleName
         })
         .eq('id', userId);
 
@@ -229,13 +213,14 @@ export async function updateProfileAction(data: {
         const supabaseAdmin = createAdminClient();
         const { data: profile } = await supabaseAdmin
             .from('profiles')
-            .select('role, roles(name)')
+            .select('role_id, roles(name)')
             .eq('id', userId)
             .single();
 
-        // Check if role is an array or object
-        const roleData = profile?.roles as any;
-        const roleName = Array.isArray(roleData) ? roleData[0]?.name : roleData?.name || profile?.role;
+        const rolesData = profile?.roles as unknown;
+        const roleName = Array.isArray(rolesData)
+            ? (rolesData[0] as { name: string })?.name
+            : (rolesData as { name: string } | null)?.name;
 
         if (roleName !== 'admin') {
             throw new Error('Only Administrators can change their email address directly. Please contact support.');
@@ -254,7 +239,7 @@ export async function updateProfileAction(data: {
     }
 
     // 3. Prepare Auth Updates (Password & Metadata)
-    const authUpdates: any = {
+    const authUpdates: { data: { full_name: string }; password?: string } = {
         data: { full_name: data.fullName }
     };
 

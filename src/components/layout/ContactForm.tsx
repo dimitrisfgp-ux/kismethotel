@@ -8,7 +8,8 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Calendar } from "../ui/Calendar";
 import { Search, Loader2, Check, Calendar as CalendarIcon } from "lucide-react";
-import { getBookingByIdAction, submitContactRequestAction, getRoomAvailabilityAction } from "@/app/actions";
+import { getBookingByIdAction, getRoomAvailabilityAction } from "@/app/actions/booking";
+import { submitContactRequestAction } from "@/app/actions/request";
 import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 
 const SUBJECTS: { value: RequestSubject; label: string }[] = [

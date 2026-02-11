@@ -1,9 +1,21 @@
 "use client";
 
 import { useEffect, useState, useCallback, useRef } from "react";
-import { supabase } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/client";
 import { BookingHold } from "@/types";
-import { getActiveHoldAction, pingHoldAction, getRoomHoldsAction } from "@/app/actions";
+import { getActiveHoldAction, pingHoldAction, getRoomHoldsAction } from "@/app/actions/booking";
+
+/** Shape of a booking_holds row as returned by Supabase realtime payloads */
+interface BookingHoldRow {
+    id: string;
+    room_id: string;
+    check_in: string;
+    check_out: string;
+    session_id: string;
+    expires_at: string;
+    has_contention: boolean;
+    created_at: string;
+}
 
 interface UseRealtimeHoldsOptions {
     roomId: string;
@@ -86,6 +98,7 @@ export function useRealtimeHolds({
 
     // Realtime subscription - Depends ONLY on roomId to prevent thrashing
     useEffect(() => {
+        const supabase = createClient();
         const channel = supabase
             .channel(`room-${roomId}-holds`)
             .on('postgres_changes', {
@@ -93,13 +106,13 @@ export function useRealtimeHolds({
                 schema: 'public',
                 table: 'booking_holds',
                 filter: `room_id=eq.${roomId}`
-            }, async (payload) => {
+            }, async (payload: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
                 const eventType = payload.eventType;
                 const current = stateRef.current; // Access fresh state via ref
 
                 if (eventType === 'INSERT') {
                     // Type hack for payload.new because the types are loose in supabase-js
-                    const newRecord = payload.new as any;
+                    const newRecord = payload.new as unknown as BookingHoldRow;
 
                     const hold: BookingHold = {
                         id: newRecord.id,
@@ -126,7 +139,7 @@ export function useRealtimeHolds({
                 }
 
                 if (eventType === 'UPDATE') {
-                    const newRecord = payload.new as any;
+                    const newRecord = payload.new as unknown as BookingHoldRow;
                     setAllHolds(prev => prev.map(h => h.id === newRecord.id ? {
                         ...h,
                         hasContention: newRecord.has_contention,
@@ -149,7 +162,7 @@ export function useRealtimeHolds({
                     }
                 }
             })
-            .subscribe((status) => {
+            .subscribe((status: string) => {
                 setIsConnected(status === 'SUBSCRIBED');
             });
 

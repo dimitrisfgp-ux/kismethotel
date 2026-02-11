@@ -5,7 +5,7 @@ import { useSearchParams } from "next/navigation";
 import { addDays } from "date-fns";
 import { useEffect, useState, Suspense } from "react";
 import { useDateContext } from "@/contexts/DateContext";
-import { getRoomsAction } from "@/app/actions";
+import { getRoomsAction } from "@/app/actions/room";
 import { Room } from "@/types";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";

@@ -7,14 +7,22 @@ import { User, Mail, Lock, Loader2, Save } from 'lucide-react';
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { useToast } from '@/contexts/ToastContext';
 
+interface ProfileUser {
+    id: string;
+    email?: string;
+    profile: {
+        full_name: string | null;
+        roles: { name: string } | null;
+    } | null;
+}
+
 export default function ProfilePage() {
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
 
-
     // User State
-    const [user, setUser] = useState<any>(null);
+    const [user, setUser] = useState<ProfileUser | null>(null);
     const [formData, setFormData] = useState({
         fullName: '',
         email: '',
@@ -34,11 +42,21 @@ export default function ProfilePage() {
             // Fetch profile for full name
             const { data: profile } = await supabase
                 .from('profiles')
-                .select('full_name, role, roles(name)')
+                .select('full_name, roles(name)')
                 .eq('id', user.id)
                 .single();
 
-            setUser({ ...user, profile });
+            // Normalize the roles join (Supabase returns object or array depending on relationship)
+            const rolesRaw = profile?.roles as unknown;
+            const normalizedRoles = Array.isArray(rolesRaw)
+                ? (rolesRaw[0] as { name: string } | undefined) ?? null
+                : (rolesRaw as { name: string } | null);
+
+            setUser({
+                id: user.id,
+                email: user.email,
+                profile: profile ? { full_name: profile.full_name, roles: normalizedRoles } : null
+            });
             setFormData(prev => ({
                 ...prev,
                 email: user.email || '',
@@ -57,8 +75,8 @@ export default function ProfilePage() {
                 email: formData.email,
             });
             showToast("Profile updated successfully", "success");
-        } catch (error: any) {
-            showToast(error.message, "error");
+        } catch (error: unknown) {
+            showToast(error instanceof Error ? error.message : 'Update failed', "error");
         } finally {
             setIsSaving(false);
         }
@@ -108,7 +126,7 @@ export default function ProfilePage() {
                         <div>
                             <p className="text-xs uppercase text-gray-500 font-bold tracking-wider">Role</p>
                             <p className="font-medium text-[var(--color-aegean-blue)] capitalize">
-                                {user?.profile?.roles?.name || user?.profile?.role || 'Staff'}
+                                {user?.profile?.roles?.name || 'Staff'}
                             </p>
                         </div>
                         <div className="h-10 w-10 bg-[var(--color-aegean-blue)]/10 rounded-full flex items-center justify-center text-[var(--color-aegean-blue)]">

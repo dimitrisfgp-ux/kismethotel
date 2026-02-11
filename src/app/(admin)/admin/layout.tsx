@@ -14,14 +14,17 @@ export default async function AdminDashboardLayout({
         redirect('/login');
     }
 
-    // Fetch Profile Role
+    // Fetch Profile Role via join
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role, full_name')
+        .select('role_id, full_name, roles ( name )')
         .eq('id', user.id)
         .single();
 
-    const role = profile?.role || 'viewer';
+    const rolesData = profile?.roles;
+    const role = Array.isArray(rolesData)
+        ? (rolesData[0] as { name: string })?.name || 'viewer'
+        : ((rolesData as unknown) as { name: string } | null)?.name || 'viewer';
     const fullName = profile?.full_name || user.email?.split('@')[0] || 'User';
 
     return (

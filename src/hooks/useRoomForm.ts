@@ -1,7 +1,8 @@
 import { useState, useEffect } from "react";
 import { useRouter } from "next/navigation";
 import { Room, RoomLayoutCategory, Amenity, RoomMedia, MediaAsset, RoomMediaCategory } from "@/types";
-import { createRoomAction, saveRoomAction, getAmenitiesAction } from "@/app/actions";
+import { createRoomAction, saveRoomAction } from "@/app/actions/room";
+import { getAmenitiesAction } from "@/app/actions/content";
 import { useToast } from "@/contexts/ToastContext";
 
 const EMPTY_ROOM: Room = {
@@ -62,7 +63,11 @@ export function useRoomForm({ initialRoom, isNew = false }: UseRoomFormProps) {
     const validateForm = () => {
         const newErrors: Record<string, string> = {};
         if (!room.name.trim()) newErrors.name = "Empty Room Name";
-        if (!room.slug.trim()) newErrors.slug = "Missing URL Slug";
+        if (!room.slug.trim()) {
+            newErrors.slug = "Missing URL Slug";
+        } else if (!/^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(room.slug)) {
+            newErrors.slug = "Slug must be lowercase, URL-safe (e.g. 'deluxe-suite')";
+        }
         if (!room.pricePerNight || room.pricePerNight <= 0) newErrors.pricePerNight = "Invalid Price";
         if (!room.maxOccupancy || room.maxOccupancy <= 0) newErrors.maxOccupancy = "Invalid Occupancy";
         if (!room.sizeSqm || room.sizeSqm <= 0) newErrors.sizeSqm = "Invalid Size";

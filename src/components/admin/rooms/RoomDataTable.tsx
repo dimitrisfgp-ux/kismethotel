@@ -4,7 +4,7 @@ import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Room } from "@/types";
-import { deleteRoomAction } from "@/app/actions";
+import { deleteRoomAction } from "@/app/actions/room";
 import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/admin/Table";

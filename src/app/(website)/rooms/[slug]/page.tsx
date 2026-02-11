@@ -13,13 +13,6 @@ interface RoomPageProps {
 
 export const dynamic = 'force-dynamic';
 
-export async function generateStaticParams() {
-    const rooms = await roomService.getRooms();
-    return rooms.map((room) => ({
-        slug: room.slug,
-    }));
-}
-
 export default async function RoomPage({ params }: RoomPageProps) {
     const { slug } = await params;
     const room = await roomService.getRoomBySlug(slug);

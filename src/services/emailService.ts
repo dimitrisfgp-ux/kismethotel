@@ -1,4 +1,5 @@
 import nodemailer from 'nodemailer';
+import type { Transporter } from 'nodemailer';
 
 interface EmailOptions {
     to: string | string[];
@@ -6,16 +7,21 @@ interface EmailOptions {
     html: string;
 }
 
-// Create transporter with Gmail SMTP
-const createTransporter = () => {
-    return nodemailer.createTransport({
-        service: 'gmail',
-        auth: {
-            user: process.env.GMAIL_USER,
-            pass: process.env.GMAIL_APP_PASSWORD
-        }
-    });
-};
+// Lazy singleton transporter — created once and reused
+let transporter: Transporter | null = null;
+
+function getTransporter(): Transporter {
+    if (!transporter) {
+        transporter = nodemailer.createTransport({
+            service: 'gmail',
+            auth: {
+                user: process.env.GMAIL_USER,
+                pass: process.env.GMAIL_APP_PASSWORD
+            }
+        });
+    }
+    return transporter;
+}
 
 /**
  * Send an email using Gmail SMTP
@@ -29,9 +35,7 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
     }
 
     try {
-        const transporter = createTransporter();
-
-        await transporter.sendMail({
+        await getTransporter().sendMail({
             from: `"Kismet" <${process.env.GMAIL_USER}>`,
             to: options.to,
             subject: options.subject,

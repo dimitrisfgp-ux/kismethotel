@@ -12,8 +12,8 @@ interface UserProfile {
     id: string;
     email: string;
     full_name: string;
-    role: string; // Legacy text role
-    role_id: string; // New FK
+    role: string;
+    role_id: string;
     roles?: { name: string }; // Joined data
     created_at: string;
 }
@@ -21,7 +21,7 @@ interface UserProfile {
 interface UserManagementSectionProps {
     currentUserRole: string;
     currentUserId: string;
-    initialUsers?: any[];
+    initialUsers?: UserProfile[];
     initialRoles?: Role[];
 }
 
@@ -29,7 +29,7 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
     const { showToast } = useToast();
 
     // Filter out current user immediately from initial data if present
-    const [users, setUsers] = useState<any[]>(initialUsers.filter(u => u.id !== currentUserId));
+    const [users, setUsers] = useState<UserProfile[]>(initialUsers.filter(u => u.id !== currentUserId));
     const [roles, setRoles] = useState<Role[]>(initialRoles);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -56,7 +56,7 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
                 getRolesAction()
             ]);
             // Filter out the current user from the list
-            const filteredUsers = (usersData as any[]).filter(u => u.id !== currentUserId);
+            const filteredUsers = usersData.filter((u: UserProfile) => u.id !== currentUserId);
             setUsers(filteredUsers);
             setRoles(rolesData);
         } catch (error) {
@@ -112,8 +112,9 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
             }
             setIsModalOpen(false);
             loadData();
-        } catch (error: any) {
-            showToast(error.message, 'error');
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'An error occurred';
+            showToast(message, 'error');
         } finally {
             setIsSaving(false);
         }
@@ -125,8 +126,9 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
             await deleteUserAction(userId);
             showToast('User removed successfully', 'success');
             loadData();
-        } catch (error: any) {
-            showToast(error.message, 'error');
+        } catch (error: unknown) {
+            const message = error instanceof Error ? error.message : 'An error occurred';
+            showToast(message, 'error');
         }
     }
 

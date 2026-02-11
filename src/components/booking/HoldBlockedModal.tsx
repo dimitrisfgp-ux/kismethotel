@@ -1,9 +1,8 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { differenceInSeconds } from "date-fns";
 import { Clock, Users, X, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "../ui/Button";
+import { useCountdown } from "@/hooks/useCountdown";
 
 export type HoldStatus = 'held' | 'released' | 'booked';
 
@@ -15,27 +14,10 @@ interface HoldBlockedModalProps {
 }
 
 export function HoldBlockedModal({ status, expiresAt, onExpired, onClose }: HoldBlockedModalProps) {
-    const [secondsLeft, setSecondsLeft] = useState(0);
-
-    useEffect(() => {
-        if (status !== 'held' || !expiresAt) return;
-
-        const updateTimer = () => {
-            const remaining = differenceInSeconds(new Date(expiresAt), new Date());
-            if (remaining <= 0) {
-                onExpired?.();
-            } else {
-                setSecondsLeft(remaining);
-            }
-        };
-
-        updateTimer();
-        const interval = setInterval(updateTimer, 1000);
-        return () => clearInterval(interval);
-    }, [status, expiresAt, onExpired]);
-
-    const minutes = Math.floor(secondsLeft / 60);
-    const seconds = secondsLeft % 60;
+    const { formatted } = useCountdown(
+        status === 'held' ? expiresAt ?? null : null,
+        onExpired
+    );
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
@@ -61,7 +43,7 @@ export function HoldBlockedModal({ status, expiresAt, onExpired, onClose }: Hold
                         </p>
                         <div className="flex items-center justify-center gap-2 text-3xl font-mono font-bold text-[var(--color-aegean-blue)] mb-6">
                             <Clock className="h-6 w-6" />
-                            <span>{minutes}:{seconds.toString().padStart(2, '0')}</span>
+                            <span>{formatted}</span>
                         </div>
                         <p className="text-sm text-[var(--color-charcoal)]/50 font-inter">
                             The room will become available when the timer expires

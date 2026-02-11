@@ -7,7 +7,7 @@ import { format } from "date-fns";
 import { formatCurrency } from "@/lib/priceCalculator";
 import { Badge } from "@/components/ui/Badge";
 import { Eye, XCircle, RotateCcw, X, Trash2 } from "lucide-react";
-import { deleteBookingAction, cancelBookingAction } from "@/app/actions/bookings";
+import { adminDeleteBookingAction, adminCancelBookingAction } from "@/app/actions/bookings";
 import { useToast } from "@/contexts/ToastContext";
 import { BookingDetailsModal } from "./BookingDetailsModal";
 import { FilterableHeader } from "./FilterableHeader";
@@ -350,7 +350,7 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
                                                             onClick={async () => {
                                                                 if (confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
                                                                     try {
-                                                                        await deleteBookingAction(booking.id);
+                                                                        await adminDeleteBookingAction(booking.id);
                                                                         showToast('Booking deleted successfully', 'success');
                                                                     } catch (error: any) {
                                                                         showToast(error.message, 'error');
@@ -368,7 +368,7 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
                                                         <button
                                                             onClick={async () => {
                                                                 if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
-                                                                    await cancelBookingAction(booking.id);
+                                                                    await adminCancelBookingAction(booking.id);
                                                                 }
                                                             }}
                                                             className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors"

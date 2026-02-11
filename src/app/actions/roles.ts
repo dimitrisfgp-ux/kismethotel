@@ -24,7 +24,7 @@ export async function getRolesAction() {
     if (error) throw new Error(error.message);
 
     // Map snake_case to camelCase
-    return roles.map((r: any) => ({
+    return roles.map((r: { id: string; name: string; description: string | null; is_system: boolean; created_at: string }) => ({
         id: r.id,
         name: r.name,
         description: r.description,
@@ -75,7 +75,7 @@ export async function getRoleDetailsAction(roleId: string) {
 
     if (permError) throw new Error(permError.message);
 
-    const permissions = rolePerms.map((rp: any) => rp.permissions) as Permission[];
+    const permissions = rolePerms.map((rp: { permissions: Permission }) => rp.permissions);
 
     return {
         ...role,

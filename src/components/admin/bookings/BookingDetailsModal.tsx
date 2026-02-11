@@ -9,7 +9,7 @@ import { X, Calendar, Users, Mail, User, CreditCard, Clock, Pencil } from "lucid
 import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { Calendar as CalendarComponent } from "@/components/ui/Calendar";
-import { updateBookingDatesAction } from "@/app/actions";
+import { updateBookingDatesAction } from "@/app/actions/booking";
 import { useToast } from "@/contexts/ToastContext";
 import { getStatusColor } from "@/lib/constants/statusStyles";
 

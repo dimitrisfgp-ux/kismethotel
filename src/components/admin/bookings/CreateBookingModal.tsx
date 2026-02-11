@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { createBookingAction } from '@/app/actions/bookings';
+import { adminCreateBookingAction } from '@/app/actions/bookings';
 import { Room, BookingStatus } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import { X, Calendar, User, CreditCard, BedDouble } from 'lucide-react';
@@ -52,7 +52,7 @@ export function CreateBookingModal({ isOpen, onClose, rooms, currentUserRole }: 
         setIsLoading(true);
 
         try {
-            await createBookingAction({
+            await adminCreateBookingAction({
                 ...formData,
                 totalPrice: Number(formData.totalPrice),
                 guestsCount: Number(formData.guestsCount)

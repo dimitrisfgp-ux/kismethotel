@@ -6,7 +6,7 @@ import { ContactRequest, Booking } from "@/types";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/Badge";
 import { Eye, Check, X } from "lucide-react";
-import { approveRequestAction, discardRequestAction } from "@/app/actions";
+import { approveRequestAction, discardRequestAction } from "@/app/actions/request";
 import { useToast } from "@/contexts/ToastContext";
 import { RequestDetailsModal } from "./RequestDetailsModal";
 import { SUBJECT_LABELS_SHORT, SUBJECT_COLORS } from "@/lib/constants/requestStyles";

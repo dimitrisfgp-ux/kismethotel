@@ -1,6 +1,34 @@
 import { createClient } from "@/lib/supabase/server";
 import { User } from "@supabase/supabase-js";
 
+// Shared helper to extract the role name from a profile join result
+function extractRoleName(rolesData: unknown): string | null {
+    if (!rolesData) return null;
+    if (Array.isArray(rolesData)) {
+        return (rolesData[0] as { name: string })?.name ?? null;
+    }
+    return (rolesData as { name: string }).name ?? null;
+}
+
+/**
+ * Get the current user's role name.
+ * Shared utility to eliminate duplicated role-fetching logic.
+ */
+export async function getUserRole(): Promise<{ user: User; roleName: string } | null> {
+    const supabase = await createClient();
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) return null;
+
+    const { data: profile } = await supabase
+        .from('profiles')
+        .select('role_id, roles ( name )')
+        .eq('id', user.id)
+        .single();
+
+    const roleName = extractRoleName(profile?.roles) ?? 'viewer';
+    return { user, roleName };
+}
+
 /**
  * Checks if the current user has a specific permission.
  * Returns true/false. Does not throw.
@@ -11,46 +39,34 @@ export async function checkPermission(permissionSlug: string): Promise<boolean> 
 
     if (!user) return false;
 
-    // We check the role_permissions table via RLS or direct query
-    // Since we are checking *our own* permissions, RLS allows reading our own role's permissions
-    // But we need to join tables.
-
-    // Efficient Query:
-    // Check if a row exists in role_permissions where:
-    // 1. role_id matches the user's profile.role_id
-    // 2. permission_id matches the slug
-
-    // We first get the user's role_id from profiles
+    // Combined query: profile + role + permission check in one join
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role_id')
+        .select(`
+            role_id,
+            roles!inner (
+                name,
+                role_permissions!inner (
+                    permissions!inner ( slug )
+                )
+            )
+        `)
         .eq('id', user.id)
         .single();
 
     if (!profile?.role_id) return false;
 
-    // Check for the permission
-    const { count } = await supabase
-        .from('role_permissions')
-        .select('permission_id', { count: 'exact', head: true })
-        .eq('role_id', profile.role_id)
-        .eq('permissions.slug', permissionSlug) // Requires Foreign Key Join or flattening
-        .not('permissions', 'is', null);
+    // Admin bypass
+    const roleName = extractRoleName(profile.roles);
+    if (roleName === 'admin') return true;
 
-    // Supabase JS join syntax is tricky for "exists". 
-    // Let's do it slightly differently to be safe with standard Postgrest:
-
-    const { data: permissions } = await supabase
-        .from('role_permissions')
-        .select(`
-            permissions!inner (
-                slug
-            )
-        `)
-        .eq('role_id', profile.role_id)
-        .eq('permissions.slug', permissionSlug);
-
-    return (permissions?.length || 0) > 0;
+    // Check if the permission slug exists in the joined result
+    const roles = Array.isArray(profile.roles) ? profile.roles : [profile.roles];
+    return roles.some((role: any) =>
+        role.role_permissions?.some((rp: any) =>
+            rp.permissions?.slug === permissionSlug
+        )
+    );
 }
 
 /**
@@ -66,36 +82,19 @@ export async function requirePermission(permissionSlug: string): Promise<User> {
         throw new Error("Unauthorized: Not logged in");
     }
 
-    // 1. SUPER ADMIN BYPASS checks? 
-    // Usually "Admin" is just a role with all permissions, so we don't need a bypass code path.
-    // But we might want to check if the role is 'is_system' & 'admin' just in case of DB sync issues.
-    // For now, let's trust the permission system.
-
-    const { data: profile, error: profileError } = await supabase
+    const { data: profile } = await supabase
         .from('profiles')
-        .select('role_id, roles ( name, is_system )')
+        .select('role_id, roles ( name )')
         .eq('id', user.id)
         .single();
-
-    if (profileError) {
-        console.error('RBAC Guard Error: Failed to fetch profile', profileError);
-        console.error('User ID:', user.id);
-    }
-
-    if (!profile) {
-        console.warn('RBAC Guard: Profile is null for user', user.id);
-    } else {
-        console.log('RBAC Guard: Profile found', { roleId: profile.role_id, roleName: (profile.roles as any)?.name });
-    }
 
     if (!profile?.role_id) {
         throw new Error("Unauthorized: No role assigned");
     }
 
-    // Optimization: If role is 'admin', allow everything?
-    // This saves DB queries and prevents lockout if we forget to seed a permission.
-    // @ts-ignore - Supabase types might be complex here
-    if (profile.roles?.name === 'admin') {
+    // Admin bypass — allow all permissions to prevent lockout
+    const roleName = extractRoleName(profile.roles);
+    if (roleName === 'admin') {
         return user;
     }
 

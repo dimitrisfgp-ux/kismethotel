@@ -1,11 +1,11 @@
-import { createServerClient } from "@/lib/supabase";
+import { createClient } from "@/lib/supabase/server";
 import { Booking, BlockedDate } from "@/types";
 
 export const bookingService = {
     // --- Availability & Bookings ---
 
     getBookings: async (roomId?: string): Promise<Booking[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         let query = supabase
             .from('bookings')
             .select('*')
@@ -34,7 +34,7 @@ export const bookingService = {
     },
 
     getBookingById: async (bookingId: string): Promise<Booking | undefined> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { data, error } = await supabase
             .from('bookings')
             .select('*')
@@ -59,7 +59,7 @@ export const bookingService = {
     },
 
     getBlockedDates: async (roomId?: string): Promise<BlockedDate[]> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         let query = supabase
             .from('blocked_dates')
             .select('*')
@@ -83,7 +83,7 @@ export const bookingService = {
     },
 
     addBlockedDate: async (block: BlockedDate): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('blocked_dates')
             .insert({
@@ -99,7 +99,7 @@ export const bookingService = {
     },
 
     removeBlockedDate: async (blockId: string): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('blocked_dates')
             .delete()
@@ -109,7 +109,7 @@ export const bookingService = {
     },
 
     checkAvailability: async (roomId: string, start: Date, end: Date): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const startStr = start.toISOString().split('T')[0];
         const endStr = end.toISOString().split('T')[0];
 
@@ -130,7 +130,7 @@ export const bookingService = {
     },
 
     createBooking: async (booking: Booking): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('bookings')
             .insert({
@@ -150,7 +150,7 @@ export const bookingService = {
     },
 
     cancelBooking: async (bookingId: string): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('bookings')
             .update({ status: 'cancelled' })
@@ -160,7 +160,7 @@ export const bookingService = {
     },
 
     updateBookingDates: async (bookingId: string, checkIn: string, checkOut: string): Promise<boolean> => {
-        const supabase = createServerClient();
+        const supabase = await createClient();
         const { error } = await supabase
             .from('bookings')
             .update({ check_in: checkIn, check_out: checkOut })

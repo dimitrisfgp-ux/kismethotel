@@ -6,6 +6,7 @@ import { bookingService } from "@/services/bookingService";
 import { sendEmail, getAdminEmail } from "@/services/emailService";
 import { newRequestAlertEmail, requestApprovedEmail } from "@/services/emailTemplates";
 import { ContactRequest, Booking } from "@/types";
+import { requirePermission } from "@/lib/auth/guards";
 
 export async function submitContactRequestAction(request: ContactRequest) {
     const success = await requestService.createRequest(request);
@@ -28,6 +29,7 @@ export async function getRequestsAction() {
 }
 
 export async function approveRequestAction(requestId: string) {
+    await requirePermission('requests.manage');
     const request = await requestService.getRequest(requestId);
     if (!request) return false;
 
@@ -51,10 +53,10 @@ export async function approveRequestAction(requestId: string) {
 
     await requestService.updateRequestStatus(requestId, 'approved', originalDates);
 
-    // Email #4: Send approval notification to guest
+    // Email #4: Send approval notification to guest (non-blocking)
     if (request.subject === 'reschedule' || request.subject === 'cancellation') {
         const approvalEmail = requestApprovedEmail(request, booking);
-        await sendEmail({
+        void sendEmail({
             to: request.email,
             subject: approvalEmail.subject,
             html: approvalEmail.html
@@ -68,6 +70,7 @@ export async function approveRequestAction(requestId: string) {
 }
 
 export async function discardRequestAction(requestId: string) {
+    await requirePermission('requests.manage');
     const success = await requestService.updateRequestStatus(requestId, 'discarded');
     if (success) {
         revalidatePath("/admin/requests");

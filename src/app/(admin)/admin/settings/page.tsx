@@ -13,9 +13,9 @@ export default async function SettingsPage() {
     const [settings, userResult, usersResult, rolesResult, permissionsResult] = await Promise.all([
         contentService.getSettings(),
         supabase.auth.getUser(),
-        getUsersAction().catch((err: any) => { console.error('Failed to fetch users:', err); return []; }),
-        getRolesAction().catch((err: any) => { console.error('Failed to fetch roles:', err); return []; }),
-        getPermissionsAction().catch((err: any) => { console.error('Failed to fetch permissions:', err); return []; })
+        getUsersAction().catch((err: Error) => { console.error('Failed to fetch users:', err); return []; }),
+        getRolesAction().catch((err: Error) => { console.error('Failed to fetch roles:', err); return []; }),
+        getPermissionsAction().catch((err: Error) => { console.error('Failed to fetch permissions:', err); return []; })
     ]);
 
     const user = userResult.data.user;
@@ -24,10 +24,14 @@ export default async function SettingsPage() {
     if (user) {
         const { data: profile } = await supabase
             .from('profiles')
-            .select('role')
+            .select('role_id, roles ( name )')
             .eq('id', user.id)
             .single();
-        userRole = profile?.role || 'viewer';
+
+        const rolesData = profile?.roles;
+        userRole = Array.isArray(rolesData)
+            ? (rolesData[0] as { name: string })?.name || 'viewer'
+            : ((rolesData as unknown) as { name: string } | null)?.name || 'viewer';
     }
 
     return (

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { PageContent, MediaAsset } from "@/types";
-import { updatePageContentAction } from "@/app/actions";
+import { updatePageContentAction } from "@/app/actions/content";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { TextArea } from "@/components/ui/admin/TextArea";
