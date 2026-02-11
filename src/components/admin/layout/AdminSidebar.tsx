@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BedDouble, Settings, ExternalLink, CalendarCheck, MessageSquare, User } from "lucide-react";
+import { LayoutDashboard, BedDouble, Settings, ExternalLink, CalendarCheck, MessageSquare, User, Image } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/admin/auth/LogoutButton";
 import type { User as AuthUser } from "@supabase/supabase-js";
@@ -31,6 +31,12 @@ const NAV_ITEMS = [
         label: "Page Content",
         href: "/admin/page-content",
         icon: LayoutDashboard,
+        roles: ['admin', 'manager']
+    },
+    {
+        label: "Media Library",
+        href: "/admin/media",
+        icon: Image,
         roles: ['admin', 'manager']
     },
     {

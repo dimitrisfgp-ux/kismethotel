@@ -50,6 +50,7 @@ export interface Room {
     beds: RoomBed[];
     layout: RoomLayoutCategory[];
     highlights: string[];
+    media?: RoomMedia[]; // New hybrid media system
 }
 
 export interface Booking {
@@ -98,17 +99,52 @@ export interface LocationCategory {
     label: string;
     icon: string; // Lucide icon name
     color: string;
+    description?: string;
 }
 
 export interface Convenience {
-    id: number;
+    id: string;
     name: string;
-    categoryId: string; // Links to LocationCategory.id
-    type?: string; // @deprecated - kept for backward compatibility during migration
+    description?: string;
     lat: number;
     lng: number;
-    distanceLabel?: string;
+    categoryId: string;
+    type: string; // "Hotel", "Attraction", "Transport", etc.
+    rating?: number;
+    placeId?: string; // Google Place ID
 }
+
+export type MediaType = 'image' | 'video';
+
+export interface MediaAsset {
+    id: string;
+    filename: string;
+    originalFilename: string;
+    storagePath: string;
+    url: string;
+    bucket: string;
+    folder: string;
+    mediaType: MediaType;
+    mimeType: string;
+    sizeBytes: number;
+    width?: number;
+    height?: number;
+    altText?: string;
+    caption?: string;
+    createdBy?: string;
+    createdAt: string;
+    updatedAt: string;
+}
+
+export type RoomMediaCategory = 'primary' | 'secondary' | 'gallery' | 'hero_poster' | 'hero_video' | 'portrait';
+
+export interface RoomMedia extends MediaAsset {
+    displayOrder: number;
+    isPrimary: boolean; // Kept for backward compatibility, but 'category' should take precedence
+    category: RoomMediaCategory;
+}
+
+// Duplicate Convenience interface removed.
 
 export interface Attraction {
     id: number;
@@ -162,6 +198,15 @@ export interface HotelSettings {
         facebook: string;
         googleReviews: string; // For QR Code generation
     };
+}
+
+export interface RoomPageContent {
+    hero: {
+        title?: string;
+        subtitle?: string;
+        ctaText?: string;
+    };
+    // Additional content fields can be added here
 }
 
 export interface PageContent {

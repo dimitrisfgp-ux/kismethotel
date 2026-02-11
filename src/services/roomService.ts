@@ -12,7 +12,7 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
         floor: dbRoom.floor as number,
         maxOccupancy: dbRoom.max_occupancy as number,
         pricePerNight: dbRoom.price_per_night as number,
-        images: (dbRoom.images as string[]) || [],
+        images: (dbRoom.images as string[]) || [], // Legacy
         highlights: (dbRoom.highlights as string[]) || [],
         beds: ((dbRoom.room_beds as Array<{ type: string; count: number }>) || []).map(b => ({
             type: b.type as 'single' | 'double',
@@ -28,7 +28,35 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
                     name: a.amenities.name,
                     iconName: a.amenities.icon_name
                 }))
-        }))
+        })),
+        // Map new Media System
+        media: ((dbRoom.room_media as Array<any>) || [])
+            .map(rm => ({
+                ...rm.media_assets,
+                id: rm.media_assets.id, // Ensure ID is from asset
+                mediaType: rm.media_assets.media_type,
+                mimeType: rm.media_assets.mime_type,
+                sizeBytes: rm.media_assets.size_bytes,
+                altText: rm.media_assets.alt_text,
+                originalFilename: rm.media_assets.original_filename,
+                storagePath: rm.media_assets.storage_path, // camelCase mapping for consistency if needed, but MediaAsset interface uses mixed... wait, checking MediaAsset interface.
+                // MediaAsset in types/index.ts uses camelCase: storagePath, mediaType, etc.
+                // But DB returns snake_case.
+                // We need to map explicitly.
+                bucket: rm.media_assets.bucket,
+                folder: rm.media_assets.folder,
+                width: rm.media_assets.width,
+                height: rm.media_assets.height,
+                caption: rm.media_assets.caption,
+                createdAt: rm.media_assets.created_at,
+                updatedAt: rm.media_assets.updated_at,
+                createdBy: rm.media_assets.created_by,
+                // Junction props
+                displayOrder: rm.display_order,
+                isPrimary: rm.is_primary, // Keep for now
+                category: rm.category || (rm.is_primary ? 'primary' : (rm.display_order === 1 || rm.display_order === 2 ? 'secondary' : 'gallery'))
+            }))
+            .sort((a, b) => a.displayOrder - b.displayOrder)
     };
 }
 
@@ -45,6 +73,10 @@ export const roomService = {
                     room_layout_amenities (
                         amenities (id, name, icon_name)
                     )
+                ),
+                room_media (
+                    display_order, is_primary,
+                    media_assets (*)
                 )
             `)
             .order('price_per_night', { ascending: true });
@@ -69,6 +101,10 @@ export const roomService = {
                     room_layout_amenities (
                         amenities (id, name, icon_name)
                     )
+                ),
+                room_media (
+                    display_order, is_primary,
+                    media_assets (*)
                 )
             `)
             .eq('slug', slug)
@@ -90,6 +126,10 @@ export const roomService = {
                     room_layout_amenities (
                         amenities (id, name, icon_name)
                     )
+                ),
+                room_media (
+                    display_order, is_primary,
+                    media_assets (*)
                 )
             `)
             .order('price_per_night', { ascending: false })
@@ -267,6 +307,23 @@ export const roomService = {
             );
         }
 
+        // Insert Media Associations
+        if (room.media?.length) {
+            const mediaInserts = room.media.map((m, index) => ({
+                room_id: room.id,
+                media_id: m.id,
+                display_order: index,
+                is_primary: m.category === 'primary',
+                category: m.category
+            }));
+
+            const { error: mediaError } = await supabase
+                .from('room_media')
+                .insert(mediaInserts);
+
+            if (mediaError) console.error("Error linking media:", mediaError);
+        }
+
         return true;
     },
 
@@ -287,6 +344,29 @@ export const roomService = {
                 highlights: room.highlights
             })
             .eq('id', room.id);
+
+        if (error) return false;
+
+        // Sync Media: Delete existing and re-insert (simplest strategy to handle order/removals)
+        // 1. Delete all existing for this room
+        await supabase.from('room_media').delete().eq('room_id', room.id);
+
+        // 2. Insert new list
+        if (room.media?.length) {
+            const mediaInserts = room.media.map((m, index) => ({
+                room_id: room.id,
+                media_id: m.id,
+                display_order: index,
+                is_primary: m.category === 'primary',
+                category: m.category
+            }));
+
+            const { error: mediaError } = await supabase
+                .from('room_media')
+                .insert(mediaInserts);
+
+            if (mediaError) console.error("Error linking media:", mediaError);
+        }
 
         return !error;
     },
