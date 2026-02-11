@@ -251,5 +251,24 @@ export const holdService = {
         }
 
         return { isBooked: !!data };
+    },
+
+    /**
+     * Signal that UserB has backed off from contending for this hold's dates.
+     * Sets contention_cleared=true, which UserA receives via realtime subscription.
+     */
+    clearContention: async (holdId: string): Promise<boolean> => {
+        const supabase = await createClient();
+        const { error } = await supabase
+            .from('booking_holds')
+            .update({ contention_cleared: true })
+            .eq('id', holdId);
+
+        if (error) {
+            console.error('Failed to clear contention:', error);
+            return false;
+        }
+        return true;
     }
 };
+

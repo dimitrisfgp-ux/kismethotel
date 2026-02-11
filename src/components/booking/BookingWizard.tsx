@@ -39,7 +39,7 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
 
 
     // Subscribe to realtime contention updates
-    const { hasContention } = useRealtimeHolds({
+    const { hasContention, contentionCleared } = useRealtimeHolds({
         roomId: room.id,
         checkIn: dateRange.from!,
         checkOut: dateRange.to!,
@@ -163,9 +163,10 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
             {/* Main Form Area */}
             <div className="lg:col-span-2">
                 {/* Contention Timer - shown when someone else is interested */}
-                {hasContention && holdExpiresAt && (
+                {(hasContention || contentionCleared) && holdExpiresAt && (
                     <ContentionTimer
                         expiresAt={holdExpiresAt}
+                        contentionCleared={contentionCleared}
                         onExpired={handleHoldExpired}
                     />
                 )}

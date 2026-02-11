@@ -11,11 +11,8 @@ import { differenceInDays, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
 import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
-import { HoldBlockedModal, HoldStatus } from "../booking/HoldBlockedModal";
-import { DiscreetHoldTimer } from "../booking/DiscreetHoldTimer";
-import { useToast } from "@/contexts/ToastContext";
+import { useHoldContention } from "@/contexts/HoldContentionContext";
 import { useSession } from "@/contexts/SessionContext";
-import { checkBookingStatusAction } from "@/app/actions/booking";
 
 interface BookingCardProps {
     room: Room;
@@ -26,8 +23,8 @@ interface BookingCardProps {
 export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingCardProps) {
     const { dateRange, setDateRange } = useDateContext();
     const router = useRouter();
-    const { showToast } = useToast();
     const { sessionId } = useSession();
+    const { showHoldModal, userBChoice, outcomeStatus, notifyHoldReleased } = useHoldContention();
 
     // Subscribe to realtime holds for this room
     const { allHolds, activeHold } = useRealtimeHolds({
@@ -37,60 +34,20 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         mySessionId: sessionId || undefined
     });
 
-    // Modal State Management
-    const [modalStatus, setModalStatus] = useState<HoldStatus | 'idle'>('idle');
-    const [isHeldDismissed, setIsHeldDismissed] = useState(false);
-
-    // Store previous hold to detect when it's released
+    // Track previous hold to detect release
     const previousHoldRef = useRef(activeHold);
 
-    // Effect: Handle State Transitions
     useEffect(() => {
-        let isMounted = true;
         const prevHold = previousHoldRef.current;
         const currentHold = activeHold;
 
-        // 1. New Hold Detected
-        if (currentHold && !prevHold) {
-            setModalStatus('held');
-            setIsHeldDismissed(false);
-        }
-        // 1b. Hold ID changed (new hold replaced old one)
-        else if (currentHold && prevHold && currentHold.id !== prevHold.id) {
-            setModalStatus('held');
-            setIsHeldDismissed(false);
-        }
-
-        // 2. Hold Released (Active -> Null)
-        if (prevHold && !currentHold) {
-            checkBookingStatusAction(
-                room.id,
-                prevHold.checkIn,
-                prevHold.checkOut
-            ).then(({ isBooked }) => {
-                if (!isMounted) return;
-
-                if (isBooked) {
-                    setModalStatus('booked');
-                } else {
-                    setModalStatus('released');
-                }
-                router.refresh();
-            });
+        // Hold released while UserB was watching → notify via context
+        if (prevHold && !currentHold && userBChoice === 'watching') {
+            notifyHoldReleased(prevHold);
         }
 
         previousHoldRef.current = activeHold;
-        return () => { isMounted = false; };
-    }, [activeHold, room.id, router]);
-
-    // Close Handler
-    const handleCloseModal = () => {
-        if (modalStatus === 'held') {
-            setIsHeldDismissed(true); // Don't close, just dismiss to discreet mode
-        } else {
-            setModalStatus('idle'); // Close completely for other states
-        }
-    };
+    }, [activeHold, userBChoice, notifyHoldReleased]);
 
     // Prepare disabled dates for DayPicker (including past dates)
     const disabledDates = [
@@ -108,20 +65,16 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
 
     const handleBookNow = () => {
         if (!dateRange?.from) {
-            alert("Please select dates first."); // Or use Toast
             return;
         }
 
-        if (isSelectionHeld) {
-            // Should be handled by disabled state, but extra safety
+        // If there's an active hold from another user, show the contention modal
+        if (activeHold) {
+            showHoldModal(activeHold);
             return;
         }
 
         // If single day selected, assume 1 night for booking flow
-        // The context in book page will likely need 'to' to be defined, but we pass roomId. 
-        // We might want to set the context 'to' here before navigating? 
-        // Or better, let the book page handle it via URL params if implemented, but here we just push.
-        // Actually, let's update local context to ensure consistency if we rely on it.
         if (!dateRange.to) {
             setDateRange({ from: dateRange.from, to: addDays(dateRange.from, 1) });
         }
@@ -156,32 +109,19 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         to: new Date(h.checkOut)
     }));
 
-    // Smart Blocking Logic: Only disable if SELECTION overlaps with a hold
+    // Smart Blocking Logic: Only show held state if actively held
     const isSelectionHeld = !!activeHold;
+
+    // Button label logic
+    const getButtonLabel = () => {
+        if (isSelectionHeld) return "Book Now"; // Still clickable — will show modal
+        if (nights > 0) return "Book Now";
+        return "Select Dates";
+    };
 
     return (
         <div className="sticky top-28 bg-white border border-[var(--color-sand)] rounded-card shadow-xl animate-slide-up overflow-hidden">
 
-            {/* Modal Logic */}
-            {(modalStatus !== 'idle') && !(modalStatus === 'held' && isHeldDismissed) && (
-                <HoldBlockedModal
-                    status={modalStatus as HoldStatus}
-                    expiresAt={activeHold?.expiresAt} // Only needed for 'held'
-                    onExpired={() => {
-                        setModalStatus('released');
-                        router.refresh();
-                    }}
-                    onClose={handleCloseModal}
-                />
-            )}
-
-            {/* Discreet Timer (only when held & dismissed) */}
-            {modalStatus === 'held' && isHeldDismissed && activeHold && (
-                <DiscreetHoldTimer
-                    expiresAt={activeHold.expiresAt}
-                    onExpired={() => { /* Effect handles removal */ }}
-                />
-            )}
             {/* Header: Price */}
             <div className="p-6 bg-[var(--color-warm-white)] border-b border-[var(--color-sand)] text-center">
                 <span className="font-montserrat text-3xl font-bold text-[var(--color-aegean-blue)]">{formatCurrency(room.pricePerNight)}</span>
@@ -240,12 +180,9 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
                     <Button
                         onClick={handleBookNow}
                         className="w-full rounded-subtle h-14 text-lg"
-                        disabled={nights === 0 || isSelectionHeld}
+                        disabled={nights === 0}
                     >
-                        {isSelectionHeld
-                            ? "Dates Currently Held"
-                            : (nights > 0 ? "Book Now" : "Select Dates")
-                        }
+                        {getButtonLabel()}
                     </Button>
 
                     <p className="text-center text-[10px] opacity-50 uppercase tracking-widest">You won&apos;t be charged yet</p>

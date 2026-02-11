@@ -14,6 +14,7 @@ interface BookingHoldRow {
     session_id: string;
     expires_at: string;
     has_contention: boolean;
+    contention_cleared: boolean;
     created_at: string;
 }
 
@@ -28,6 +29,7 @@ interface UseRealtimeHoldsResult {
     activeHold: BookingHold | null;
     allHolds: BookingHold[];
     hasContention: boolean;
+    contentionCleared: boolean;
     isConnected: boolean;
     isLoading: boolean;
 }
@@ -41,6 +43,7 @@ export function useRealtimeHolds({
     const [activeHold, setActiveHold] = useState<BookingHold | null>(null);
     const [allHolds, setAllHolds] = useState<BookingHold[]>([]);
     const [hasContention, setHasContention] = useState(false);
+    const [contentionCleared, setContentionCleared] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -111,7 +114,6 @@ export function useRealtimeHolds({
                 const current = stateRef.current; // Access fresh state via ref
 
                 if (eventType === 'INSERT') {
-                    // Type hack for payload.new because the types are loose in supabase-js
                     const newRecord = payload.new as unknown as BookingHoldRow;
 
                     const hold: BookingHold = {
@@ -146,9 +148,16 @@ export function useRealtimeHolds({
                         expiresAt: newRecord.expires_at
                     } : h));
 
-                    // Contention check
+                    // Contention check — UserA's hold was marked as contention
                     if (newRecord.session_id === current.mySessionId && newRecord.has_contention) {
                         setHasContention(true);
+                        setContentionCleared(false); // Reset cleared state
+                    }
+
+                    // Contention cleared — UserB backed off
+                    if (newRecord.session_id === current.mySessionId && newRecord.contention_cleared) {
+                        setContentionCleared(true);
+                        setHasContention(false);
                     }
                 }
 
@@ -171,5 +180,5 @@ export function useRealtimeHolds({
         };
     }, [roomId]); // <-- Only roomId!
 
-    return { activeHold, allHolds, hasContention, isConnected, isLoading };
+    return { activeHold, allHolds, hasContention, contentionCleared, isConnected, isLoading };
 }

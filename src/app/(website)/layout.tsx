@@ -5,9 +5,12 @@ import { DateProvider } from "@/contexts/DateContext";
 import { UIProvider } from "@/contexts/UIContext";
 import { ToastProvider } from "@/contexts/ToastContext";
 import { SessionProvider } from "@/contexts/SessionContext";
+import { HoldContentionProvider } from "@/contexts/HoldContentionContext";
 import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWidget } from "@/components/layout/FloatingWidget";
+import { HoldBlockedModal } from "@/components/booking/HoldBlockedModal";
+import { FloatingHoldTimer } from "@/components/booking/FloatingHoldTimer";
 
 
 
@@ -79,13 +82,17 @@ export default async function RootLayout({
           <SessionProvider>
             <DateProvider>
               <ToastProvider>
-                <ScrollToTop />
-                <Header settings={settings} rooms={roomsForHeader} />
-                <main className="min-h-screen">
-                  {children}
-                </main>
-                <Footer settings={settings} />
-                <FloatingWidget settings={settings} />
+                <HoldContentionProvider>
+                  <ScrollToTop />
+                  <Header settings={settings} rooms={roomsForHeader} />
+                  <main className="min-h-screen">
+                    {children}
+                  </main>
+                  <Footer settings={settings} />
+                  <FloatingHoldTimer />
+                  <FloatingWidget settings={settings} />
+                  <HoldBlockedModal />
+                </HoldContentionProvider>
               </ToastProvider>
             </DateProvider>
           </SessionProvider>

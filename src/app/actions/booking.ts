@@ -191,3 +191,7 @@ export async function checkBookingStatusAction(
 ): Promise<{ isBooked: boolean }> {
     return holdService.checkBookingStatus(roomId, checkIn, checkOut);
 }
+
+export async function clearContentionAction(holdId: string): Promise<boolean> {
+    return holdService.clearContention(holdId);
+}
