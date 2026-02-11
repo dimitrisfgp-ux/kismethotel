@@ -6,7 +6,7 @@ import { FAQAccordion } from "@/components/home/FAQAccordion";
 import { roomService } from "@/services/roomService";
 import { contentService } from "@/services/contentService";
 
-export const dynamic = 'force-dynamic';
+
 
 export default async function Home() {
   // Fetch data in parallel

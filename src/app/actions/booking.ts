@@ -42,6 +42,10 @@ export async function cancelBookingAction(bookingId: string) {
     return success;
 }
 
+export async function getRoomByIdAction(roomId: string) {
+    return (await roomService.getRoomById(roomId)) ?? null;
+}
+
 export async function getRoomAvailabilityAction(roomId: string) {
     const bookings = await bookingService.getBookings(roomId);
     const blockedDates = await bookingService.getBlockedDates(roomId);

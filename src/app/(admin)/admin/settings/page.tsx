@@ -5,34 +5,23 @@ import { RoleManagementSection } from "@/components/admin/settings/RoleManagemen
 import { createClient } from "@/lib/supabase/server";
 import { getUsersAction } from "@/app/actions/auth";
 import { getRolesAction, getPermissionsAction } from "@/app/actions/roles";
+import { getUserRole } from '@/lib/auth/guards';
 
 export default async function SettingsPage() {
     const supabase = await createClient();
 
     // Parallel Data Fetching (Server-Side)
-    const [settings, userResult, usersResult, rolesResult, permissionsResult] = await Promise.all([
+    const [settings, userResult, usersResult, rolesResult, permissionsResult, roleResult] = await Promise.all([
         contentService.getSettings(),
         supabase.auth.getUser(),
         getUsersAction().catch((err: Error) => { console.error('Failed to fetch users:', err); return []; }),
         getRolesAction().catch((err: Error) => { console.error('Failed to fetch roles:', err); return []; }),
-        getPermissionsAction().catch((err: Error) => { console.error('Failed to fetch permissions:', err); return []; })
+        getPermissionsAction().catch((err: Error) => { console.error('Failed to fetch permissions:', err); return []; }),
+        getUserRole()
     ]);
 
     const user = userResult.data.user;
-
-    let userRole = 'viewer';
-    if (user) {
-        const { data: profile } = await supabase
-            .from('profiles')
-            .select('role_id, roles ( name )')
-            .eq('id', user.id)
-            .single();
-
-        const rolesData = profile?.roles;
-        userRole = Array.isArray(rolesData)
-            ? (rolesData[0] as { name: string })?.name || 'viewer'
-            : ((rolesData as unknown) as { name: string } | null)?.name || 'viewer';
-    }
+    const userRole = roleResult?.roleName ?? 'viewer';
 
     return (
         <div className="max-w-4xl mx-auto space-y-12 pb-12">

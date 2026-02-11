@@ -5,14 +5,14 @@ import { useSearchParams } from "next/navigation";
 import { addDays } from "date-fns";
 import { useEffect, useState, Suspense } from "react";
 import { useDateContext } from "@/contexts/DateContext";
-import { getRoomsAction } from "@/app/actions/room";
+import { getRoomByIdAction } from '@/app/actions/booking';
 import { Room } from "@/types";
 import { Container } from "@/components/ui/Container";
 import { SectionHeading } from "@/components/ui/SectionHeading";
 import { BookingWizard } from "@/components/booking/BookingWizard";
 import { Loader2 } from "lucide-react";
 
-export const dynamic = 'force-dynamic';
+
 
 function BookContent() {
     const searchParams = useSearchParams();
@@ -28,8 +28,7 @@ function BookContent() {
             return;
         }
 
-        getRoomsAction().then(rooms => {
-            const found = rooms.find(r => r.id === roomId);
+        getRoomByIdAction(roomId).then(found => {
             if (found) setRoom(found);
             setLoading(false);
         });

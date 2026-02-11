@@ -21,8 +21,10 @@ export default async function RoomPage({ params }: RoomPageProps) {
         notFound();
     }
 
-    const blockedDates = await bookingService.getBlockedDates(room.id);
-    const bookings = await bookingService.getBookings(room.id);
+    const [blockedDates, bookings] = await Promise.all([
+        bookingService.getBlockedDates(room.id),
+        bookingService.getBookings(room.id)
+    ]);
 
     return (
         <article className="">

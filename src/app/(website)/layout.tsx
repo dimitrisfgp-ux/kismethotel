@@ -9,7 +9,7 @@ import { Header } from "@/components/layout/Header";
 import { Footer } from "@/components/layout/Footer";
 import { FloatingWidget } from "@/components/layout/FloatingWidget";
 
-export const dynamic = 'force-dynamic';
+
 
 export const metadata: Metadata = {
   title: {
@@ -57,18 +57,19 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [settings, rooms] = await Promise.all([
+  const [settings, roomSummaries] = await Promise.all([
     contentService.getSettings(),
-    roomService.getRooms()
+    roomService.getRoomsSummary()
   ]);
 
-  // Map to minimal room summary for header
-  const roomSummaries = rooms.map(r => ({
+  // getRoomsSummary already returns { id, name, slug, pricePerNight }
+  // Add sizeSqm and maxOccupancy as 0 since header only needs name/slug
+  const roomsForHeader = roomSummaries.map(r => ({
     id: r.id,
     slug: r.slug,
     name: r.name,
-    sizeSqm: r.sizeSqm,
-    maxOccupancy: r.maxOccupancy
+    sizeSqm: 0,
+    maxOccupancy: 0
   }));
 
   return (
@@ -79,7 +80,7 @@ export default async function RootLayout({
             <DateProvider>
               <ToastProvider>
                 <ScrollToTop />
-                <Header settings={settings} rooms={roomSummaries} />
+                <Header settings={settings} rooms={roomsForHeader} />
                 <main className="min-h-screen">
                   {children}
                 </main>
