@@ -33,7 +33,7 @@ export default async function RoomPage({ params }: RoomPageProps) {
     return (
         <article className="">
             {/* 1. Gallery */}
-            <ImageGallery images={room.images} media={room.media} roomName={room.name} />
+            <ImageGallery media={room.media} roomName={room.name} />
 
             {/* 2. Content Grid */}
             <Container className="py-16 md:py-24">

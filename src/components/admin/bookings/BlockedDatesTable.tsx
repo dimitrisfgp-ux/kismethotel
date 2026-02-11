@@ -47,20 +47,22 @@ export function BlockedDatesTable({ blocks, rooms, onEdit, onDelete }: BlockedDa
                                 <tr key={block.id} className="hover:bg-[var(--color-warm-white)]/20 transition-colors">
                                     <td className="p-4">
                                         <div className="flex items-center gap-3">
-                                            {room?.images?.[0] ? (
-                                                <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
-                                                    <Image
-                                                        src={room.images[0]}
-                                                        alt={room.name}
-                                                        fill
-                                                        className="object-cover"
-                                                    />
-                                                </div>
-                                            ) : (
-                                                <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
-                                                    No Img
-                                                </div>
-                                            )}
+                                            <div className="flex items-center gap-3">
+                                                {room?.media && room.media.length > 0 ? (
+                                                    <div className="relative w-12 h-12 rounded-md overflow-hidden bg-gray-100 flex-shrink-0">
+                                                        <Image
+                                                            src={room.media[0].url}
+                                                            alt={room.name}
+                                                            fill
+                                                            className="object-cover"
+                                                        />
+                                                    </div>
+                                                ) : (
+                                                    <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center text-xs text-gray-500">
+                                                        No Img
+                                                    </div>
+                                                )}
+                                            </div>
                                             <div>
                                                 <div className="font-bold text-[var(--color-aegean-blue)]">{room?.name || "Unknown Room"}</div>
                                             </div>

@@ -46,7 +46,7 @@ export const contentService = {
 
         if (locations.length > 0) {
             const { error } = await supabase.from('conveniences').insert(
-                locations.map(c => ({
+                locations.map((c: any) => ({
                     id: c.id,
                     name: c.name,
                     category_id: c.categoryId,

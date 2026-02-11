@@ -29,7 +29,7 @@ const EMPTY_ROOM: Room = {
     floor: 0,
     maxOccupancy: 2,
     pricePerNight: 100,
-    images: [""],
+    // images: [""], // Removed Legacy
     beds: [],
     layout: [],
     highlights: [],
@@ -91,11 +91,10 @@ export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
             return;
         }
 
-        // Warning for missing images (Legacy + New)
-        const hasLegacyImages = room.images && room.images.length > 0 && room.images.some(img => img.trim());
+        // Legacy check removed. Rely only on new media.
         const hasNewMedia = attachedMedia.length > 0;
 
-        if (!hasLegacyImages && !hasNewMedia) {
+        if (!hasNewMedia) {
             if (!window.confirm("⚠️ No Images Detected. Proceed?")) return;
         }
 
@@ -133,15 +132,7 @@ export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
         }
     };
 
-    // --- Legacy Image Updates ---
-    const updateImage = (index: number, value: string) => {
-        const newImages = [...room.images];
-        newImages[index] = value;
-        updateField('images', newImages);
-    };
-
-    const addImage = () => updateField('images', [...room.images, ""]);
-    const removeImage = (index: number) => updateField('images', room.images.filter((_, i) => i !== index));
+    // --- Legacy Image Updates Removed ---
 
     const getBedCount = (type: 'single' | 'double') => {
         return room.beds.find(b => b.type === type)?.count || 0;
@@ -558,20 +549,7 @@ export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
                         </div>
                     </div>
 
-                    {/* Legacy Fallback for visibility */}
-                    {room.images && room.images.length > 0 && room.images.some(Boolean) && (
-                        <div className="pt-8 mt-8 border-t border-gray-200">
-                            <h4 className="text-sm font-bold text-gray-500 mb-2">Legacy Images (Unmigrated)</h4>
-                            <div className="flex gap-2 overflow-x-auto pb-2">
-                                {room.images.map((url, i) => url && (
-                                    <div key={i} className="relative w-24 h-24 flex-shrink-0 rounded overflow-hidden">
-                                        <Image src={url} alt="Legacy" fill className="object-cover" />
-                                    </div>
-                                ))}
-                            </div>
-                            <p className="text-xs text-gray-500 mt-1">These will still appear until you fully migrate to the new system.</p>
-                        </div>
-                    )}
+                    {/* Legacy Fallback removed */}
                 </div>
             )}
 

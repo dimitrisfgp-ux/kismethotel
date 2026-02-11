@@ -25,6 +25,8 @@ export default async function Home() {
         title={pageContent.hero.title}
         subtitle={pageContent.hero.subtitle}
         ctaText={pageContent.hero.ctaText}
+        poster={pageContent.hero.poster}
+        videos={pageContent.hero.videos}
       />
       <div id="search-bar" />
       <RoomsGrid rooms={rooms} />

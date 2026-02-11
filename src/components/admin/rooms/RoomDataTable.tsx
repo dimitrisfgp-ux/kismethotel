@@ -72,9 +72,9 @@ export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
                             <TableRow key={room.id}>
                                 <TableCell>
                                     <div className="relative h-12 w-20 overflow-hidden rounded-md bg-gray-100">
-                                        {room.images?.[0] ? (
+                                        {room.media && room.media.length > 0 ? (
                                             <Image
-                                                src={room.images[0]}
+                                                src={room.media[0].url}
                                                 alt={room.name || "Room Image"}
                                                 fill
                                                 className="object-cover"

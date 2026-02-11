@@ -16,7 +16,12 @@ export function StepItinerary({ room, dateRange, nights }: StepItineraryProps) {
         <div className="space-y-6 animate-fade-in">
             <div className="flex gap-6">
                 <div className="relative w-32 h-32 flex-shrink-0">
-                    <Image src={room.images[0]} alt={room.name} fill className="object-cover rounded-[var(--radius-subtle)]" />
+                    <Image
+                        src={room.media?.[0]?.url || "/placeholder.jpg"}
+                        alt={room.name}
+                        fill
+                        className="object-cover rounded-[var(--radius-subtle)]"
+                    />
                 </div>
                 <div>
                     <h3 className="font-bold text-xl mb-2">{room.name}</h3>

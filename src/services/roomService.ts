@@ -3,6 +3,32 @@ import { Room, BlockedDate, Booking } from "@/types";
 
 // Helper to transform Supabase room data to our Room type
 function transformRoom(dbRoom: Record<string, unknown>): Room {
+    // Map new Media System
+    const media = ((dbRoom.room_media as Array<any>) || [])
+        .map(rm => ({
+            ...rm.media_assets,
+            id: rm.media_assets.id,
+            mediaType: rm.media_assets.media_type,
+            mimeType: rm.media_assets.mime_type,
+            sizeBytes: rm.media_assets.size_bytes,
+            altText: rm.media_assets.alt_text,
+            originalFilename: rm.media_assets.original_filename,
+            storagePath: rm.media_assets.storage_path,
+            bucket: rm.media_assets.bucket,
+            folder: rm.media_assets.folder,
+            width: rm.media_assets.width,
+            height: rm.media_assets.height,
+            caption: rm.media_assets.caption,
+            createdAt: rm.media_assets.created_at,
+            updatedAt: rm.media_assets.updated_at,
+            createdBy: rm.media_assets.created_by,
+            // Junction props
+            displayOrder: rm.display_order,
+            isPrimary: rm.is_primary,
+            category: rm.category || (rm.is_primary ? 'primary' : (rm.display_order === 1 || rm.display_order === 2 ? 'secondary' : 'gallery'))
+        }))
+        .sort((a, b) => a.displayOrder - b.displayOrder);
+
     return {
         id: dbRoom.id as string,
         slug: dbRoom.slug as string,
@@ -12,7 +38,7 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
         floor: dbRoom.floor as number,
         maxOccupancy: dbRoom.max_occupancy as number,
         pricePerNight: dbRoom.price_per_night as number,
-        images: (dbRoom.images as string[]) || [], // Legacy
+        // images: legacyImages.length > 0 ? legacyImages : ((dbRoom.images as string[]) || []), // Removed Legacy
         highlights: (dbRoom.highlights as string[]) || [],
         beds: ((dbRoom.room_beds as Array<{ type: string; count: number }>) || []).map(b => ({
             type: b.type as 'single' | 'double',
@@ -29,34 +55,7 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
                     iconName: a.amenities.icon_name
                 }))
         })),
-        // Map new Media System
-        media: ((dbRoom.room_media as Array<any>) || [])
-            .map(rm => ({
-                ...rm.media_assets,
-                id: rm.media_assets.id, // Ensure ID is from asset
-                mediaType: rm.media_assets.media_type,
-                mimeType: rm.media_assets.mime_type,
-                sizeBytes: rm.media_assets.size_bytes,
-                altText: rm.media_assets.alt_text,
-                originalFilename: rm.media_assets.original_filename,
-                storagePath: rm.media_assets.storage_path, // camelCase mapping for consistency if needed, but MediaAsset interface uses mixed... wait, checking MediaAsset interface.
-                // MediaAsset in types/index.ts uses camelCase: storagePath, mediaType, etc.
-                // But DB returns snake_case.
-                // We need to map explicitly.
-                bucket: rm.media_assets.bucket,
-                folder: rm.media_assets.folder,
-                width: rm.media_assets.width,
-                height: rm.media_assets.height,
-                caption: rm.media_assets.caption,
-                createdAt: rm.media_assets.created_at,
-                updatedAt: rm.media_assets.updated_at,
-                createdBy: rm.media_assets.created_by,
-                // Junction props
-                displayOrder: rm.display_order,
-                isPrimary: rm.is_primary, // Keep for now
-                category: rm.category || (rm.is_primary ? 'primary' : (rm.display_order === 1 || rm.display_order === 2 ? 'secondary' : 'gallery'))
-            }))
-            .sort((a, b) => a.displayOrder - b.displayOrder)
+        media: media
     };
 }
 
@@ -66,19 +65,19 @@ export const roomService = {
         const { data, error } = await supabase
             .from('rooms')
             .select(`
-                *,
-                room_beds (type, count),
-                room_layout_sections (
-                    type, title, details, sort_order,
-                    room_layout_amenities (
-                        amenities (id, name, icon_name)
-                    )
-                ),
-                room_media (
-                    display_order, is_primary,
-                    media_assets (*)
+            *,
+            room_beds (type, count),
+            room_layout_sections (
+                type, title, details, sort_order,
+                room_layout_amenities (
+                    amenities (id, name, icon_name)
                 )
-            `)
+            ),
+            room_media (
+                display_order, is_primary,
+                media_assets (*)
+            )
+        `)
             .order('price_per_night', { ascending: true });
 
         if (error) {
@@ -94,19 +93,19 @@ export const roomService = {
         const { data, error } = await supabase
             .from('rooms')
             .select(`
-                *,
-                room_beds (type, count),
-                room_layout_sections (
-                    type, title, details, sort_order,
-                    room_layout_amenities (
-                        amenities (id, name, icon_name)
-                    )
-                ),
-                room_media (
-                    display_order, is_primary,
-                    media_assets (*)
+            *,
+            room_beds (type, count),
+            room_layout_sections (
+                type, title, details, sort_order,
+                room_layout_amenities (
+                    amenities (id, name, icon_name)
                 )
-            `)
+            ),
+            room_media (
+                display_order, is_primary,
+                media_assets (*)
+            )
+        `)
             .eq('slug', slug)
             .single();
 
@@ -119,19 +118,19 @@ export const roomService = {
         const { data, error } = await supabase
             .from('rooms')
             .select(`
-                *,
-                room_beds (type, count),
-                room_layout_sections (
-                    type, title, details, sort_order,
-                    room_layout_amenities (
-                        amenities (id, name, icon_name)
-                    )
-                ),
-                room_media (
-                    display_order, is_primary,
-                    media_assets (*)
+            *,
+            room_beds (type, count),
+            room_layout_sections (
+                type, title, details, sort_order,
+                room_layout_amenities (
+                    amenities (id, name, icon_name)
                 )
-            `)
+            ),
+            room_media (
+                display_order, is_primary,
+                media_assets (*)
+            )
+        `)
             .order('price_per_night', { ascending: false })
             .limit(4);
 
@@ -288,7 +287,7 @@ export const roomService = {
                 floor: room.floor,
                 max_occupancy: room.maxOccupancy,
                 price_per_night: room.pricePerNight,
-                images: room.images,
+                // images: room.images, // Removed
                 highlights: room.highlights
             })
             .select()
@@ -340,7 +339,7 @@ export const roomService = {
                 floor: room.floor,
                 max_occupancy: room.maxOccupancy,
                 price_per_night: room.pricePerNight,
-                images: room.images,
+                // images: room.images, // Removed
                 highlights: room.highlights
             })
             .eq('id', room.id);

@@ -9,9 +9,15 @@ interface HeroProps {
     title: string;
     subtitle: string;
     ctaText: string;
+    poster?: string;
+    videos?: {
+        ios?: string;
+        android?: string;
+        desktop?: string;
+    };
 }
 
-export function Hero({ title, subtitle, ctaText }: HeroProps) {
+export function Hero({ title, subtitle, ctaText, poster, videos }: HeroProps) {
     const handleScroll = (e: React.MouseEvent) => {
         e.preventDefault();
         scrollToElement("search-bar"); // Or 'rooms' if preferred, preserving 'search-bar' targeting
@@ -21,17 +27,18 @@ export function Hero({ title, subtitle, ctaText }: HeroProps) {
         <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
             {/* Background (Video) */}
             <div className="absolute inset-0 z-0 select-none pointer-events-none">
+                {/* Only render video if a source exists (or poster) */}
                 <video
                     autoPlay
                     loop
                     muted
                     playsInline
                     className="absolute inset-0 w-full h-full object-cover"
-                    poster={PLACEHOLDER_HERO}
+                    poster={poster || PLACEHOLDER_HERO}
                 >
-                    <source src="/Videos/ios/hero-ios.mp4" type='video/mp4; codecs="hvc1"' media="(max-width: 768px)" />
-                    <source src="/Videos/android/hero-android.mp4" type="video/mp4" media="(max-width: 768px)" />
-                    <source src="/Videos/desktop/hero-desktop.mp4" type="video/mp4" media="(min-width: 769px)" />
+                    {videos?.ios && <source src={videos.ios} type='video/mp4; codecs="hvc1"' media="(max-width: 768px)" />}
+                    {videos?.android && <source src={videos.android} type="video/mp4" media="(max-width: 768px)" />}
+                    {videos?.desktop && <source src={videos.desktop} type="video/mp4" media="(min-width: 769px)" />}
                     Your browser does not support the video tag.
                 </video>
             </div>

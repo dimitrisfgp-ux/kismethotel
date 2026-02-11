@@ -6,6 +6,7 @@ import { cn } from "@/lib/utils";
 import dynamic from "next/dynamic";
 import { RoomPlaceholder } from "@/components/ui/RoomPlaceholder";
 import { RoomMedia } from "@/types";
+import { Grid } from "lucide-react";
 
 // Dynamic import for Lightbox - only loads when user clicks to open gallery
 const Lightbox = dynamic(() => import("../ui/Lightbox").then(m => m.Lightbox), {
@@ -14,25 +15,22 @@ const Lightbox = dynamic(() => import("../ui/Lightbox").then(m => m.Lightbox), {
 });
 
 interface ImageGalleryProps {
-    images: string[]; // Legacy (needed for backward compat if media is empty)
-    media?: RoomMedia[];
+    // images: string[]; // <-- REMOVED
+    media: RoomMedia[]; // <-- REQUIRED
     roomName: string;
 }
 
-export function ImageGallery({ images, media = [], roomName }: ImageGalleryProps) {
+export function ImageGallery({ media = [], roomName }: ImageGalleryProps) {
     const [isOpen, setIsOpen] = useState(false);
     const [photoIndex, setPhotoIndex] = useState(0);
 
     // --- Resolve Media Sources ---
-    // If we have new media, use it. Otherwise fall back to legacy 'images' array.
-    const hasNewMedia = media.length > 0;
-
     let galleryItems: { url: string; alt: string; mediaType: 'image' | 'video' }[] = [];
 
     let primaryItem: { url: string; alt: string; mediaType: 'image' | 'video' } | null = null;
     let secondaryImages: { url: string; alt: string; mediaType: 'image' | 'video' }[] = [];
 
-    if (hasNewMedia) {
+    if (media.length > 0) {
         // New System
         const heroVideo = media.find(m => m.category === 'hero_video');
         const primary = media.find(m => m.category === 'primary') || media.find(m => m.isPrimary) || media[0];
@@ -47,15 +45,11 @@ export function ImageGallery({ images, media = [], roomName }: ImageGalleryProps
         }
 
         // Construct the full "Lightbox" list order: Primary -> Secondaries -> Gallery
-        // (Or whatever order makes sense. Usually all images should be browseable).
         // Let's gather ALL valid images for the lightbox.
         const allMedia = [
             ...(primary ? [primary] : []),
             ...secondary,
             ...gallery,
-            // Fallback: if we have 'hero_video' or others, maybe exclude them from image gallery?
-            // The prompt mentions "Expanding Lightbox Gallery".
-            // Let's include everything that is an image.
             ...media.filter(m => !['primary', 'secondary', 'gallery', 'hero_video', 'portrait'].includes(m.category) && m.mediaType === 'image')
         ];
 
@@ -70,15 +64,6 @@ export function ImageGallery({ images, media = [], roomName }: ImageGalleryProps
         if (secondaryImages.length < 2 && gallery.length > 0) {
             const fillCount = 2 - secondaryImages.length;
             secondaryImages.push(...gallery.slice(0, fillCount).map(m => ({ url: m.url, alt: m.altText || roomName, mediaType: 'image' as const })));
-        }
-
-    } else {
-        // Legacy System
-        galleryItems = images.filter(Boolean).map(url => ({ url, alt: roomName, mediaType: 'image' as const }));
-
-        if (galleryItems.length > 0) {
-            primaryItem = galleryItems[0];
-            secondaryImages = galleryItems.slice(1, 3);
         }
     }
 
@@ -104,7 +89,7 @@ export function ImageGallery({ images, media = [], roomName }: ImageGalleryProps
     };
 
     // Helper for rendering an interactive item (image or video)
-    function GalleryItem({ item, index, onOpen, priority = false, className }: { item: { url: string, alt: string, mediaType: 'image' | 'video' }, index: number, onOpen: (i: number) => void, priority?: boolean, className?: string }) {
+    function GalleryItem({ item, index, onOpen, priority = false, className, children }: { item: { url: string, alt: string, mediaType: 'image' | 'video' }, index: number, onOpen: (i: number) => void, priority?: boolean, className?: string, children?: React.ReactNode }) {
         if (!item || !item.url) return <div className={cn("w-full h-full bg-gray-200", className)}><RoomPlaceholder /></div>;
 
         if (item.mediaType === 'video') {
@@ -119,6 +104,7 @@ export function ImageGallery({ images, media = [], roomName }: ImageGalleryProps
                         playsInline
                     />
                     <div className="absolute inset-0 bg-black/10" />
+                    {children}
                 </div>
             );
         }
@@ -143,9 +129,12 @@ export function ImageGallery({ images, media = [], roomName }: ImageGalleryProps
                 />
                 {/* Overlay hint */}
                 <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-300" />
+                {children}
             </div>
         );
     }
+
+    const remainingCount = Math.max(0, lightboxImages.length - 3);
 
     return (
         <>
@@ -184,12 +173,22 @@ export function ImageGallery({ images, media = [], roomName }: ImageGalleryProps
                                     item={secondaryImages[1]}
                                     index={2}
                                     onOpen={openLightbox}
-                                />
+                                >
+                                    {remainingCount > 0 && (
+                                        <div className="absolute bottom-4 right-4 z-10 pointer-events-none">
+                                            <div className="bg-white/90 backdrop-blur-sm text-[var(--color-charcoal)] text-xs font-bold px-3 py-2 rounded-full shadow-md flex items-center gap-2 transition-transform group-hover:scale-105">
+                                                <Grid className="w-3 h-3" />
+                                                See all {lightboxImages.length} photos
+                                            </div>
+                                        </div>
+                                    )}
+                                </GalleryItem>
                             </div>
                         </div>
                     )}
                 </div>
             )}
+
 
             <Lightbox
                 isOpen={isOpen}

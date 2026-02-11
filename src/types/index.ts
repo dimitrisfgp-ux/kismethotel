@@ -46,11 +46,11 @@ export interface Room {
     floor: number;
     maxOccupancy: number;
     pricePerNight: number;
-    images: string[];
+    // images: string[]; // <-- REMOVED (Legacy)
     beds: RoomBed[];
     layout: RoomLayoutCategory[];
     highlights: string[];
-    media?: RoomMedia[]; // New hybrid media system
+    media: RoomMedia[]; // <-- NOW REQUIRED
 }
 
 export interface Booking {

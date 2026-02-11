@@ -38,9 +38,9 @@ export function RoomCard({ room, index: _index }: RoomCardProps) {
         >
             {/* Image */}
             <div className="absolute inset-0 transition-transform duration-500 ease-premium group-hover:scale-105 group-[.is-active]:scale-105">
-                {room.images?.[0]?.trim() ? (
+                {room.media && room.media.length > 0 ? (
                     <Image
-                        src={room.images[0]}
+                        src={room.media[0].url}
                         alt={room.name}
                         fill
                         className="object-cover"
