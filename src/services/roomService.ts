@@ -111,11 +111,11 @@ export const roomService = {
     /**
      * Lightweight query returning only basic room info (for admin lists, dropdowns, emails).
      */
-    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number }[]> => {
+    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number; maxOccupancy: number }[]> => {
         const supabase = await createClient();
         const { data, error } = await supabase
             .from('rooms')
-            .select('id, name, slug, price_per_night')
+            .select('id, name, slug, price_per_night, max_occupancy')
             .order('name');
 
         if (error) return [];
@@ -123,7 +123,8 @@ export const roomService = {
             id: r.id,
             name: r.name,
             slug: r.slug,
-            pricePerNight: r.price_per_night
+            pricePerNight: r.price_per_night,
+            maxOccupancy: r.max_occupancy
         }));
     },
 

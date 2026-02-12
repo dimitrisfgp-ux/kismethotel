@@ -1,8 +1,10 @@
 import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
-import { Bot, Lock } from 'lucide-react';
+import { Bot, Lock, AlertCircle } from 'lucide-react';
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string }> }) {
+    const { error: loginError } = await searchParams;
+
     async function login(formData: FormData) {
         "use server";
 
@@ -20,7 +22,7 @@ export default function LoginPage() {
         });
 
         if (error) {
-            return redirect(`/login?error=${encodeURIComponent(error.message)}`);
+            return redirect('/login?error=Invalid email or password');
         }
 
         return redirect('/admin/bookings');
@@ -60,6 +62,13 @@ export default function LoginPage() {
                             Please sign in to continue
                         </p>
                     </div>
+
+                    {loginError && (
+                        <div className="flex items-center gap-3 p-4 bg-red-50 border border-red-200 rounded-lg text-red-700 text-sm">
+                            <AlertCircle className="w-5 h-5 flex-shrink-0" />
+                            <span>{loginError}</span>
+                        </div>
+                    )}
 
                     <form action={login} className="space-y-6">
                         <div className="space-y-2">

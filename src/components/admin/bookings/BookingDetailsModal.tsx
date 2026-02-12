@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { Booking, Room } from "@/types";
+import { Booking, RoomSummary } from "@/types";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/priceCalculator";
@@ -16,7 +16,7 @@ import { formatLocalDate } from "@/lib/dateUtils";
 
 interface BookingDetailsModalProps {
     booking: Booking;
-    room?: Room;
+    room?: RoomSummary;
     onClose: () => void;
 }
 

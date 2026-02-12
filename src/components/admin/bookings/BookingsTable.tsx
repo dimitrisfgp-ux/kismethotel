@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PaginationControls } from "@/components/ui/admin/PaginationControls";
-import { Booking, Room, ContactRequest, BookingStatus } from "@/types";
+import { Booking, RoomSummary, ContactRequest, BookingStatus } from "@/types";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/priceCalculator";
 import { Badge } from "@/components/ui/Badge";
@@ -32,7 +32,7 @@ import { useBookingFilters, BookingFilters, FilterKey } from "@/hooks/useBooking
 
 interface BookingsTableProps {
     bookings: Booking[];
-    rooms: Room[];
+    rooms: RoomSummary[];
     requests?: ContactRequest[];
     userRole: string;
     onApproveRequest?: (request: ContactRequest) => Promise<void>;

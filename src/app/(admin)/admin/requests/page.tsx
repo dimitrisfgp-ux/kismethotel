@@ -2,11 +2,11 @@ import { requestService } from "@/services/requestService";
 import { bookingService } from "@/services/bookingService";
 import { RequestsTable } from "@/components/admin/requests/RequestsTable";
 
-export const dynamic = "force-dynamic";
-
 export default async function RequestsPage() {
-    const requests = await requestService.getRequests();
-    const bookings = await bookingService.getBookings();
+    const [requests, bookings] = await Promise.all([
+        requestService.getRequests(),
+        bookingService.getBookings()
+    ]);
 
     return (
         <div className="max-w-6xl mx-auto space-y-8 pb-12">

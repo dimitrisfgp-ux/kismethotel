@@ -4,10 +4,12 @@ import { LocationsManager } from "@/components/admin/forms/LocationsManager";
 import { FAQManager } from "@/components/admin/forms/FAQManager";
 
 export default async function PageContentPage() {
-    const pageContent = await contentService.getPageContent();
-    const conveniences = await contentService.getConveniences();
-    const categories = await contentService.getCategories();
-    const faqs = await contentService.getFAQs();
+    const [pageContent, conveniences, categories, faqs] = await Promise.all([
+        contentService.getPageContent(),
+        contentService.getConveniences(),
+        contentService.getCategories(),
+        contentService.getFAQs()
+    ]);
 
     return (
         <div className="max-w-4xl mx-auto space-y-8 pb-12">

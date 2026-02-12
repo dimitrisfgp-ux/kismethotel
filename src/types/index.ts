@@ -53,6 +53,15 @@ export interface Room {
     media: RoomMedia[]; // <-- NOW REQUIRED
 }
 
+/** Lightweight room info for admin lists, filters, and dropdowns */
+export interface RoomSummary {
+    id: string;
+    name: string;
+    slug: string;
+    pricePerNight: number;
+    maxOccupancy?: number;
+}
+
 export interface Booking {
     id: string;
     roomId: string;

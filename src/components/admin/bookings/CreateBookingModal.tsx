@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { adminCreateBookingAction } from '@/app/actions/bookings';
-import { Room, BookingStatus } from '@/types';
+import { RoomSummary, BookingStatus } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import { X, Calendar, User, CreditCard, BedDouble } from 'lucide-react';
 import { formatCurrency } from '@/lib/priceCalculator';
@@ -10,7 +10,7 @@ import { formatCurrency } from '@/lib/priceCalculator';
 interface CreateBookingModalProps {
     isOpen: boolean;
     onClose: () => void;
-    rooms: Room[];
+    rooms: RoomSummary[];
     currentUserRole: string;
 }
 

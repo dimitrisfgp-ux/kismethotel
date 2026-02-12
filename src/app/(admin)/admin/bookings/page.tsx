@@ -5,12 +5,10 @@ import { approveRequestAction, discardRequestAction } from "@/app/actions/reques
 import { BookingsPageClient } from "@/components/admin/bookings/BookingsPageClient";
 import { getUserRole } from "@/lib/auth/guards";
 
-export const dynamic = "force-dynamic";
-
 export default async function BookingsPage() {
-    // 1. Fetch Key Data Parallel
+    // All queries run in parallel — getRoomsSummary is lightweight (no deep joins)
     const [rooms, bookings, requests, roleResult] = await Promise.all([
-        roomService.getRooms(),
+        roomService.getRoomsSummary(),
         bookingService.getBookings(),
         requestService.getRequests(),
         getUserRole()

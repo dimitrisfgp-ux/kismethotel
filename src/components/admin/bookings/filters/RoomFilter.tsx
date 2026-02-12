@@ -1,14 +1,14 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Room } from "@/types";
+import { RoomSummary } from "@/types";
 import { Check } from "lucide-react";
 import { FilterModal } from "../FilterModal";
 
 interface RoomFilterProps {
     isOpen: boolean;
     onClose: () => void;
-    rooms: Room[];
+    rooms: RoomSummary[];
     selectedRoomIds: string[];
     onChange: (roomIds: string[]) => void;
 }
@@ -52,8 +52,8 @@ export function RoomFilter({ isOpen, onClose, rooms, selectedRoomIds, onChange }
                     <button
                         onClick={selectAll}
                         className={`w-full flex items-center justify-between p-2 rounded-md transition-colors ${allSelected
-                                ? "bg-[var(--color-aegean-blue)]/10 text-[var(--color-aegean-blue)]"
-                                : "hover:bg-[var(--color-warm-white)]"
+                            ? "bg-[var(--color-aegean-blue)]/10 text-[var(--color-aegean-blue)]"
+                            : "hover:bg-[var(--color-warm-white)]"
                             }`}
                     >
                         <span className="font-medium">All Rooms</span>
@@ -70,8 +70,8 @@ export function RoomFilter({ isOpen, onClose, rooms, selectedRoomIds, onChange }
                                 key={room.id}
                                 onClick={() => toggleRoom(room.id)}
                                 className={`w-full flex items-center justify-between p-2 rounded-md transition-colors ${isSelected
-                                        ? "bg-[var(--color-aegean-blue)]/10 text-[var(--color-aegean-blue)]"
-                                        : "hover:bg-[var(--color-warm-white)]"
+                                    ? "bg-[var(--color-aegean-blue)]/10 text-[var(--color-aegean-blue)]"
+                                    : "hover:bg-[var(--color-warm-white)]"
                                     }`}
                             >
                                 <span>{room.name}</span>

@@ -1,13 +1,13 @@
 'use client';
 
 import { useState } from 'react';
-import { Room, Booking, ContactRequest, BookingStatus } from "@/types";
+import { RoomSummary, Booking, ContactRequest, BookingStatus } from "@/types";
 import { BookingsTable } from "@/components/admin/bookings/BookingsTable";
 import { CreateBookingModal } from "@/components/admin/bookings/CreateBookingModal";
 import { Plus } from 'lucide-react';
 
 interface BookingsPageClientProps {
-    rooms: Room[];
+    rooms: RoomSummary[];
     bookings: Booking[];
     requests: ContactRequest[];
     userRole: string;
