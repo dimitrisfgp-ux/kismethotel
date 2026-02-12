@@ -439,3 +439,44 @@ export function welcomeEmail(email: string, password: string, name: string): { s
         html: emailWrapper(content, "Your access credentials for Kismet CMS")
     };
 }
+
+/**
+ * Email #7: Password Reset
+ * Branded reset email sent via our Gmail pipeline (not Supabase's default)
+ */
+export function passwordResetEmail(resetLink: string): { subject: string; html: string } {
+    const content = `
+        <h2 style="color: ${COLORS.aegeanBlue}; margin-top: 0;">Password Reset Request</h2>
+        <p style="font-size: 16px; line-height: 1.5; color: ${COLORS.charcoal};">
+            Hello,
+        </p>
+        <p style="font-size: 16px; line-height: 1.5; color: ${COLORS.charcoal};">
+            We received a request to reset your CMS account password.
+            Click the button below to choose a new password:
+        </p>
+        
+        <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="margin: 30px 0;">
+            <tr>
+                <td align="center" style="background-color: ${COLORS.aegeanBlue}; border-radius: 6px;">
+                    <a href="${resetLink}" style="display: inline-block; padding: 14px 30px; color: #ffffff; text-decoration: none; font-weight: 500; font-size: 16px; font-family: ${FONTS.body};">Reset Your Password &rarr;</a>
+                </td>
+            </tr>
+        </table>
+
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="margin: 20px 0; background-color: #F8F9FA; border-radius: 8px; border: 1px solid #E9ECEF;">
+            <tr>
+                <td style="padding: 16px 20px;">
+                    <p style="margin: 0; font-size: 13px; line-height: 1.6; color: ${COLORS.charcoal}; opacity: 0.8;">
+                        ⏱ This link expires in <strong>1 hour</strong>.<br/>
+                        🔒 If you didn't request this, you can safely ignore this email. Your password will remain unchanged.
+                    </p>
+                </td>
+            </tr>
+        </table>
+    `;
+
+    return {
+        subject: `Kismet — Password Reset`,
+        html: emailWrapper(content, "Reset your Kismet CMS password")
+    };
+}

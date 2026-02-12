@@ -31,8 +31,9 @@ export async function updateSession(request: NextRequest) {
         }
     )
 
-    // Do not run on login page to avoid loops
-    if (request.nextUrl.pathname === '/login') {
+    // Do not run auth check on public auth pages
+    const publicPaths = ['/login', '/reset-password', '/auth/callback'];
+    if (publicPaths.some(p => request.nextUrl.pathname.startsWith(p))) {
         return supabaseResponse
     }
 

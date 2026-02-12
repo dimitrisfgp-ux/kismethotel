@@ -264,3 +264,69 @@ export async function updateProfileAction(data: {
     revalidatePath('/admin/profile');
     return { success: true };
 }
+
+/**
+ * Request a password reset email.
+ * Uses admin API to generate a recovery link, then sends via our branded Gmail pipeline.
+ * Validates that the email belongs to an existing CMS user before sending.
+ */
+export async function requestPasswordResetAction(email: string) {
+    try {
+        const supabase = createAdminClient();
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+
+        // Verify the email belongs to an existing user (CMS is internal — no anti-enumeration needed)
+        const { data: userList, error: listError } = await supabase.auth.admin.listUsers();
+        const existingUser = userList?.users?.find(u => u.email?.toLowerCase() === email.toLowerCase());
+
+        if (listError || !existingUser) {
+            return { success: false, message: 'No account found with this email address. Contact an admin if you need help.' };
+        }
+
+        const { data, error } = await supabase.auth.admin.generateLink({
+            type: 'recovery',
+            email,
+        });
+
+        if (error || !data?.properties?.hashed_token) {
+            console.error('Password reset link generation failed:', error?.message);
+            return { success: false, message: 'Failed to generate reset link. Please try again.' };
+        }
+
+        // Build our own callback URL using hashed_token + verifyOtp (bypasses PKCE/hash-fragment issues)
+        const resetUrl = `${appUrl}/auth/callback?token_hash=${data.properties.hashed_token}&type=recovery`;
+
+        // Send branded email via our Gmail pipeline
+        const { passwordResetEmail } = await import('@/services/emailTemplates');
+        await sendEmail({
+            to: email,
+            ...passwordResetEmail(resetUrl)
+        });
+
+        return { success: true };
+    } catch (err) {
+        console.error('Password reset error:', err);
+        return { success: false, message: 'An unexpected error occurred. Please try again.' };
+    }
+}
+
+/**
+ * Update the current user's password.
+ * Requires an active session (established via the recovery code exchange).
+ */
+export async function updatePasswordAction(newPassword: string) {
+    const supabase = await createClient();
+
+    const { data: { user } } = await supabase.auth.getUser();
+    if (!user) {
+        throw new Error('No active session. Please use a valid password reset link.');
+    }
+
+    const { error } = await supabase.auth.updateUser({ password: newPassword });
+
+    if (error) {
+        throw new Error(error.message);
+    }
+
+    return { success: true };
+}
