@@ -273,7 +273,8 @@ export async function updateProfileAction(data: {
 export async function requestPasswordResetAction(email: string) {
     try {
         const supabase = createAdminClient();
-        const appUrl = process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000';
+        const appUrl = process.env.NEXT_PUBLIC_APP_URL
+            || (process.env.VERCEL_URL ? `https://${process.env.VERCEL_URL}` : 'http://localhost:3000');
 
         // Verify the email belongs to an existing user (CMS is internal — no anti-enumeration needed)
         const { data: userList, error: listError } = await supabase.auth.admin.listUsers();
