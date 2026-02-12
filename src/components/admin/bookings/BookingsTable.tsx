@@ -2,7 +2,7 @@
 
 import { useState, useMemo } from "react";
 import { PaginationControls } from "@/components/ui/admin/PaginationControls";
-import { Booking, RoomSummary, ContactRequest, BookingStatus } from "@/types";
+import { Booking, RoomSummary, ContactRequest } from "@/types";
 import { format } from "date-fns";
 import { formatCurrency } from "@/lib/priceCalculator";
 import { Badge } from "@/components/ui/Badge";
@@ -13,7 +13,7 @@ import { BookingDetailsModal } from "./BookingDetailsModal";
 import { FilterableHeader } from "./FilterableHeader";
 import { RequestBadge } from "./RequestBadge";
 import { RequestDetailsModal } from "../requests/RequestDetailsModal";
-import { DateRange } from "react-day-picker";
+
 import { getStatusColor } from "@/lib/constants/statusStyles";
 import {
     BookingIdFilter,
@@ -24,11 +24,9 @@ import {
     StatusFilter,
     RequestsFilter,
     DatesFilter,
-    NumericFilterValue,
-    RequestFilterOption
 } from "./filters";
 
-import { useBookingFilters, BookingFilters, FilterKey } from "@/hooks/useBookingFilters";
+import { useBookingFilters, FilterKey } from "@/hooks/useBookingFilters";
 
 interface BookingsTableProps {
     bookings: Booking[];
@@ -59,8 +57,10 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
         requestsByBookingId,
         isFilterActive,
         hasActiveFilters,
-        clearFilters
-    } = useBookingFilters(bookings, requests);
+        clearFilters,
+        sortConfig,
+        cycleSort
+    } = useBookingFilters(bookings, requests, rooms);
 
     // Pagination State
     const [itemsPerPage, setItemsPerPage] = useState(10);
@@ -99,6 +99,9 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
                 break;
             case "requests":
                 newFilters.requestOptions = newFilters.requestOptions.filter(o => o !== value);
+                break;
+            case "stayDates":
+                newFilters.stayDates = null;
                 break;
             case "bookedDate":
                 newFilters.bookedDate = null;
@@ -145,10 +148,16 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
             tags.push({ id: `req-${opt}`, label: `Request: ${opt}`, onRemove: () => removeFilter("requests", opt) });
         });
 
+        if (filters.stayDates && filters.stayDates.from) {
+            let label = `Dates: ${format(filters.stayDates.from, "MMM d")}`;
+            if (filters.stayDates.to) label += ` - ${format(filters.stayDates.to, "MMM d")}`;
+            tags.push({ id: 'stayDates', label, onRemove: () => removeFilter("stayDates") });
+        }
+
         if (filters.bookedDate && filters.bookedDate.from) {
             let label = `Booked: ${format(filters.bookedDate.from, "MMM d")}`;
             if (filters.bookedDate.to) label += ` - ${format(filters.bookedDate.to, "MMM d")}`;
-            tags.push({ id: 'date', label, onRemove: () => removeFilter("bookedDate") });
+            tags.push({ id: 'bookedDate', label, onRemove: () => removeFilter("bookedDate") });
         }
 
         return tags;
@@ -243,22 +252,41 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
                                     label="Details"
                                     isActive={isFilterActive("details")}
                                     onClick={() => setOpenFilter("details")}
+                                    sortable
+                                    sortDirection={sortConfig?.key === "guestName" ? sortConfig.direction : null}
+                                    onSort={() => cycleSort("guestName")}
                                 />
                                 <FilterableHeader
                                     label="Room"
                                     isActive={isFilterActive("room")}
                                     onClick={() => setOpenFilter("room")}
+                                    sortable
+                                    sortDirection={sortConfig?.key === "roomName" ? sortConfig.direction : null}
+                                    onSort={() => cycleSort("roomName")}
                                 />
-                                <th className="p-4 font-bold text-[var(--color-charcoal)]">Dates</th>
+                                <FilterableHeader
+                                    label="Dates"
+                                    isActive={isFilterActive("dates")}
+                                    onClick={() => setOpenFilter("dates")}
+                                    sortable
+                                    sortDirection={sortConfig?.key === "checkIn" ? sortConfig.direction : null}
+                                    onSort={() => cycleSort("checkIn")}
+                                />
                                 <FilterableHeader
                                     label="Guests"
                                     isActive={isFilterActive("guests")}
                                     onClick={() => setOpenFilter("guests")}
+                                    sortable
+                                    sortDirection={sortConfig?.key === "guestsCount" ? sortConfig.direction : null}
+                                    onSort={() => cycleSort("guestsCount")}
                                 />
                                 <FilterableHeader
                                     label="Total"
                                     isActive={isFilterActive("cost")}
                                     onClick={() => setOpenFilter("cost")}
+                                    sortable
+                                    sortDirection={sortConfig?.key === "totalPrice" ? sortConfig.direction : null}
+                                    onSort={() => cycleSort("totalPrice")}
                                 />
                                 <FilterableHeader
                                     label="Status"
@@ -274,6 +302,9 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
                                     label="Booked"
                                     isActive={isFilterActive("bookedDate")}
                                     onClick={() => setOpenFilter("bookedDate")}
+                                    sortable
+                                    sortDirection={sortConfig?.key === "createdAt" ? sortConfig.direction : null}
+                                    onSort={() => cycleSort("createdAt")}
                                 />
                                 <th className="p-4 font-bold text-[var(--color-charcoal)] text-right">Actions</th>
                             </tr>
@@ -441,6 +472,13 @@ export function BookingsTable({ bookings, rooms, requests = [], userRole, onAppr
                 onClose={() => setOpenFilter(null)}
                 selectedOptions={filters.requestOptions}
                 onChange={(requestOptions) => setFilters({ ...filters, requestOptions })}
+            />
+            <DatesFilter
+                isOpen={openFilter === "dates"}
+                onClose={() => setOpenFilter(null)}
+                label="Stay Dates"
+                value={filters.stayDates}
+                onChange={(stayDates) => setFilters({ ...filters, stayDates })}
             />
             <DatesFilter
                 isOpen={openFilter === "bookedDate"}

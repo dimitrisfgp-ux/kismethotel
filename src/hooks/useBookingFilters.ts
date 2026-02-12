@@ -1,5 +1,5 @@
 import { useState, useMemo } from "react";
-import { Booking, ContactRequest, BookingStatus } from "@/types";
+import { Booking, ContactRequest, BookingStatus, RoomSummary } from "@/types";
 import { DateRange } from "react-day-picker";
 import { NumericFilterValue, RequestFilterOption } from "@/components/admin/bookings/filters";
 
@@ -9,6 +9,7 @@ export interface BookingFilters {
     bookingId: string;
     details: { name?: string; email?: string; phone?: string };
     roomIds: string[];
+    stayDates: DateRange | null;
     guests: NumericFilterValue | null;
     cost: NumericFilterValue | null;
     statuses: BookingStatus[];
@@ -16,12 +17,19 @@ export interface BookingFilters {
     bookedDate: DateRange | null;
 }
 
-export type FilterKey = "bookingId" | "details" | "room" | "guests" | "cost" | "status" | "requests" | "bookedDate";
+export type FilterKey = "bookingId" | "details" | "room" | "dates" | "guests" | "cost" | "status" | "requests" | "bookedDate";
+
+export type SortDirection = "asc" | "desc";
+export interface SortConfig {
+    key: string;
+    direction: SortDirection;
+}
 
 export const INITIAL_FILTERS: BookingFilters = {
     bookingId: "",
     details: {},
     roomIds: [],
+    stayDates: null,
     guests: null,
     cost: null,
     statuses: [],
@@ -31,8 +39,9 @@ export const INITIAL_FILTERS: BookingFilters = {
 
 // --- Hook ---
 
-export function useBookingFilters(bookings: Booking[], requests: ContactRequest[] = []) {
+export function useBookingFilters(bookings: Booking[], requests: ContactRequest[] = [], rooms: RoomSummary[] = []) {
     const [filters, setFilters] = useState<BookingFilters>(INITIAL_FILTERS);
+    const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
 
     // 1. Group Requests by Booking ID
     const requestsByBookingId = useMemo(() => {
@@ -46,12 +55,20 @@ export function useBookingFilters(bookings: Booking[], requests: ContactRequest[
         return map;
     }, [requests]);
 
+    // Room name lookup (for sorting)
+    const roomNameMap = useMemo(() => {
+        const map = new Map<string, string>();
+        rooms.forEach(r => map.set(r.id, r.name));
+        return map;
+    }, [rooms]);
+
     // 2. Filter Active Helper
     const isFilterActive = (key: FilterKey): boolean => {
         switch (key) {
             case "bookingId": return !!filters.bookingId;
             case "details": return !!(filters.details.name || filters.details.email || filters.details.phone);
             case "room": return filters.roomIds.length > 0;
+            case "dates": return filters.stayDates !== null;
             case "guests": return filters.guests !== null;
             case "cost": return filters.cost !== null;
             case "status": return filters.statuses.length > 0;
@@ -61,42 +78,64 @@ export function useBookingFilters(bookings: Booking[], requests: ContactRequest[
         }
     };
 
-    const hasActiveFilters = Object.keys(INITIAL_FILTERS).some(key => isFilterActive(key as FilterKey));
+    const hasActiveFilters = Object.keys(INITIAL_FILTERS).some(key => {
+        // Map filter keys to FilterKey enum values
+        const filterKeyMap: Record<string, FilterKey> = {
+            bookingId: "bookingId",
+            details: "details",
+            roomIds: "room",
+            stayDates: "dates",
+            guests: "guests",
+            cost: "cost",
+            statuses: "status",
+            requestOptions: "requests",
+            bookedDate: "bookedDate"
+        };
+        return isFilterActive(filterKeyMap[key] || key as FilterKey);
+    });
 
-    const clearFilters = () => setFilters(INITIAL_FILTERS);
+    const clearFilters = () => {
+        setFilters(INITIAL_FILTERS);
+        setSortConfig(null);
+    };
 
-    // 3. Apply Filters
+    // 3. Cycle sort: none → asc → desc → none
+    const cycleSort = (key: string) => {
+        setSortConfig(prev => {
+            if (!prev || prev.key !== key) return { key, direction: "asc" };
+            if (prev.direction === "asc") return { key, direction: "desc" };
+            return null; // desc → none
+        });
+    };
+
+    // 4. Apply Filters + Sort
     const filteredBookings = useMemo(() => {
-        return bookings.filter(booking => {
+        let result = bookings.filter(booking => {
             // Booking ID filter
             if (filters.bookingId && !booking.id.toLowerCase().includes(filters.bookingId.toLowerCase())) {
                 return false;
             }
 
-            // Details filter (OR across fields)
+            // Details filter (AND across fields)
             const { name, email, phone } = filters.details;
             if (name || email || phone) {
-                const matchesName = name ? booking.guestName.toLowerCase().includes(name.toLowerCase()) : true;
-                const matchesEmail = email ? booking.guestEmail.toLowerCase().includes(email.toLowerCase()) : true;
-                const matchesPhone = phone ? (booking.guestPhone?.includes(phone) || false) : true;
-
-                // If any detail filter is set, strict matching logic:
-                // If I search Name="John", it must match.
-                // If I search Name="John" AND Email="gmail", do I match BOTH?
-                // The original logic was:
-                // if (name && !matchesName) return false;
-                // if (email && !matchesEmail) return false;
-                // if (phone && !matchesPhone) return false;
-                // This implies AND.
-
-                if (name && !matchesName) return false;
-                if (email && !matchesEmail) return false;
-                if (phone && !matchesPhone) return false;
+                if (name && !booking.guestName.toLowerCase().includes(name.toLowerCase())) return false;
+                if (email && !booking.guestEmail.toLowerCase().includes(email.toLowerCase())) return false;
+                if (phone && !(booking.guestPhone?.includes(phone) || false)) return false;
             }
 
             // Room filter
             if (filters.roomIds.length > 0 && !filters.roomIds.includes(booking.roomId)) {
                 return false;
+            }
+
+            // Stay Dates filter (overlap: checkIn <= range.to AND checkOut >= range.from)
+            if (filters.stayDates) {
+                const { from, to } = filters.stayDates;
+                const checkIn = new Date(booking.checkIn);
+                const checkOut = new Date(booking.checkOut);
+                if (from && checkOut < from) return false;
+                if (to && checkIn > to) return false;
             }
 
             // Guests filter
@@ -132,15 +171,10 @@ export function useBookingFilters(bookings: Booking[], requests: ContactRequest[
             if (filters.requestOptions.length > 0) {
                 const bookingRequests = requestsByBookingId.get(booking.id) || [];
                 const hasPending = bookingRequests.some(r => r.status === 'pending');
-                const hasHistory = bookingRequests.length > 0;
 
-                // "any" means has pending requests
                 if (filters.requestOptions.includes('any') && !hasPending) return false;
-
-                // "none" means NO pending requests
                 if (filters.requestOptions.includes('none') && hasPending) return false;
 
-                // Specific types
                 if (filters.requestOptions.includes('reschedule')) {
                     const hasReschedule = bookingRequests.some(r => r.subject === 'reschedule' && r.status === 'pending');
                     if (!hasReschedule) return false;
@@ -156,14 +190,49 @@ export function useBookingFilters(bookings: Booking[], requests: ContactRequest[
             if (filters.bookedDate) {
                 const { from, to } = filters.bookedDate;
                 const checkIn = new Date(booking.checkIn);
-                // Simple logic: If booking check-in is within range
                 if (from && checkIn < from) return false;
                 if (to && checkIn > to) return false;
             }
 
             return true;
         });
-    }, [bookings, filters, requestsByBookingId]);
+
+        // Apply sorting
+        if (sortConfig) {
+            const { key, direction } = sortConfig;
+            const multiplier = direction === "asc" ? 1 : -1;
+
+            result = [...result].sort((a, b) => {
+                let cmp = 0;
+                switch (key) {
+                    case "guestName":
+                        cmp = a.guestName.localeCompare(b.guestName);
+                        break;
+                    case "roomName": {
+                        const nameA = roomNameMap.get(a.roomId) || "";
+                        const nameB = roomNameMap.get(b.roomId) || "";
+                        cmp = nameA.localeCompare(nameB);
+                        break;
+                    }
+                    case "checkIn":
+                        cmp = new Date(a.checkIn).getTime() - new Date(b.checkIn).getTime();
+                        break;
+                    case "guestsCount":
+                        cmp = a.guestsCount - b.guestsCount;
+                        break;
+                    case "totalPrice":
+                        cmp = a.totalPrice - b.totalPrice;
+                        break;
+                    case "createdAt":
+                        cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+                        break;
+                }
+                return cmp * multiplier;
+            });
+        }
+
+        return result;
+    }, [bookings, filters, requestsByBookingId, sortConfig, roomNameMap]);
 
     return {
         filters,
@@ -172,6 +241,8 @@ export function useBookingFilters(bookings: Booking[], requests: ContactRequest[
         requestsByBookingId,
         isFilterActive,
         hasActiveFilters,
-        clearFilters
+        clearFilters,
+        sortConfig,
+        cycleSort
     };
 }
