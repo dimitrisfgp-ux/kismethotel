@@ -5,6 +5,7 @@ import { Clock, Users, X, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useHoldContention } from "@/contexts/HoldContentionContext";
+import { useDateContext } from "@/contexts/DateContext";
 import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 
@@ -20,6 +21,7 @@ export function HoldBlockedModal() {
         selectDismissed,
         closeModal
     } = useHoldContention();
+    const { setDateRange } = useDateContext();
     const router = useRouter();
 
     // Determine current status
@@ -50,10 +52,21 @@ export function HoldBlockedModal() {
         }
     }, [outcomeStatus, modalVisible, closeModal, router]);
 
-    // When 'available' outcome is dismissed, refresh to get latest data
+    // When dates become available, set DateContext and navigate directly to booking
     const handleAvailableClose = () => {
-        closeModal();
-        router.refresh();
+        if (blockedHold) {
+            // Set the dates UserB was watching into DateContext
+            setDateRange({
+                from: new Date(blockedHold.checkIn),
+                to: new Date(blockedHold.checkOut)
+            });
+            closeModal();
+            // Navigate directly to the booking flow for this room
+            router.push(`/book?roomId=${blockedHold.roomId}`);
+        } else {
+            closeModal();
+            router.refresh();
+        }
     };
 
     // Don't render if modal shouldn't be visible or no status to show
