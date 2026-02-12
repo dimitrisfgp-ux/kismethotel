@@ -9,6 +9,7 @@ import { Select } from "@/components/ui/admin/Select";
 import { Input } from "@/components/ui/Input";
 import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { formatLocalDate } from "@/lib/dateUtils";
 
 interface BlockDateModalProps {
     rooms: Room[];
@@ -54,8 +55,8 @@ export function BlockDateModal({ rooms, isOpen, onClose, onSave, initialData }: 
             await onSave({
                 id: initialData?.id || Math.random().toString(36).substr(2, 9),
                 roomId: selectedRoomId,
-                from: dateRange.from.toISOString(),
-                to: dateRange.to.toISOString(),
+                from: formatLocalDate(dateRange.from),
+                to: formatLocalDate(dateRange.to),
                 reason,
                 note
             });

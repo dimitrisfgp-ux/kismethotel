@@ -12,8 +12,9 @@ import { StepItinerary } from "./steps/StepItinerary";
 import { StepGuestDetails, GuestData } from "./steps/StepGuestDetails";
 import { BookingSummary } from "./BookingSummary";
 import { ContentionTimer } from "./ContentionTimer";
-import { createBookingAction, createHoldAction, releaseHoldAction, extendHoldAction } from "@/app/actions/booking";
+import { createBookingAction, createHoldAction, extendHoldAction } from "@/app/actions/booking";
 import { useToast } from "@/contexts/ToastContext";
+import { formatLocalDate } from "@/lib/dateUtils";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
 import { useSession } from "@/contexts/SessionContext";
 
@@ -39,7 +40,7 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
 
 
     // Subscribe to realtime contention updates
-    const { hasContention, contentionCleared } = useRealtimeHolds({
+    const { hasContention, contentionCleared, contentionDeadline } = useRealtimeHolds({
         roomId: room.id,
         checkIn: dateRange.from!,
         checkOut: dateRange.to!,
@@ -48,61 +49,103 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
 
     // Create hold on mount
     useEffect(() => {
-        let isMounted = true;
         if (holdCreated.current || !sessionId || !dateRange.from || !dateRange.to) return;
         holdCreated.current = true;
 
+        let cancelled = false;
+
+        // Use local date formatting to avoid UTC timezone shift
+
         createHoldAction(
             room.id,
-            dateRange.from.toISOString(),
-            dateRange.to.toISOString(),
+            formatLocalDate(dateRange.from),
+            formatLocalDate(dateRange.to),
             sessionId
         ).then(result => {
-            if (!isMounted) return;
-
             if (result.success) {
+                // Always set holdId — React 18 safely delivers state updates
+                // after StrictMode cleanup (the fiber identity is preserved)
                 setHoldId(result.holdId!);
                 setHoldExpiresAt(result.expiresAt!);
-            } else {
+            } else if (!cancelled) {
+                // Only navigate/toast if effect isn't cancelled (real unmount)
                 showToast(result.error || "Could not reserve room", "error");
                 router.push(`/rooms/${room.slug}`);
             }
         });
 
-        return () => { isMounted = false; };
+        return () => { cancelled = true; };
     }, [room.id, room.slug, dateRange.from, dateRange.to, sessionId, showToast, router]);
 
     // HEARTBEAT: Extend hold every 30 seconds with error handling (Fix #7)
     const consecutiveFailures = useRef(0);
+    const [heartbeatContention, setHeartbeatContention] = useState(false);
+    const [heartbeatDeadline, setHeartbeatDeadline] = useState<string | null>(null);
 
     const heartbeat = useCallback(async () => {
         if (!holdId) return;
         const result = await extendHoldAction(holdId);
         if (!result.success) {
+            if ('expired' in result && result.expired) {
+                // Contention deadline expired — session is over
+                showToast("Your booking session has expired. Please start again.", "error");
+                router.push(`/rooms/${room.slug}`);
+                return;
+            }
             consecutiveFailures.current++;
             if (consecutiveFailures.current >= 2) {
                 showToast("Connection issue — your hold may expire soon.", "error");
             }
         } else {
             consecutiveFailures.current = 0;
+            // Polling fallback: detect contention from heartbeat response
+            if (result.hasContention && !heartbeatContention) {
+                setHeartbeatContention(true);
+            }
+            if (result.contentionDeadline && !heartbeatDeadline) {
+                setHeartbeatDeadline(result.contentionDeadline);
+            }
         }
-    }, [holdId, showToast]);
+    }, [holdId, showToast, router, room.slug, heartbeatContention, heartbeatDeadline]);
 
     useEffect(() => {
         if (!holdId) return;
 
-        const interval = setInterval(heartbeat, 30000);
+        const interval = setInterval(heartbeat, 10000);
 
         return () => clearInterval(interval);
     }, [holdId, heartbeat]);
 
-    // Explicit Cleanup on unmount (Navigation)
+
+    // Robust cleanup — sendBeacon with Blob survives ALL page transitions
+    // Handles both: (1) client-side navigation (unmount) and (2) tab close (beforeunload)
     useEffect(() => {
         const currentHoldId = holdId;
-        return () => {
-            if (currentHoldId) {
-                releaseHoldAction(currentHoldId);
+        if (!currentHoldId) return;
+
+        const releaseHold = () => {
+            const body = JSON.stringify({ holdId: currentHoldId });
+            // sendBeacon with Blob is the most reliable for page transitions
+            const blob = new Blob([body], { type: 'application/json' });
+            const sent = navigator.sendBeacon('/api/holds/release', blob);
+            if (!sent) {
+                // Fallback: fetch with keepalive
+                fetch('/api/holds/release', {
+                    method: 'POST',
+                    body,
+                    headers: { 'Content-Type': 'application/json' },
+                    keepalive: true
+                }).catch(() => { });
             }
+        };
+
+        // Browser tab/window close
+        window.addEventListener('beforeunload', releaseHold);
+
+        return () => {
+            window.removeEventListener('beforeunload', releaseHold);
+            // Component unmount (client-side navigation / browser back)
+            releaseHold();
         };
     }, [holdId]);
 
@@ -132,8 +175,8 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
             const booking: Booking = {
                 id: crypto.randomUUID(),
                 roomId: room.id,
-                checkIn: dateRange.from!.toISOString(),
-                checkOut: dateRange.to!.toISOString(),
+                checkIn: formatLocalDate(dateRange.from!),
+                checkOut: formatLocalDate(dateRange.to!),
                 guestName: `${guestData.firstName} ${guestData.lastName}`,
                 guestEmail: guestData.email,
                 guestPhone: guestData.phone,
@@ -162,10 +205,10 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-12">
             {/* Main Form Area */}
             <div className="lg:col-span-2">
-                {/* Contention Timer - shown when someone else is interested */}
-                {(hasContention || contentionCleared) && holdExpiresAt && (
+                {/* Contention Timer - shown when contention detected via Realtime OR heartbeat polling */}
+                {(hasContention || heartbeatContention || contentionCleared) && (contentionDeadline || heartbeatDeadline) && (
                     <ContentionTimer
-                        expiresAt={holdExpiresAt}
+                        expiresAt={(contentionDeadline || heartbeatDeadline)!}
                         contentionCleared={contentionCleared}
                         onExpired={handleHoldExpired}
                     />

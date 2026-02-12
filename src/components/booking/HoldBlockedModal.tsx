@@ -1,9 +1,11 @@
 "use client";
 
+import { useEffect } from "react";
 import { Clock, Users, X, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "../ui/Button";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useHoldContention } from "@/contexts/HoldContentionContext";
+import { useRouter } from "next/navigation";
 import { format } from "date-fns";
 
 export type HoldStatus = 'held' | 'available' | 'booked';
@@ -13,22 +15,46 @@ export function HoldBlockedModal() {
         blockedHold,
         modalVisible,
         outcomeStatus,
+        userBChoice,
         selectWatching,
         selectDismissed,
         closeModal
     } = useHoldContention();
+    const router = useRouter();
 
     // Determine current status
     const status: HoldStatus | null = outcomeStatus
         ? (outcomeStatus === 'available' ? 'available' : 'booked')
         : (blockedHold ? 'held' : null);
 
+    // Use contention deadline (7 min) when available, fallback to heartbeat TTL
+    const timerTarget = status === 'held'
+        ? (blockedHold?.contentionDeadline ?? blockedHold?.expiresAt ?? null)
+        : null;
+
     const { formatted } = useCountdown(
-        status === 'held' ? blockedHold?.expiresAt ?? null : null,
+        timerTarget,
         () => {
             // Timer expired — hold is released, context will handle via realtime
         }
     );
+
+    // Auto-close the 'booked' outcome after 4 seconds
+    useEffect(() => {
+        if (outcomeStatus === 'booked' && modalVisible) {
+            const timer = setTimeout(() => {
+                closeModal();
+                router.refresh(); // Refresh page data so calendar shows booked dates
+            }, 4000);
+            return () => clearTimeout(timer);
+        }
+    }, [outcomeStatus, modalVisible, closeModal, router]);
+
+    // When 'available' outcome is dismissed, refresh to get latest data
+    const handleAvailableClose = () => {
+        closeModal();
+        router.refresh();
+    };
 
     // Don't render if modal shouldn't be visible or no status to show
     if (!modalVisible || !status) return null;
@@ -39,9 +65,9 @@ export function HoldBlockedModal() {
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white p-8 rounded-lg max-w-md mx-4 text-center shadow-2xl border border-[var(--color-sand)] relative animate-scale-in">
+            <div className="bg-white p-8 rounded-lg max-w-md mx-4 text-center shadow-2xl border border-[var(--color-sand)] relative animate-slide-up">
                 <button
-                    onClick={closeModal}
+                    onClick={outcomeStatus ? handleAvailableClose : closeModal}
                     className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
                 >
                     <X className="w-6 h-6" />
@@ -56,20 +82,21 @@ export function HoldBlockedModal() {
                             Dates Currently Held
                         </h3>
                         <p className="text-[var(--color-charcoal)]/70 mb-6 font-inter leading-relaxed">
-                            It seems someone is trying to book the dates from{' '}
+                            Another guest is currently booking the dates from{' '}
                             <strong>{checkInDisplay}</strong> to <strong>{checkOutDisplay}</strong>.
-                            The session ends in:
                         </p>
-                        <div className="flex items-center justify-center gap-2 text-3xl font-mono font-bold text-[var(--color-aegean-blue)] mb-6">
-                            <Clock className="h-6 w-6" />
-                            <span>{formatted}</span>
-                        </div>
+                        {userBChoice === 'watching' && blockedHold?.contentionDeadline && (
+                            <div className="flex items-center justify-center gap-2 text-3xl font-mono font-bold text-[var(--color-aegean-blue)] mb-6">
+                                <Clock className="h-6 w-6" />
+                                <span>{formatted}</span>
+                            </div>
+                        )}
                         <p className="text-sm text-[var(--color-charcoal)]/50 font-inter mb-8">
-                            How would you like us to inform you?
+                            Would you like us to notify you if the dates become available while you browse? (Max waiting time 7 Minutes)
                         </p>
                         <div className="space-y-3">
                             <Button onClick={selectWatching} className="w-full">
-                                Inform me of the availability in {formatted}
+                                Notify me when available
                             </Button>
                             <button
                                 onClick={selectDismissed}
@@ -90,9 +117,9 @@ export function HoldBlockedModal() {
                             Good News!
                         </h3>
                         <p className="text-[var(--color-charcoal)]/70 mb-6 font-inter">
-                            The session is now available. You can proceed with your booking.
+                            The dates are now available. You can proceed with your booking.
                         </p>
-                        <Button onClick={closeModal} className="w-full">
+                        <Button onClick={handleAvailableClose} className="w-full">
                             Book Now
                         </Button>
                     </>
@@ -110,12 +137,13 @@ export function HoldBlockedModal() {
                             Dates from <strong>{checkInDisplay}</strong> to <strong>{checkOutDisplay}</strong>{' '}
                             have been booked. Please check other ranges.
                         </p>
-                        <Button variant="outline" onClick={closeModal} className="w-full">
-                            Close
-                        </Button>
+                        <p className="text-xs text-[var(--color-charcoal)]/40 font-inter">
+                            This window will close shortly...
+                        </p>
                     </>
                 )}
             </div>
         </div>
     );
 }
+

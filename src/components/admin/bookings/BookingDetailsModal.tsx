@@ -12,6 +12,7 @@ import { Calendar as CalendarComponent } from "@/components/ui/Calendar";
 import { updateBookingDatesAction } from "@/app/actions/booking";
 import { useToast } from "@/contexts/ToastContext";
 import { getStatusColor } from "@/lib/constants/statusStyles";
+import { formatLocalDate } from "@/lib/dateUtils";
 
 interface BookingDetailsModalProps {
     booking: Booking;
@@ -35,15 +36,15 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
         setIsSaving(true);
         const success = await updateBookingDatesAction(
             localBooking.id,
-            dateRange.from.toISOString(),
-            dateRange.to.toISOString()
+            formatLocalDate(dateRange.from),
+            formatLocalDate(dateRange.to)
         );
 
         if (success) {
             setLocalBooking({
                 ...localBooking,
-                checkIn: dateRange.from.toISOString(),
-                checkOut: dateRange.to.toISOString()
+                checkIn: formatLocalDate(dateRange.from),
+                checkOut: formatLocalDate(dateRange.to)
             });
             setIsEditingDates(false);
             showToast("Booking dates updated", "success");

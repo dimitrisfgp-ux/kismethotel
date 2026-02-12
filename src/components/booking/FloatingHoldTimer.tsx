@@ -1,5 +1,6 @@
 "use client";
 
+import { useCallback } from "react";
 import { Clock } from "lucide-react";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useHoldContention } from "@/contexts/HoldContentionContext";
@@ -10,11 +11,23 @@ export function FloatingHoldTimer() {
         blockedHold,
         userBChoice,
         outcomeStatus,
-        openModalFromWidget
+        openModalFromWidget,
+        notifyHoldReleased
     } = useHoldContention();
 
+    // When timer expires → check if dates got booked or are now free
+    const handleExpired = useCallback(() => {
+        if (blockedHold) {
+            notifyHoldReleased(blockedHold);
+        }
+    }, [blockedHold, notifyHoldReleased]);
+
+    // Use contention deadline if set (clear 7-min max), otherwise fallback to heartbeat TTL
+    const timerTarget = blockedHold?.contentionDeadline ?? blockedHold?.expiresAt ?? null;
+
     const { secondsLeft, formatted } = useCountdown(
-        blockedHold?.expiresAt ?? null
+        timerTarget,
+        handleExpired
     );
 
     // Only show when user chose "watching" and hold is still active

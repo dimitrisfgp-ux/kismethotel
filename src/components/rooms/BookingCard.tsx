@@ -24,7 +24,7 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
     const { dateRange, setDateRange } = useDateContext();
     const router = useRouter();
     const { sessionId } = useSession();
-    const { showHoldModal, userBChoice, outcomeStatus, notifyHoldReleased } = useHoldContention();
+    const { showHoldModal, userBChoice, outcomeStatus, notifyHoldReleased, updateBlockedHoldExpiry } = useHoldContention();
 
     // Subscribe to realtime holds for this room
     const { allHolds, activeHold } = useRealtimeHolds({
@@ -48,6 +48,13 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
 
         previousHoldRef.current = activeHold;
     }, [activeHold, userBChoice, notifyHoldReleased]);
+
+    // Sync activeHold.expiresAt updates (heartbeat) to the context's blockedHold
+    useEffect(() => {
+        if (activeHold && userBChoice === 'watching') {
+            updateBlockedHoldExpiry(activeHold.id, activeHold.expiresAt);
+        }
+    }, [activeHold?.expiresAt, activeHold?.id, userBChoice, updateBlockedHoldExpiry]);
 
     // Prepare disabled dates for DayPicker (including past dates)
     const disabledDates = [
@@ -104,10 +111,12 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         .filter(b => b.reason === "Other")
         .map(b => ({ from: new Date(b.from), to: new Date(b.to) }));
 
-    const heldMatchers = allHolds.map(h => ({
-        from: new Date(h.checkIn),
-        to: new Date(h.checkOut)
-    }));
+    const heldMatchers = allHolds
+        .filter(h => h.sessionId !== sessionId) // Don't show own holds
+        .map(h => ({
+            from: new Date(h.checkIn),
+            to: new Date(h.checkOut)
+        }));
 
     // Smart Blocking Logic: Only show held state if actively held
     const isSelectionHeld = !!activeHold;

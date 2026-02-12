@@ -11,6 +11,7 @@ import { Search, Loader2, Check, Calendar as CalendarIcon } from "lucide-react";
 import { getBookingByIdAction, getRoomAvailabilityAction } from "@/app/actions/booking";
 import { submitContactRequestAction } from "@/app/actions/request";
 import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
+import { formatLocalDate } from "@/lib/dateUtils";
 
 const SUBJECTS: { value: RequestSubject; label: string }[] = [
     { value: "general", label: "General Question" },
@@ -101,8 +102,8 @@ export function ContactForm() {
             phone: phone || undefined,
             message,
             bookingId: linkedBooking?.id,
-            newCheckIn: requiresNewDates && newDateRange?.from ? newDateRange.from.toISOString() : undefined,
-            newCheckOut: requiresNewDates && newDateRange?.to ? newDateRange.to.toISOString() : undefined,
+            newCheckIn: requiresNewDates && newDateRange?.from ? formatLocalDate(newDateRange.from) : undefined,
+            newCheckOut: requiresNewDates && newDateRange?.to ? formatLocalDate(newDateRange.to) : undefined,
             status: "pending",
             createdAt: new Date().toISOString()
         };

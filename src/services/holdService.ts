@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { BookingHold } from "@/types";
 
 export const holdService = {
@@ -12,7 +12,7 @@ export const holdService = {
         checkOut: string,
         sessionId: string
     ): Promise<{ success: boolean; holdId?: string; expiresAt?: string; error?: string }> => {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
 
         // SHORT TTL for Heartbeat Pattern (1 minute)
         const durationMs = 60 * 1000;
@@ -117,7 +117,7 @@ export const holdService = {
      * Release (delete) a booking hold.
      */
     releaseHold: async (holdId: string): Promise<boolean> => {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
         const { error } = await supabase
             .from('booking_holds')
             .delete()
@@ -131,9 +131,37 @@ export const holdService = {
 
     /**
      * Extend a hold's expiry by 1 minute (heartbeat).
+     * If contention_deadline is set (UserB triggered contention), refuses to extend past it.
+     * Returns contention info so the client can detect contention even if Realtime is missed.
      */
-    extendHold: async (holdId: string): Promise<{ success: boolean }> => {
-        const supabase = await createClient();
+    extendHold: async (holdId: string): Promise<{
+        success: boolean;
+        expired?: boolean;
+        hasContention?: boolean;
+        contentionDeadline?: string | null;
+    }> => {
+        const supabase = createAdminClient();
+
+        // Fetch hold to check contention deadline and contention status
+        const { data: hold, error: fetchError } = await supabase
+            .from('booking_holds')
+            .select('has_contention, contention_deadline')
+            .eq('id', holdId)
+            .maybeSingle();
+
+        if (fetchError || !hold) {
+            return { success: false, expired: true };
+        }
+
+        // If contention deadline is set and has passed → auto-delete
+        if (hold.contention_deadline) {
+            const deadline = new Date(hold.contention_deadline).getTime();
+            if (Date.now() > deadline) {
+                await supabase.from('booking_holds').delete().eq('id', holdId);
+                return { success: false, expired: true };
+            }
+        }
+
         const newExpiry = new Date(Date.now() + 60 * 1000).toISOString();
 
         const { error } = await supabase
@@ -145,17 +173,36 @@ export const holdService = {
             console.error('Failed to extend hold:', error);
             return { success: false };
         }
-        return { success: true };
+        return {
+            success: true,
+            hasContention: hold.has_contention,
+            contentionDeadline: hold.contention_deadline ?? null
+        };
     },
 
     /**
      * Mark a hold as having contention (another user is looking at the same dates).
+     * Sets a 7-minute contention deadline on first ping only.
      */
     pingHold: async (holdId: string): Promise<void> => {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
+        const CONTENTION_DEADLINE_MS = 7 * 60 * 1000;
+
+        // Only set deadline if not already set (first contention ping)
+        const { data: hold } = await supabase
+            .from('booking_holds')
+            .select('contention_deadline')
+            .eq('id', holdId)
+            .maybeSingle();
+
+        const updates: Record<string, unknown> = { has_contention: true };
+        if (!hold?.contention_deadline) {
+            updates.contention_deadline = new Date(Date.now() + CONTENTION_DEADLINE_MS).toISOString();
+        }
+
         await supabase
             .from('booking_holds')
-            .update({ has_contention: true })
+            .update(updates)
             .eq('id', holdId);
     },
 
@@ -168,7 +215,7 @@ export const holdService = {
         checkOut: string,
         excludeSessionId?: string
     ): Promise<BookingHold | null> => {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
 
         let query = supabase
             .from('booking_holds')
@@ -194,6 +241,7 @@ export const holdService = {
             sessionId: data.session_id,
             expiresAt: data.expires_at,
             hasContention: data.has_contention,
+            contentionDeadline: data.contention_deadline ?? null,
             createdAt: data.created_at
         };
     },
@@ -202,7 +250,7 @@ export const holdService = {
      * Get all active holds for a room (for populating the calendar UI).
      */
     getRoomHolds: async (roomId: string): Promise<BookingHold[]> => {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
         const { data, error } = await supabase
             .from('booking_holds')
             .select('*')
@@ -222,6 +270,7 @@ export const holdService = {
             sessionId: record.session_id as string,
             expiresAt: record.expires_at as string,
             hasContention: record.has_contention as boolean,
+            contentionDeadline: (record.contention_deadline as string) ?? null,
             createdAt: record.created_at as string
         }));
     },
@@ -234,7 +283,7 @@ export const holdService = {
         checkIn: string,
         checkOut: string
     ): Promise<{ isBooked: boolean }> => {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
 
         const { data, error } = await supabase
             .from('bookings')
@@ -258,7 +307,7 @@ export const holdService = {
      * Sets contention_cleared=true, which UserA receives via realtime subscription.
      */
     clearContention: async (holdId: string): Promise<boolean> => {
-        const supabase = await createClient();
+        const supabase = createAdminClient();
         const { error } = await supabase
             .from('booking_holds')
             .update({ contention_cleared: true })

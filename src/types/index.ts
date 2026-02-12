@@ -75,6 +75,7 @@ export interface BookingHold {
     sessionId: string;
     expiresAt: string;    // ISO DateTime
     hasContention: boolean;
+    contentionDeadline: string | null; // ISO DateTime — set when UserB triggers contention
     createdAt: string;
 }
 

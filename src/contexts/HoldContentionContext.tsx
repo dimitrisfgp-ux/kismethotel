@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { BookingHold } from '@/types';
-import { clearContentionAction, checkBookingStatusAction } from '@/app/actions/booking';
+import { clearContentionAction, checkBookingStatusAction, pingHoldAction } from '@/app/actions/booking';
 
 type UserBChoice = 'idle' | 'watching' | 'dismissed';
 type OutcomeStatus = 'available' | 'booked' | null;
@@ -22,6 +22,7 @@ interface HoldContentionContextType {
     openModalFromWidget: () => void;
     notifyHoldReleased: (hold: BookingHold) => void;
     resetContention: () => void;
+    updateBlockedHoldExpiry: (holdId: string, newExpiresAt: string) => void;
 }
 
 const HoldContentionContext = createContext<HoldContentionContextType | undefined>(undefined);
@@ -39,10 +40,18 @@ export function HoldContentionProvider({ children }: { children: ReactNode }) {
         setModalVisible(true);
     }, []);
 
-    const selectWatching = useCallback(() => {
+    // UserB clicks "Inform me" — NOW we ping the hold to trigger contention for UserA
+    const selectWatching = useCallback(async () => {
         setUserBChoice('watching');
         setModalVisible(false); // Collapse to floating widget
-    }, []);
+        // Set the 7-minute deadline locally so the timer shows correctly immediately
+        const deadline = new Date(Date.now() + 7 * 60 * 1000).toISOString();
+        setBlockedHold(prev => prev ? { ...prev, contentionDeadline: deadline } : prev);
+        // Trigger contention on UserA's hold (server also sets the same deadline)
+        if (blockedHold) {
+            await pingHoldAction(blockedHold.id);
+        }
+    }, [blockedHold]);
 
     const selectDismissed = useCallback(() => {
         setUserBChoice('dismissed');
@@ -94,6 +103,16 @@ export function HoldContentionProvider({ children }: { children: ReactNode }) {
         setOutcomeStatus(null);
     }, []);
 
+    // Update the blocked hold's expiry when heartbeat extensions arrive
+    const updateBlockedHoldExpiry = useCallback((holdId: string, newExpiresAt: string) => {
+        setBlockedHold(prev => {
+            if (prev && prev.id === holdId) {
+                return { ...prev, expiresAt: newExpiresAt };
+            }
+            return prev;
+        });
+    }, []);
+
     return (
         <HoldContentionContext.Provider value={{
             blockedHold,
@@ -106,7 +125,8 @@ export function HoldContentionProvider({ children }: { children: ReactNode }) {
             closeModal,
             openModalFromWidget,
             notifyHoldReleased,
-            resetContention
+            resetContention,
+            updateBlockedHoldExpiry
         }}>
             {children}
         </HoldContentionContext.Provider>

@@ -187,7 +187,8 @@ h6 {
 }
 
 .rdp-day_held {
-  background-color: rgba(217, 119, 6, 0.15) !important; /* Amber tint */
+  background-color: rgba(217, 119, 6, 0.15) !important;
+  /* Amber tint */
 }
 
 
@@ -237,4 +238,18 @@ h6 {
 .rdp-day_held::after {
   content: 'HELD';
   color: #92400e;
+}
+
+/* ── Selection takes priority over held ──
+   When UserB has selected dates that overlap with a hold,
+   the selection highlight should be visible, not the held indicator.
+   RDP v9 sets data-selected on selected day cells. */
+.rdp-day_held[data-selected] {
+  background-color: transparent !important;
+  color: inherit !important;
+  pointer-events: auto;
+}
+
+.rdp-day_held[data-selected]::after {
+  content: none;
 }

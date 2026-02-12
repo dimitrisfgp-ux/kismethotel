@@ -1,5 +1,6 @@
 import { createClient } from "@/lib/supabase/server";
 import { Booking, BlockedDate } from "@/types";
+import { formatLocalDate } from "@/lib/dateUtils";
 
 export const bookingService = {
     // --- Availability & Bookings ---
@@ -110,8 +111,8 @@ export const bookingService = {
 
     checkAvailability: async (roomId: string, start: Date, end: Date): Promise<boolean> => {
         const supabase = await createClient();
-        const startStr = start.toISOString().split('T')[0];
-        const endStr = end.toISOString().split('T')[0];
+        const startStr = formatLocalDate(start);
+        const endStr = formatLocalDate(end);
 
         // Use the database function we created
         const { data, error } = await supabase

@@ -163,21 +163,17 @@ export async function releaseHoldAction(holdId: string): Promise<boolean> {
     return holdService.releaseHold(holdId);
 }
 
-export async function extendHoldAction(holdId: string): Promise<{ success: boolean }> {
+export async function extendHoldAction(holdId: string): Promise<{
+    success: boolean;
+    expired?: boolean;
+    hasContention?: boolean;
+    contentionDeadline?: string | null;
+}> {
     return holdService.extendHold(holdId);
 }
 
 export async function pingHoldAction(holdId: string): Promise<void> {
     return holdService.pingHold(holdId);
-}
-
-export async function getActiveHoldAction(
-    roomId: string,
-    checkIn: string,
-    checkOut: string,
-    excludeSessionId?: string
-): Promise<BookingHold | null> {
-    return holdService.getActiveHold(roomId, checkIn, checkOut, excludeSessionId);
 }
 
 export async function getRoomHoldsAction(roomId: string): Promise<BookingHold[]> {

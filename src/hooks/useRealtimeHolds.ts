@@ -1,9 +1,9 @@
 "use client";
 
-import { useEffect, useState, useCallback, useRef } from "react";
+import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BookingHold } from "@/types";
-import { getActiveHoldAction, pingHoldAction, getRoomHoldsAction } from "@/app/actions/booking";
+import { getRoomHoldsAction } from "@/app/actions/booking";
 
 /** Shape of a booking_holds row as returned by Supabase realtime payloads */
 interface BookingHoldRow {
@@ -15,6 +15,7 @@ interface BookingHoldRow {
     expires_at: string;
     has_contention: boolean;
     contention_cleared: boolean;
+    contention_deadline: string | null;
     created_at: string;
 }
 
@@ -30,6 +31,7 @@ interface UseRealtimeHoldsResult {
     allHolds: BookingHold[];
     hasContention: boolean;
     contentionCleared: boolean;
+    contentionDeadline: string | null;
     isConnected: boolean;
     isLoading: boolean;
 }
@@ -40,81 +42,90 @@ export function useRealtimeHolds({
     checkOut,
     mySessionId
 }: UseRealtimeHoldsOptions): UseRealtimeHoldsResult {
-    const [activeHold, setActiveHold] = useState<BookingHold | null>(null);
     const [allHolds, setAllHolds] = useState<BookingHold[]>([]);
     const [hasContention, setHasContention] = useState(false);
     const [contentionCleared, setContentionCleared] = useState(false);
     const [isConnected, setIsConnected] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
-    // Check if dates overlap with a specific hold
-    const datesOverlap = useCallback((hold: { check_in: string; check_out: string }) => {
-        if (!checkIn || !checkOut) return false;
-        const holdStart = new Date(hold.check_in);
-        const holdEnd = new Date(hold.check_out);
-        return holdStart < checkOut && holdEnd > checkIn;
-    }, [checkIn, checkOut]);
+    // ── Derived: activeHold is computed synchronously from allHolds ──
+    // This eliminates the race condition where async fetch hadn't completed
+    // before the user clicked "Book Now"
+    const activeHold = useMemo(() => {
+        if (!checkIn || !checkOut) return null;
+        return allHolds.find(h => {
+            if (h.sessionId === mySessionId) return false; // Not my own hold
+            const holdStart = new Date(h.checkIn);
+            const holdEnd = new Date(h.checkOut);
+            return holdStart < checkOut && holdEnd > checkIn;
+        }) ?? null;
+    }, [allHolds, checkIn, checkOut, mySessionId]);
 
-    // Initial check for existing holds
+    // ── Initial fetch of all holds for this room ──
     useEffect(() => {
         let isMounted = true;
 
-        async function checkExistingHolds() {
+        async function fetchHolds() {
             try {
-                // 1. Fetch ALL active holds for this room (for the Calendar)
                 const roomHolds = await getRoomHoldsAction(roomId);
-
                 if (isMounted) {
                     setAllHolds(roomHolds);
-
-                    // 2. If I have selected dates, check if any EXISTING hold blocks me
-                    if (checkIn && checkOut) {
-                        const overlappingHold = roomHolds.find(h =>
-                            datesOverlap({ check_in: h.checkIn, check_out: h.checkOut }) &&
-                            h.sessionId !== mySessionId
-                        );
-
-                        if (overlappingHold) {
-                            setActiveHold(overlappingHold);
-                            await pingHoldAction(overlappingHold.id);
-                        }
-                    }
                 }
             } catch (error) {
-                console.error('Error checking existing holds:', error);
+                console.error('Error fetching holds:', error);
             }
-
             if (isMounted) setIsLoading(false);
         }
 
-        checkExistingHolds();
-
+        fetchHolds();
         return () => { isMounted = false; };
-    }, [roomId, checkIn, checkOut, mySessionId, datesOverlap]);
+    }, [roomId]); // Only re-fetch when roomId changes
 
-    // Refs for stable access inside the effect without triggering re-runs
-    const stateRef = useRef({ checkIn, checkOut, mySessionId, activeHold, datesOverlap });
-    // Update refs on every render
+    // ── Client-side expiry pruning ──
+    // Removes holds whose expiresAt has passed (heartbeat stopped = UserA left)
+    // This is the reliable fallback when Realtime DELETE events are missed
     useEffect(() => {
-        stateRef.current = { checkIn, checkOut, mySessionId, activeHold, datesOverlap };
+        const interval = setInterval(() => {
+            const now = new Date().toISOString();
+            setAllHolds(prev => {
+                const filtered = prev.filter(h => h.expiresAt > now);
+                return filtered.length !== prev.length ? filtered : prev; // Avoid unnecessary re-renders
+            });
+        }, 5000);
+
+        return () => clearInterval(interval);
+    }, []);
+
+    // Ping is now triggered explicitly by UserB clicking "Inform me"
+    // in HoldContentionContext.selectWatching, NOT on auto-detection.
+
+    // Refs for stable access inside the realtime handler
+    const stateRef = useRef({ mySessionId });
+    useEffect(() => {
+        stateRef.current = { mySessionId };
     });
 
-    // Realtime subscription - Depends ONLY on roomId to prevent thrashing
+    // ── Realtime subscription ──
+    // IMPORTANT: Channel name must be unique per hook instance AND per effect invocation.
+    // The Supabase browser client is a singleton. useRef persists across StrictMode re-mounts,
+    // so generating the ID inside the effect ensures each mount gets a truly unique channel.
     useEffect(() => {
+        const channelName = `holds-${roomId}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
         const supabase = createClient();
         const channel = supabase
-            .channel(`room-${roomId}-holds`)
+            .channel(channelName)
             .on('postgres_changes', {
                 event: '*',
                 schema: 'public',
-                table: 'booking_holds',
-                filter: `room_id=eq.${roomId}`
-            }, async (payload: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
+                table: 'booking_holds'
+            }, (payload: { eventType: string; new: Record<string, unknown>; old: Record<string, unknown> }) => {
                 const eventType = payload.eventType;
-                const current = stateRef.current; // Access fresh state via ref
+                const current = stateRef.current;
 
                 if (eventType === 'INSERT') {
                     const newRecord = payload.new as unknown as BookingHoldRow;
+                    // Client-side room filter
+                    if (newRecord.room_id !== roomId) return;
 
                     const hold: BookingHold = {
                         id: newRecord.id,
@@ -124,34 +135,32 @@ export function useRealtimeHolds({
                         sessionId: newRecord.session_id,
                         expiresAt: newRecord.expires_at,
                         hasContention: newRecord.has_contention,
+                        contentionDeadline: newRecord.contention_deadline,
                         createdAt: newRecord.created_at
                     };
 
                     setAllHolds(prev => {
-                        // Avoid duplicates
                         if (prev.some(h => h.id === hold.id)) return prev;
                         return [...prev, hold];
                     });
-
-                    // Check overlap with MY dates
-                    if (current.datesOverlap(newRecord) && newRecord.session_id !== current.mySessionId) {
-                        setActiveHold(hold);
-                        await pingHoldAction(hold.id);
-                    }
                 }
 
                 if (eventType === 'UPDATE') {
                     const newRecord = payload.new as unknown as BookingHoldRow;
+                    // Client-side room filter
+                    if (newRecord.room_id !== roomId) return;
+
                     setAllHolds(prev => prev.map(h => h.id === newRecord.id ? {
                         ...h,
                         hasContention: newRecord.has_contention,
-                        expiresAt: newRecord.expires_at
+                        expiresAt: newRecord.expires_at,
+                        contentionDeadline: newRecord.contention_deadline
                     } : h));
 
                     // Contention check — UserA's hold was marked as contention
                     if (newRecord.session_id === current.mySessionId && newRecord.has_contention) {
                         setHasContention(true);
-                        setContentionCleared(false); // Reset cleared state
+                        setContentionCleared(false);
                     }
 
                     // Contention cleared — UserB backed off
@@ -163,12 +172,8 @@ export function useRealtimeHolds({
 
                 if (eventType === 'DELETE') {
                     const oldRecord = payload.old as { id: string };
+                    // DELETE only has the primary key — match against existing allHolds
                     setAllHolds(prev => prev.filter(h => h.id !== oldRecord.id));
-
-                    // STALE CLOSURE FIXED: Check against ref, not captured variable
-                    if (oldRecord.id === current.activeHold?.id) {
-                        setActiveHold(null);
-                    }
                 }
             })
             .subscribe((status: string) => {
@@ -178,7 +183,15 @@ export function useRealtimeHolds({
         return () => {
             supabase.removeChannel(channel);
         };
-    }, [roomId]); // <-- Only roomId!
+    }, [roomId]);
 
-    return { activeHold, allHolds, hasContention, contentionCleared, isConnected, isLoading };
+    // Derive contentionDeadline from own hold (set when UserB triggers contention)
+    const ownContentionDeadline = useMemo(() => {
+        if (!mySessionId) return null;
+        const ownHold = allHolds.find(h => h.sessionId === mySessionId);
+        return ownHold?.contentionDeadline ?? null;
+    }, [allHolds, mySessionId]);
+
+    return { activeHold, allHolds, hasContention, contentionCleared, contentionDeadline: ownContentionDeadline, isConnected, isLoading };
 }
+
