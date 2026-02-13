@@ -272,3 +272,10 @@ export interface RolePermission {
     roleId: string;
     permissionId: string;
 }
+
+export interface PaginatedResponse<T> {
+    data: T[];
+    total: number;
+    page: number;
+    limit: number;
+}

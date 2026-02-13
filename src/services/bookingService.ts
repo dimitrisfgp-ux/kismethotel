@@ -1,25 +1,41 @@
 import { createClient } from "@/lib/supabase/server";
-import { Booking, BlockedDate, BookingStatus } from "@/types";
+import { Booking, BlockedDate, BookingStatus, PaginatedResponse } from "@/types";
 import { formatLocalDate } from "@/lib/dateUtils";
 
 export const bookingService = {
     // --- Availability & Bookings ---
 
-    getBookings: async (roomId?: string): Promise<Booking[]> => {
+    getBookings: async (
+        page: number = 1,
+        limit: number = 10,
+        filters?: { roomId?: string; status?: BookingStatus }
+    ): Promise<PaginatedResponse<Booking>> => {
         const supabase = await createClient();
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
         let query = supabase
             .from('bookings')
-            .select('*')
-            .order('check_in', { ascending: false });
+            .select('*', { count: 'exact' })
+            .order('check_in', { ascending: false })
+            .range(from, to);
 
-        if (roomId) {
-            query = query.eq('room_id', roomId);
+        if (filters?.roomId) {
+            query = query.eq('room_id', filters.roomId);
         }
 
-        const { data, error } = await query;
-        if (error) return [];
+        if (filters?.status) {
+            query = query.eq('status', filters.status);
+        }
 
-        return (data || []).map(b => ({
+        const { data, count, error } = await query;
+
+        if (error) {
+            console.error('Error fetching bookings:', error);
+            return { data: [], total: 0, page, limit };
+        }
+
+        const bookings = (data || []).map(b => ({
             id: b.id,
             roomId: b.room_id,
             checkIn: b.check_in,
@@ -33,6 +49,13 @@ export const bookingService = {
             createdAt: b.created_at,
             preCheckoutEmailSent: b.pre_checkout_email_sent
         }));
+
+        return {
+            data: bookings,
+            total: count || 0,
+            page,
+            limit
+        };
     },
 
     getBookingById: async (bookingId: string): Promise<Booking | undefined> => {

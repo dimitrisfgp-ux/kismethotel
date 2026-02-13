@@ -1,20 +1,34 @@
 import { createClient } from "@/lib/supabase/server";
-import { ContactRequest, RequestStatus } from "@/types";
+import { ContactRequest, RequestStatus, PaginatedResponse } from "@/types";
 
 export const requestService = {
-    getRequests: async (): Promise<ContactRequest[]> => {
+    getRequests: async (
+        page: number = 1,
+        limit: number = 10,
+        filters?: { status?: RequestStatus }
+    ): Promise<PaginatedResponse<ContactRequest>> => {
         const supabase = await createClient();
-        const { data, error } = await supabase
+        const from = (page - 1) * limit;
+        const to = from + limit - 1;
+
+        let query = supabase
             .from('contact_requests')
-            .select('*')
-            .order('created_at', { ascending: false });
+            .select('*', { count: 'exact' })
+            .order('created_at', { ascending: false })
+            .range(from, to);
+
+        if (filters?.status) {
+            query = query.eq('status', filters.status);
+        }
+
+        const { data, count, error } = await query;
 
         if (error) {
             console.error('Error fetching requests:', error);
-            return [];
+            return { data: [], total: 0, page, limit };
         }
 
-        return (data || []).map((r: Record<string, unknown>) => ({
+        const requests = (data || []).map((r: Record<string, unknown>) => ({
             id: r.id as string,
             subject: r.subject as ContactRequest['subject'],
             name: r.name as string,
@@ -29,6 +43,13 @@ export const requestService = {
             status: r.status as RequestStatus,
             createdAt: r.created_at as string
         }));
+
+        return {
+            data: requests,
+            total: count || 0,
+            page,
+            limit
+        };
     },
 
     getRequest: async (id: string): Promise<ContactRequest | undefined> => {

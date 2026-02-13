@@ -5,12 +5,16 @@ import { approveRequestAction, discardRequestAction } from "@/app/actions/reques
 import { BookingsPageClient } from "@/components/admin/bookings/BookingsPageClient";
 import { getUserRole } from "@/lib/auth/guards";
 
-export default async function BookingsPage() {
+export default async function BookingsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+    const params = await searchParams;
+    const page = Number(params.page) || 1;
+    const limit = 10;
+
     // All queries run in parallel — getRoomsSummary is lightweight (no deep joins)
-    const [rooms, bookings, requests, roleResult] = await Promise.all([
+    const [rooms, bookingsData, requestsData, roleResult] = await Promise.all([
         roomService.getRoomsSummary(),
-        bookingService.getBookings(),
-        requestService.getRequests(),
+        bookingService.getBookings(page, limit),
+        requestService.getRequests(page, limit),
         getUserRole()
     ]);
 
@@ -19,8 +23,8 @@ export default async function BookingsPage() {
     return (
         <BookingsPageClient
             rooms={rooms}
-            bookings={bookings}
-            requests={requests}
+            initialBookings={bookingsData}
+            initialRequests={requestsData}
             userRole={userRole}
             approveFn={async (id: string) => { "use server"; await approveRequestAction(id); }}
             discardFn={async (id: string) => { "use server"; await discardRequestAction(id); }}
