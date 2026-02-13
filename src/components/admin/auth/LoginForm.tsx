@@ -72,7 +72,7 @@ export default function LoginForm({ loginAction, initialError, initialSuccess }:
                             required
                             className="w-full pl-10 pr-4 py-3 bg-white border border-gray-200 rounded-lg focus:ring-2 focus:ring-[var(--color-aegean-blue)] focus:border-transparent transition-all outline-none"
                             placeholder="admin@kismethotel.com"
-                            onChange={() => setMessage(null)}
+                            placeholder="admin@kismethotel.com"
                         />
                         <Bot className="w-5 h-5 text-gray-400 absolute left-3 top-3.5" />
                     </div>

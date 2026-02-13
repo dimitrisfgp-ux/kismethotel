@@ -6,7 +6,13 @@ import { Room } from "@/types";
 import { requirePermission } from "@/lib/auth/guards";
 
 export async function bulkUpdateRoomsAction(roomIds: string[], updates: Partial<Room>) {
-    await requirePermission('rooms.update');
+    // Check if we are updating times
+    if (updates.checkInTime !== undefined || updates.checkOutTime !== undefined) {
+        await requirePermission('rooms.update_times');
+    } else {
+        // Default fall back for other updates (if any in future)
+        await requirePermission('rooms.update');
+    }
 
     if (!roomIds.length) return { success: false, message: "No rooms selected" };
 

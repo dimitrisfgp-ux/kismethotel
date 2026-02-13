@@ -6,7 +6,7 @@ import { Room } from "@/types";
 import { requirePermission } from "@/lib/auth/guards";
 
 export async function createRoomAction(room: Room) {
-    await requirePermission('rooms.manage');
+    await requirePermission('rooms.create');
     const success = await roomService.createRoom(room);
     if (success) {
         revalidatePath("/admin/rooms");
@@ -17,7 +17,7 @@ export async function createRoomAction(room: Room) {
 }
 
 export async function saveRoomAction(room: Room) {
-    await requirePermission('rooms.manage');
+    await requirePermission('rooms.update');
     const success = await roomService.saveRoom(room);
     if (success) {
         revalidatePath("/admin/rooms");
@@ -28,7 +28,7 @@ export async function saveRoomAction(room: Room) {
 }
 
 export async function deleteRoomAction(roomId: string) {
-    await requirePermission('rooms.manage');
+    await requirePermission('rooms.delete');
     const success = await roomService.deleteRoom(roomId);
     if (success) {
         revalidatePath("/admin/rooms");
