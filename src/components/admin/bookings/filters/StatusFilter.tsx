@@ -13,9 +13,11 @@ interface StatusFilterProps {
 }
 
 const ALL_STATUSES: { value: BookingStatus; label: string; color: string }[] = [
+    { value: "pending", label: "Pending", color: "bg-yellow-100 text-yellow-700" },
     { value: "confirmed", label: "Confirmed", color: "bg-green-100 text-green-700" },
-    { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-700" },
-    { value: "completed", label: "Completed", color: "bg-gray-100 text-gray-600" }
+    { value: "active", label: "Active", color: "bg-blue-100 text-blue-700" },
+    { value: "completed", label: "Completed", color: "bg-gray-100 text-gray-600" },
+    { value: "cancelled", label: "Cancelled", color: "bg-red-100 text-red-700" }
 ];
 
 export function StatusFilter({ isOpen, onClose, selectedStatuses, onChange }: StatusFilterProps) {
@@ -57,8 +59,8 @@ export function StatusFilter({ isOpen, onClose, selectedStatuses, onChange }: St
                     <button
                         onClick={selectAll}
                         className={`w-full flex items-center justify-between p-2 rounded-md transition-colors ${allSelected
-                                ? "bg-[var(--color-aegean-blue)]/10 text-[var(--color-aegean-blue)]"
-                                : "hover:bg-[var(--color-warm-white)]"
+                            ? "bg-[var(--color-aegean-blue)]/10 text-[var(--color-aegean-blue)]"
+                            : "hover:bg-[var(--color-warm-white)]"
                             }`}
                     >
                         <span className="font-medium">All Statuses</span>
@@ -75,8 +77,8 @@ export function StatusFilter({ isOpen, onClose, selectedStatuses, onChange }: St
                                 key={status.value}
                                 onClick={() => toggleStatus(status.value)}
                                 className={`w-full flex items-center justify-between p-2 rounded-md transition-colors ${isSelected
-                                        ? "bg-[var(--color-aegean-blue)]/10 text-[var(--color-aegean-blue)]"
-                                        : "hover:bg-[var(--color-warm-white)]"
+                                    ? "bg-[var(--color-aegean-blue)]/10 text-[var(--color-aegean-blue)]"
+                                    : "hover:bg-[var(--color-warm-white)]"
                                     }`}
                             >
                                 <div className="flex items-center gap-2">

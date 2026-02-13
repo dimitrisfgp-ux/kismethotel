@@ -184,11 +184,17 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <span className="block text-xs opacity-50 uppercase tracking-wide">Check-in</span>
-                                            <span className="font-medium">{format(new Date(localBooking.checkIn), "MMM d, yyyy")}</span>
+                                            <span className="font-medium block">{format(new Date(localBooking.checkIn), "MMM d, yyyy")}</span>
+                                            <span className="text-xs text-[var(--color-charcoal)]/60">
+                                                from {new Date(`2000-01-01T${room?.checkInTime || "15:00"}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                            </span>
                                         </div>
                                         <div>
                                             <span className="block text-xs opacity-50 uppercase tracking-wide">Check-out</span>
-                                            <span className="font-medium">{format(new Date(localBooking.checkOut), "MMM d, yyyy")}</span>
+                                            <span className="font-medium block">{format(new Date(localBooking.checkOut), "MMM d, yyyy")}</span>
+                                            <span className="text-xs text-[var(--color-charcoal)]/60">
+                                                by {new Date(`2000-01-01T${room?.checkOutTime || "11:00"}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                            </span>
                                         </div>
                                     </div>
                                 )}

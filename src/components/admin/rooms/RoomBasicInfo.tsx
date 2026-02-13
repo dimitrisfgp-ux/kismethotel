@@ -22,6 +22,20 @@ export function RoomBasicInfo({ room, errors, updateField, getBedCount, updateBe
                 <Input error={errors.sizeSqm} label="Size (m²)" type="number" value={room.sizeSqm} onChange={e => updateField('sizeSqm', Number(e.target.value))} />
                 <Input label="Floor" type="number" value={room.floor} onChange={e => updateField('floor', Number(e.target.value))} />
 
+                {/* Time Configuration */}
+                <Input
+                    label="Check-in Time"
+                    type="time"
+                    value={room.checkInTime || "15:00"}
+                    onChange={e => updateField('checkInTime', e.target.value)}
+                />
+                <Input
+                    label="Check-out Time"
+                    type="time"
+                    value={room.checkOutTime || "11:00"}
+                    onChange={e => updateField('checkOutTime', e.target.value)}
+                />
+
                 {/* Bed Configuration */}
                 <div className="md:col-span-2 space-y-3 p-4 border border-[var(--color-sand)] rounded-md bg-[var(--color-warm-white)]/30">
                     <label className="text-sm font-medium text-[var(--color-charcoal)]">Bed Configuration</label>

@@ -43,7 +43,7 @@ export async function GET(request: Request) {
 
         // Find bookings checking out within the window
         const checkingOutSoon = bookings.filter(booking => {
-            if (booking.status !== "confirmed") return false;
+            if (booking.status !== "active") return false;
             const checkOut = new Date(booking.checkOut);
             // Check if checkout is between now and the window
             return checkOut >= now && checkOut <= checkoutWindow;

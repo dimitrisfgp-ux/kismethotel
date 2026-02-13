@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { Booking, BlockedDate } from "@/types";
+import { Booking, BlockedDate, BookingStatus } from "@/types";
 import { formatLocalDate } from "@/lib/dateUtils";
 
 export const bookingService = {
@@ -165,6 +165,16 @@ export const bookingService = {
         const { error } = await supabase
             .from('bookings')
             .update({ check_in: checkIn, check_out: checkOut })
+            .eq('id', bookingId);
+
+        return !error;
+    },
+
+    updateBookingStatus: async (bookingId: string, status: BookingStatus): Promise<boolean> => {
+        const supabase = await createClient();
+        const { error } = await supabase
+            .from('bookings')
+            .update({ status })
             .eq('id', bookingId);
 
         return !error;

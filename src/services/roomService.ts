@@ -10,10 +10,10 @@ interface RoomMediaJoin {
 
 // Helper to transform Supabase room data to our Room type
 function transformRoom(dbRoom: Record<string, unknown>): Room {
-    // Map new Media System
+    // Media System
     const media = ((dbRoom.room_media as RoomMediaJoin[]) || [])
         .map(rm => ({
-            ...rm.media_assets,
+            ...(rm.media_assets as any),
             id: rm.media_assets.id,
             mediaType: rm.media_assets.media_type,
             mimeType: rm.media_assets.mime_type,
@@ -40,6 +40,8 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
         id: dbRoom.id as string,
         slug: dbRoom.slug as string,
         name: dbRoom.name as string,
+        checkInTime: (dbRoom.check_in_time as string)?.slice(0, 5) || "15:00",
+        checkOutTime: (dbRoom.check_out_time as string)?.slice(0, 5) || "11:00",
         description: dbRoom.description as string || '',
         sizeSqm: dbRoom.size_sqm as number,
         floor: dbRoom.floor as number,
@@ -111,11 +113,11 @@ export const roomService = {
     /**
      * Lightweight query returning only basic room info (for admin lists, dropdowns, emails).
      */
-    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number; maxOccupancy: number }[]> => {
+    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number; maxOccupancy: number; checkInTime?: string; checkOutTime?: string }[]> => {
         const supabase = await createClient();
         const { data, error } = await supabase
             .from('rooms')
-            .select('id, name, slug, price_per_night, max_occupancy')
+            .select('id, name, slug, price_per_night, max_occupancy, check_in_time, check_out_time')
             .order('name');
 
         if (error) return [];
@@ -124,7 +126,9 @@ export const roomService = {
             name: r.name,
             slug: r.slug,
             pricePerNight: r.price_per_night,
-            maxOccupancy: r.max_occupancy
+            maxOccupancy: r.max_occupancy,
+            checkInTime: r.check_in_time?.slice(0, 5),
+            checkOutTime: r.check_out_time?.slice(0, 5)
         }));
     },
 
@@ -169,7 +173,9 @@ export const roomService = {
                 floor: room.floor,
                 max_occupancy: room.maxOccupancy,
                 price_per_night: room.pricePerNight,
-                highlights: room.highlights
+                highlights: room.highlights,
+                check_in_time: room.checkInTime,
+                check_out_time: room.checkOutTime
             })
             .select()
             .single();
@@ -217,7 +223,7 @@ export const roomService = {
     saveRoom: async (room: Room): Promise<boolean> => {
         const supabase = await createClient();
 
-        const { error } = await supabase
+        const { error, count } = await supabase
             .from('rooms')
             .update({
                 name: room.name,
@@ -227,11 +233,23 @@ export const roomService = {
                 floor: room.floor,
                 max_occupancy: room.maxOccupancy,
                 price_per_night: room.pricePerNight,
-                highlights: room.highlights
-            })
+                highlights: room.highlights,
+                check_in_time: room.checkInTime,
+                check_out_time: room.checkOutTime
+            }, { count: 'exact' })
             .eq('id', room.id);
 
-        if (error) return false;
+        if (error) {
+            console.error("Error saving room:", error);
+            return false;
+        }
+
+        if (count === 0) {
+            console.error("Room save failed: No rows updated (check RLS policies or ID)");
+            return false;
+        }
+
+        console.log("Room updated successfully. Rows modified:", count);
 
         // Sync Media: Delete existing and re-insert
         await supabase.from('room_media').delete().eq('room_id', room.id);
@@ -264,4 +282,27 @@ export const roomService = {
 
         return !error;
     },
+
+    bulkUpdateRooms: async (roomIds: string[], updates: Partial<Room>): Promise<boolean> => {
+        const supabase = await createClient();
+
+        // Map camelCase to snake_case for DB
+        const dbUpdates: any = {};
+        if (updates.pricePerNight !== undefined) dbUpdates.price_per_night = updates.pricePerNight;
+        if (updates.maxOccupancy !== undefined) dbUpdates.max_occupancy = updates.maxOccupancy;
+        if (updates.sizeSqm !== undefined) dbUpdates.size_sqm = updates.sizeSqm;
+        if (updates.floor !== undefined) dbUpdates.floor = updates.floor;
+        if (updates.checkInTime !== undefined) dbUpdates.check_in_time = updates.checkInTime;
+        if (updates.checkOutTime !== undefined) dbUpdates.check_out_time = updates.checkOutTime;
+        if (updates.highlights !== undefined) dbUpdates.highlights = updates.highlights;
+
+        if (Object.keys(dbUpdates).length === 0) return true;
+
+        const { error } = await supabase
+            .from('rooms')
+            .update(dbUpdates)
+            .in('id', roomIds);
+
+        return !error;
+    }
 };

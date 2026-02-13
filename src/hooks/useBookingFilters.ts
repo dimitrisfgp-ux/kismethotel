@@ -41,7 +41,7 @@ export const INITIAL_FILTERS: BookingFilters = {
 
 export function useBookingFilters(bookings: Booking[], requests: ContactRequest[] = [], rooms: RoomSummary[] = []) {
     const [filters, setFilters] = useState<BookingFilters>(INITIAL_FILTERS);
-    const [sortConfig, setSortConfig] = useState<SortConfig | null>(null);
+    const [sortConfig, setSortConfig] = useState<SortConfig | null>({ key: "createdAt", direction: "desc" });
 
     // 1. Group Requests by Booking ID
     const requestsByBookingId = useMemo(() => {
