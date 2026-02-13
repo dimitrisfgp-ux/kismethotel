@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { Booking, ContactRequest, BookingStatus, RoomSummary } from "@/types";
 import { DateRange } from "react-day-picker";
 import { NumericFilterValue, RequestFilterOption } from "@/components/admin/bookings/filters";
+import { useBookingRequests } from "@/hooks/useBookingRequests";
 
 // --- Types ---
 
@@ -43,17 +44,7 @@ export function useBookingFilters(bookings: Booking[], requests: ContactRequest[
     const [filters, setFilters] = useState<BookingFilters>(INITIAL_FILTERS);
     const [sortConfig, setSortConfig] = useState<SortConfig | null>({ key: "createdAt", direction: "desc" });
 
-    // 1. Group Requests by Booking ID
-    const requestsByBookingId = useMemo(() => {
-        const map = new Map<string, ContactRequest[]>();
-        requests.forEach(req => {
-            if (req.bookingId) {
-                const existing = map.get(req.bookingId) || [];
-                map.set(req.bookingId, [...existing, req]);
-            }
-        });
-        return map;
-    }, [requests]);
+    const requestsByBookingId = useBookingRequests(requests);
 
     // Room name lookup (for sorting)
     const roomNameMap = useMemo(() => {

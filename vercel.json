@@ -3,6 +3,10 @@
         {
             "path": "/api/cron/cleanup-holds",
             "schedule": "0 0 * * *"
+        },
+        {
+            "path": "/api/cron/pre-checkout?hoursAhead=1.2",
+            "schedule": "0 * * * *"
         }
     ]
 }

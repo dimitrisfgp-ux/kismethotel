@@ -78,6 +78,7 @@ export interface Booking {
     totalPrice: number;
     status: BookingStatus;
     createdAt: string;
+    preCheckoutEmailSent?: boolean;
 }
 
 export interface BookingHold {

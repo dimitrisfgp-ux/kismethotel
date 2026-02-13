@@ -13,6 +13,7 @@ import { updateBookingDatesAction } from "@/app/actions/booking";
 import { useToast } from "@/contexts/ToastContext";
 import { getStatusColor } from "@/lib/constants/statusStyles";
 import { formatLocalDate } from "@/lib/dateUtils";
+import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from "@/lib/constants";
 
 interface BookingDetailsModalProps {
     booking: Booking;
@@ -181,19 +182,21 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
                                         </div>
                                     </div>
                                 ) : (
+
+
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
                                             <span className="block text-xs opacity-50 uppercase tracking-wide">Check-in</span>
                                             <span className="font-medium block">{format(new Date(localBooking.checkIn), "MMM d, yyyy")}</span>
                                             <span className="text-xs text-[var(--color-charcoal)]/60">
-                                                from {new Date(`2000-01-01T${room?.checkInTime || "15:00"}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                                from {new Date(`2000-01-01T${room?.checkInTime || DEFAULT_CHECK_IN_TIME}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                                             </span>
                                         </div>
                                         <div>
                                             <span className="block text-xs opacity-50 uppercase tracking-wide">Check-out</span>
                                             <span className="font-medium block">{format(new Date(localBooking.checkOut), "MMM d, yyyy")}</span>
                                             <span className="text-xs text-[var(--color-charcoal)]/60">
-                                                by {new Date(`2000-01-01T${room?.checkOutTime || "11:00"}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                                                by {new Date(`2000-01-01T${room?.checkOutTime || DEFAULT_CHECK_OUT_TIME}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                                             </span>
                                         </div>
                                     </div>

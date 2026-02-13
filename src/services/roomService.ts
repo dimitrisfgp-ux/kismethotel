@@ -8,10 +8,13 @@ interface RoomMediaJoin {
     media_assets: Record<string, unknown>;
 }
 
+import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from "@/lib/constants";
+
 // Helper to transform Supabase room data to our Room type
 function transformRoom(dbRoom: Record<string, unknown>): Room {
     // Media System
     const media = ((dbRoom.room_media as RoomMediaJoin[]) || [])
+        // ... (existing map logic) ...
         .map(rm => ({
             ...(rm.media_assets as any),
             id: rm.media_assets.id,
@@ -40,8 +43,8 @@ function transformRoom(dbRoom: Record<string, unknown>): Room {
         id: dbRoom.id as string,
         slug: dbRoom.slug as string,
         name: dbRoom.name as string,
-        checkInTime: (dbRoom.check_in_time as string)?.slice(0, 5) || "15:00",
-        checkOutTime: (dbRoom.check_out_time as string)?.slice(0, 5) || "11:00",
+        checkInTime: (dbRoom.check_in_time as string)?.slice(0, 5) || DEFAULT_CHECK_IN_TIME,
+        checkOutTime: (dbRoom.check_out_time as string)?.slice(0, 5) || DEFAULT_CHECK_OUT_TIME,
         description: dbRoom.description as string || '',
         sizeSqm: dbRoom.size_sqm as number,
         floor: dbRoom.floor as number,

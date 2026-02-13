@@ -30,3 +30,7 @@ export const FAB_BOTTOM_OFFSET = "bottom-24"; // Height (56px) + Offset (24px) +
 // Timezone Constants
 export const HOTEL_TIMEZONE = "Europe/Athens";
 export const TIMEZONE_DISCLAIMER = "All dates shown in Greek time (Europe/Athens)";
+
+// Room Defaults
+export const DEFAULT_CHECK_IN_TIME = "15:00";
+export const DEFAULT_CHECK_OUT_TIME = "11:00";

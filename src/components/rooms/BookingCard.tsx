@@ -9,7 +9,7 @@ import { Button } from "../ui/Button";
 import { formatCurrency, calculateTotal } from "@/lib/priceCalculator";
 import { differenceInDays, addDays } from "date-fns";
 import { useRouter } from "next/navigation";
-import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
+import { TIMEZONE_DISCLAIMER, DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from "@/lib/constants";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
 import { useHoldContention } from "@/contexts/HoldContentionContext";
 import { useSession } from "@/contexts/SessionContext";
@@ -168,6 +168,22 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
                 <p className="text-[10px] text-center text-[var(--color-charcoal)]/50 mt-2">
                     {TIMEZONE_DISCLAIMER}
                 </p>
+
+                {/* Check-in / Check-out Times */}
+                <div className="grid grid-cols-2 gap-2 text-center py-4 border-t border-[var(--color-sand)]">
+                    <div>
+                        <span className="block text-[10px] uppercase tracking-widest opacity-60 mb-1">Check-in</span>
+                        <span className="block font-medium text-sm text-[var(--color-charcoal)]">
+                            {new Date(`2000-01-01T${room.checkInTime || DEFAULT_CHECK_IN_TIME}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                    </div>
+                    <div>
+                        <span className="block text-[10px] uppercase tracking-widest opacity-60 mb-1">Check-out</span>
+                        <span className="block font-medium text-sm text-[var(--color-charcoal)]">
+                            {new Date(`2000-01-01T${room.checkOutTime || DEFAULT_CHECK_OUT_TIME}`).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                    </div>
+                </div>
 
 
                 {/* Totals & Action */}

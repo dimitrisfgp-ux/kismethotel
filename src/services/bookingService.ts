@@ -30,7 +30,8 @@ export const bookingService = {
             guestsCount: b.guests_count,
             totalPrice: b.total_price,
             status: b.status,
-            createdAt: b.created_at
+            createdAt: b.created_at,
+            preCheckoutEmailSent: b.pre_checkout_email_sent
         }));
     },
 
@@ -175,6 +176,16 @@ export const bookingService = {
         const { error } = await supabase
             .from('bookings')
             .update({ status })
+            .eq('id', bookingId);
+
+        return !error;
+    },
+
+    markPreCheckoutEmailSent: async (bookingId: string): Promise<boolean> => {
+        const supabase = await createClient();
+        const { error } = await supabase
+            .from('bookings')
+            .update({ pre_checkout_email_sent: true })
             .eq('id', bookingId);
 
         return !error;

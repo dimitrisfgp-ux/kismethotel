@@ -44,9 +44,35 @@ export async function GET(request: Request) {
         // Find bookings checking out within the window
         const checkingOutSoon = bookings.filter(booking => {
             if (booking.status !== "active") return false;
-            const checkOut = new Date(booking.checkOut);
-            // Check if checkout is between now and the window
-            return checkOut >= now && checkOut <= checkoutWindow;
+            if (booking.preCheckoutEmailSent) return false;
+
+            const room = rooms.find(r => r.id === booking.roomId);
+            const timeStr = room?.checkOutTime?.slice(0, 5) || "11:00";
+
+            // 1. Get current time in Athens
+            // This creates a Date object that "looks like" Athens time in UTC
+            const athensTimeStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Athens" });
+            const nowAthens = new Date(athensTimeStr);
+
+            // 2. Construct Checkout Time in Athens context
+            // checkOut is YYYY-MM-DD. timeStr is HH:MM.
+            // We create a date that "looks like" the checkout time in UTC
+            const checkOutAthens = new Date(`${booking.checkOut}T${timeStr}:00`);
+
+            // If invalid date, fallback to simple day comparison (safety)
+            if (isNaN(checkOutAthens.getTime())) {
+                const checkOut = new Date(booking.checkOut);
+                return checkOut >= now && checkOut <= checkoutWindow;
+            }
+
+            // 3. Compare difference in hours
+            const diffMs = checkOutAthens.getTime() - nowAthens.getTime();
+            const diffHours = diffMs / (1000 * 60 * 60);
+
+            // Check if within window (e.g. 0 to 1.2 hours)
+            // Using a slightly larger window than 1.0 to account for cron latency
+            // but checked hourly, so 1.2 ensures we catch it.
+            return diffHours > 0 && diffHours <= hoursAhead;
         });
 
         if (testMode) {
@@ -58,7 +84,8 @@ export async function GET(request: Request) {
                     id: b.id,
                     guest: b.guestName,
                     email: b.guestEmail,
-                    checkOut: b.checkOut
+                    checkOut: b.checkOut,
+                    sent: b.preCheckoutEmailSent
                 }))
             });
         }
@@ -74,6 +101,10 @@ export async function GET(request: Request) {
                     subject: email.subject,
                     html: email.html
                 });
+
+                if (sent) {
+                    await bookingService.markPreCheckoutEmailSent(booking.id);
+                }
 
                 return {
                     bookingId: booking.id,
