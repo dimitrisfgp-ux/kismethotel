@@ -24,11 +24,11 @@ export function RoomMediaManager(props: RoomMediaManagerProps) {
     } = props;
 
     return (
-        <div className="space-y-8 bg-white p-6 rounded-lg border border-[var(--color-sand)] shadow-sm animate-in fade-in duration-300">
+        <div className="space-y-6 md:space-y-8 bg-white p-3 md:p-6 rounded-lg border border-[var(--color-sand)] shadow-sm animate-in fade-in duration-300">
 
             {/* Primary Image Slot */}
             <div className="space-y-4">
-                <div className="flex justify-between items-end">
+                <div className="flex flex-col md:flex-row justify-between md:items-end gap-1">
                     <h3 className="text-lg font-bold text-[var(--color-aegean-blue)]">Primary Image</h3>
                     <span className="text-xs text-gray-500">Appears in Hero background (Desktop)</span>
                 </div>
@@ -63,7 +63,7 @@ export function RoomMediaManager(props: RoomMediaManagerProps) {
 
             {/* Secondary Images Slots */}
             <div className="space-y-4 pt-6 border-t">
-                <div className="flex justify-between items-end">
+                <div className="flex flex-col md:flex-row justify-between md:items-end gap-1">
                     <h3 className="text-lg font-bold text-[var(--color-charcoal)]">Secondary Images</h3>
                     <span className="text-xs text-gray-500">Appear next to Hero (Desktop)</span>
                 </div>

@@ -60,7 +60,7 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
     const disabledDates = [
         { before: new Date() }, // Disable all past dates
         ...blockedDates.map(b => ({ from: new Date(b.from), to: new Date(b.to) })),
-        ...bookings.filter(b => b.status === 'confirmed').map(b => ({ from: new Date(b.checkIn), to: new Date(b.checkOut) }))
+        ...bookings.filter(b => b.status === 'confirmed' || b.status === 'active').map(b => ({ from: new Date(b.checkIn), to: new Date(b.checkOut) }))
     ];
 
     // Logic: If 'from' is selected but 'to' is not, consider it 1 night (User selecting just check-in for 1 night stay)
@@ -92,7 +92,7 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
 
     // Modifiers Calculation
     const bookedMatchers = bookings
-        .filter(b => b.status === "confirmed")
+        .filter(b => b.status === "confirmed" || b.status === "active")
         .map(b => ({ from: new Date(b.checkIn), to: new Date(b.checkOut) }));
 
     const maintenanceMatchers = blockedDates

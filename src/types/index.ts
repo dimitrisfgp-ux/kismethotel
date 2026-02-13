@@ -64,6 +64,7 @@ export interface RoomSummary {
     checkInTime?: string;
     checkOutTime?: string;
     maxOccupancy?: number;
+    imageUrl?: string;
 }
 
 export interface Booking {

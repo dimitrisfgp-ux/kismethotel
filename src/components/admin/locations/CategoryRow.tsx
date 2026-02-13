@@ -40,12 +40,12 @@ export function CategoryRow({
             {/* Category Header Row */}
             <div
                 className={cn(
-                    "flex items-center justify-between p-4 cursor-pointer hover:bg-[var(--color-sand)]/10 transition-colors",
+                    "flex items-center justify-between p-3 md:p-4 cursor-pointer hover:bg-[var(--color-sand)]/10 transition-colors",
                     isExpanded ? "bg-[var(--color-sand)]/10" : ""
                 )}
                 onClick={() => onToggle(category.id)}
             >
-                <div className="flex items-center gap-3 flex-1">
+                <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
                     {isEditing ? (
                         <div className="flex items-center gap-2 flex-1" onClick={(e) => e.stopPropagation()}>
                             <div className="w-[140px] shrink-0">
@@ -69,11 +69,11 @@ export function CategoryRow({
                         </div>
                     ) : (
                         <>
-                            <div className="p-2 rounded-full bg-white border border-[var(--color-sand)]" style={{ color: category.color }}>
+                            <div className="p-2 rounded-full bg-white border border-[var(--color-sand)] shrink-0" style={{ color: category.color }}>
                                 <CategoryIcon className="h-4 w-4" />
                             </div>
-                            <span className="font-bold font-montserrat text-[var(--color-charcoal)]">{category.label || "Unnamed Category"}</span>
-                            <span className="text-xs text-[var(--color-charcoal)]/40 ml-2">({locations.length} locations)</span>
+                            <span className="font-bold font-montserrat text-[var(--color-charcoal)] truncate text-sm md:text-base">{category.label || "Unnamed Category"}</span>
+                            <span className="text-xs text-[var(--color-charcoal)]/40 ml-1 md:ml-2 shrink-0">({locations.length}<span className="hidden md:inline"> locations</span>)</span>
                             <Button
                                 size="sm"
                                 variant="ghost"

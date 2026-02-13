@@ -12,6 +12,7 @@ import { getBookingByIdAction, getRoomAvailabilityAction } from "@/app/actions/b
 import { submitContactRequestAction } from "@/app/actions/request";
 import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 import { formatLocalDate } from "@/lib/dateUtils";
+import { useToast } from "@/contexts/ToastContext";
 
 const SUBJECTS: { value: RequestSubject; label: string }[] = [
     { value: "general", label: "General Question" },
@@ -38,8 +39,9 @@ export function ContactForm() {
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [lookupError, setLookupError] = useState("");
     const [submitted, setSubmitted] = useState(false);
-    const [showDatePicker, setShowDatePicker] = useState(false);
+    const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
     const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([]);
+    const { showToast } = useToast();
 
     const requiresBookingId = subject === "reschedule" || subject === "cancellation";
     const requiresNewDates = subject === "reschedule";
@@ -108,9 +110,32 @@ export function ContactForm() {
             createdAt: new Date().toISOString()
         };
 
-        await submitContactRequestAction(request);
-        setSubmitted(true);
-        setIsSubmitting(false);
+        try {
+            await submitContactRequestAction(request);
+            setSubmitted(true);
+        } catch (error: any) {
+            console.error("Submission error:", error);
+            // Extract meaningful message if possible
+            const msg = error.message?.includes("invalid input syntax for type uuid")
+                ? "Invalid Booking ID format. Please check your Booking ID."
+                : (error.message || "Failed to submit request. Please try again.");
+
+            // Assuming useToast is available in scope (it is not used in original code? let me check imports)
+            // Original code imports useToast but didn't use it in handleSubmit?
+            // Actually line 20: const { showToast } = useToast(); IS MISSING in the view I saw?
+            // Let me check lines 1-40 of ContactForm.tsx in previous view.
+            // Ah, line 1-308 view showed: 
+            // 28: export function ContactForm() {
+            // 29:     const [subject, setSubject] = useState...
+            // It does NOT have useToast hook usage! 
+            // But line 8 imports useToast? NO.
+            // Line 8: import { Input } from "../ui/Input";
+            // Line 12: import { submitContactRequestAction } ...
+            // No useToast import in the file content I saw Step 23233.
+            showToast(msg, "error");
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
     const resetForm = () => {
@@ -124,7 +149,7 @@ export function ContactForm() {
         setLinkedBooking(null);
         setSubmitted(false);
         setUnavailableDates([]);
-        setShowDatePicker(false);
+        setIsDatePickerOpen(false);
     };
 
     if (submitted) {
@@ -235,7 +260,7 @@ export function ContactForm() {
                     <label className="block text-xs font-bold uppercase tracking-widest text-white/60">New Dates</label>
                     <button
                         type="button"
-                        onClick={() => setShowDatePicker(!showDatePicker)}
+                        onClick={() => setIsDatePickerOpen(!isDatePickerOpen)}
                         className="w-full h-11 flex items-center justify-between rounded-[var(--radius-subtle)] border border-white/20 bg-white/5 px-3 py-2 text-sm text-white/80 hover:bg-white/10 transition-colors"
                     >
                         <span className="flex items-center gap-2">
@@ -246,7 +271,7 @@ export function ContactForm() {
                             }
                         </span>
                     </button>
-                    {showDatePicker && (
+                    {isDatePickerOpen && (
                         <div className="bg-white/10 rounded-lg p-3 border border-white/20">
                             <Calendar
                                 mode="range"
@@ -263,7 +288,7 @@ export function ContactForm() {
                                 {newDateRange?.from && newDateRange?.to && (
                                     <button
                                         type="button"
-                                        onClick={() => setShowDatePicker(false)}
+                                        onClick={() => setIsDatePickerOpen(false)}
                                         className="text-xs bg-white/20 hover:bg-white/30 text-white px-3 py-1 rounded transition-colors"
                                     >
                                         Done

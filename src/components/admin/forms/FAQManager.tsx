@@ -71,10 +71,10 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
     };
 
     return (
-        <div className="space-y-8 bg-white p-6 rounded-lg border border-[var(--color-sand)] shadow-sm mt-8">
-            <div className="flex items-center justify-between border-b border-[var(--color-sand)] pb-4">
+        <div className="space-y-6 md:space-y-8 bg-white p-3 md:p-6 rounded-lg border border-[var(--color-sand)] shadow-sm mt-4 md:mt-8">
+            <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-[var(--color-sand)] pb-4 gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[var(--color-aegean-blue)]/10 rounded-full">
+                    <div className="p-2 bg-[var(--color-aegean-blue)]/10 rounded-full shrink-0">
                         <HelpCircle className="h-5 w-5 text-[var(--color-aegean-blue)]" />
                     </div>
                     <div>
@@ -82,7 +82,7 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                         <p className="text-sm text-[var(--color-charcoal)]/60">Manage the Q&A displayed on the home page.</p>
                     </div>
                 </div>
-                <Button onClick={handleSave} isLoading={isLoading} className="gap-2">
+                <Button onClick={handleSave} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
                     <Save className="h-4 w-4" />
                     Save FAQs
                 </Button>
@@ -98,21 +98,21 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                         <div key={faq.id} className="border border-[var(--color-sand)] rounded-md overflow-hidden transition-all bg-white hover:border-[var(--color-aegean-blue)]/30">
                             <div
                                 className={cn(
-                                    "flex items-center justify-between p-4 cursor-pointer hover:bg-[var(--color-warm-white)]/50",
+                                    "flex flex-col md:flex-row items-start md:items-center justify-between p-3 md:p-4 cursor-pointer hover:bg-[var(--color-warm-white)]/50 gap-3 md:gap-0",
                                     expandedIds.includes(faq.id) ? "bg-[var(--color-warm-white)]" : ""
                                 )}
                                 onClick={() => toggleExpand(faq.id)}
                             >
-                                <div className="flex items-center gap-4 flex-1">
-                                    <span className="text-[var(--color-aegean-blue)] font-bold font-montserrat text-sm w-6">#{index + 1}</span>
-                                    <span className={cn("font-medium text-sm flex-1", !faq.question && "text-red-400 italic")}>
+                                <div className="flex items-center gap-2 md:gap-4 flex-1 w-full md:w-auto">
+                                    <span className="text-[var(--color-aegean-blue)] font-bold font-montserrat text-sm w-6 hidden md:inline">#{index + 1}</span>
+                                    <span className={cn("font-medium text-sm flex-1 break-words", !faq.question && "text-red-400 italic")}>
                                         {faq.question || "New Question (Click to edit)"}
                                     </span>
-                                    <span className="text-xs uppercase tracking-wider px-2 py-1 bg-[var(--color-sand)]/20 rounded text-[var(--color-charcoal)]/60">
+                                    <span className="text-[10px] md:text-xs uppercase tracking-wider px-2 py-0.5 md:py-1 bg-[var(--color-sand)]/20 rounded text-[var(--color-charcoal)]/60 shrink-0">
                                         {faq.category}
                                     </span>
                                 </div>
-                                <div className="flex items-center gap-2 ml-4">
+                                <div className="flex items-center gap-2 ml-auto md:ml-4">
                                     <button
                                         type="button"
                                         onClick={(e) => { e.stopPropagation(); deleteFAQ(faq.id); }}

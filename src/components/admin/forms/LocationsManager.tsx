@@ -41,12 +41,12 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
 
 
     return (
-        <div className="space-y-8 bg-white p-6 rounded-lg border border-[var(--color-sand)] shadow-sm mt-8">
+        <div className="space-y-6 md:space-y-8 bg-white p-3 md:p-6 rounded-lg border border-[var(--color-sand)] shadow-sm mt-4 md:mt-8">
 
             {/* Header / Toolbar */}
-            <div className="flex items-center justify-between border-b border-[var(--color-sand)] pb-4">
+            <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-[var(--color-sand)] pb-4 gap-4">
                 <div className="flex items-center gap-3">
-                    <div className="p-2 bg-[var(--color-aegean-blue)]/10 rounded-full">
+                    <div className="p-2 bg-[var(--color-aegean-blue)]/10 rounded-full shrink-0">
                         <MapPin className="h-5 w-5 text-[var(--color-aegean-blue)]" />
                     </div>
                     <div>
@@ -54,7 +54,7 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
                         <p className="text-sm text-[var(--color-charcoal)]/60">Manage map groups and pins.</p>
                     </div>
                 </div>
-                <Button onClick={saveChanges} isLoading={isLoading} className="gap-2">
+                <Button onClick={saveChanges} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
                     <Save className="h-4 w-4" />
                     Save Changes
                 </Button>

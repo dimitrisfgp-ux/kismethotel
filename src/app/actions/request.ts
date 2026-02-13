@@ -9,7 +9,12 @@ import { ContactRequest, Booking } from "@/types";
 import { requirePermission } from "@/lib/auth/guards";
 
 export async function submitContactRequestAction(request: ContactRequest) {
-    const success = await requestService.createRequest(request);
+    const { success, error } = await requestService.createRequest(request);
+    if (!success) {
+        console.error("Failed to submit request:", error);
+        throw new Error(`Failed to submit request: ${error?.message || JSON.stringify(error)}`);
+    }
+
     if (success) {
         // Email #3: Send alert to admin
         const alertEmail = newRequestAlertEmail(request);

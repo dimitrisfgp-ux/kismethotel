@@ -15,8 +15,8 @@ import { preCheckoutEmail } from "@/services/emailTemplates";
  * - Manual call from admin dashboard
  * - External scheduler
  * 
+ * 
  * Query params:
- * - hoursAhead: Number of hours to look ahead (default: 4)
  * - test: If "true", just returns bookings without sending emails
  */
 export async function GET(request: Request) {
@@ -30,7 +30,7 @@ export async function GET(request: Request) {
     }
 
     const { searchParams } = new URL(request.url);
-    const hoursAhead = parseInt(searchParams.get("hoursAhead") || "4");
+    // hoursAhead is no longer used, defaulting to check "today"
     const testMode = searchParams.get("test") === "true";
 
     try {
@@ -39,7 +39,6 @@ export async function GET(request: Request) {
         const rooms = await roomService.getRoomsSummary();
 
         const now = new Date();
-        const checkoutWindow = new Date(now.getTime() + hoursAhead * 60 * 60 * 1000);
 
         // Find bookings checking out within the window
         const checkingOutSoon = bookings.filter(booking => {
@@ -50,35 +49,26 @@ export async function GET(request: Request) {
             const timeStr = room?.checkOutTime?.slice(0, 5) || "11:00";
 
             // 1. Get current time in Athens
-            // This creates a Date object that "looks like" Athens time in UTC
             const athensTimeStr = new Date().toLocaleString("en-US", { timeZone: "Europe/Athens" });
             const nowAthens = new Date(athensTimeStr);
 
-            // 2. Construct Checkout Time in Athens context
-            // checkOut is YYYY-MM-DD. timeStr is HH:MM.
-            // We create a date that "looks like" the checkout time in UTC
-            const checkOutAthens = new Date(`${booking.checkOut}T${timeStr}:00`);
+            // 2. Get checkout date in Athens time
+            // booking.checkOut is "YYYY-MM-DD". We treat it as midnight on that day.
+            const checkOutDate = new Date(booking.checkOut);
 
-            // If invalid date, fallback to simple day comparison (safety)
-            if (isNaN(checkOutAthens.getTime())) {
-                const checkOut = new Date(booking.checkOut);
-                return checkOut >= now && checkOut <= checkoutWindow;
-            }
+            // Compare YYYY-MM-DD parts
+            const isToday =
+                checkOutDate.getDate() === nowAthens.getDate() &&
+                checkOutDate.getMonth() === nowAthens.getMonth() &&
+                checkOutDate.getFullYear() === nowAthens.getFullYear();
 
-            // 3. Compare difference in hours
-            const diffMs = checkOutAthens.getTime() - nowAthens.getTime();
-            const diffHours = diffMs / (1000 * 60 * 60);
-
-            // Check if within window (e.g. 0 to 1.2 hours)
-            // Using a slightly larger window than 1.0 to account for cron latency
-            // but checked hourly, so 1.2 ensures we catch it.
-            return diffHours > 0 && diffHours <= hoursAhead;
+            return isToday;
         });
 
         if (testMode) {
             return NextResponse.json({
                 mode: "test",
-                hoursAhead,
+                checkType: "today",
                 found: checkingOutSoon.length,
                 bookings: checkingOutSoon.map(b => ({
                     id: b.id,
@@ -121,14 +111,14 @@ export async function GET(request: Request) {
             await sendEmail({
                 to: getAdminEmail(),
                 subject: `📤 Pre-checkout emails sent (${successCount})`,
-                html: `<p>Sent ${successCount} goodbye emails to guests checking out within ${hoursAhead} hours.</p>
+                html: `<p>Sent ${successCount} goodbye emails to guests checking out today.</p>
                        <ul>${results.map(r => `<li>${r.guestEmail}: ${r.sent ? '✓' : '✗'}</li>`).join('')}</ul>`
             });
         }
 
         return NextResponse.json({
             success: true,
-            hoursAhead,
+            checkType: "today",
             emailsSent: successCount,
             results
         });

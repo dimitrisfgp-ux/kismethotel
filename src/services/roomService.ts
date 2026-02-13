@@ -116,23 +116,40 @@ export const roomService = {
     /**
      * Lightweight query returning only basic room info (for admin lists, dropdowns, emails).
      */
-    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number; maxOccupancy: number; checkInTime?: string; checkOutTime?: string }[]> => {
+    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number; maxOccupancy: number; sizeSqm: number; floor: number; checkInTime?: string; checkOutTime?: string; imageUrl?: string }[]> => {
         const supabase = await createClient();
         const { data, error } = await supabase
             .from('rooms')
-            .select('id, name, slug, price_per_night, max_occupancy, check_in_time, check_out_time')
+            .select(`
+                id, name, slug, price_per_night, max_occupancy, size_sqm, floor, check_in_time, check_out_time,
+                room_media (
+                    is_primary,
+                    display_order,
+                    media_assets (url)
+                )
+            `)
             .order('name');
 
         if (error) return [];
-        return (data || []).map(r => ({
-            id: r.id,
-            name: r.name,
-            slug: r.slug,
-            pricePerNight: r.price_per_night,
-            maxOccupancy: r.max_occupancy,
-            checkInTime: r.check_in_time?.slice(0, 5),
-            checkOutTime: r.check_out_time?.slice(0, 5)
-        }));
+        return (data || []).map(r => {
+            // Find primary image or first available
+            const media = (r.room_media as any[]) || [];
+            const primary = media.find(m => m.is_primary) || media.sort((a, b) => a.display_order - b.display_order)[0];
+            const imageUrl = primary?.media_assets?.url;
+
+            return {
+                id: r.id,
+                name: r.name,
+                slug: r.slug,
+                pricePerNight: r.price_per_night,
+                maxOccupancy: r.max_occupancy,
+                sizeSqm: r.size_sqm,
+                floor: r.floor,
+                checkInTime: r.check_in_time?.slice(0, 5),
+                checkOutTime: r.check_out_time?.slice(0, 5),
+                imageUrl
+            };
+        });
     },
 
     getRoomBySlug: async (slug: string): Promise<Room | undefined> => {

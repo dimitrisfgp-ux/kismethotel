@@ -135,10 +135,10 @@ export function PageContentForm({ initialContent }: PageContentFormProps) {
 
     return (
         <>
-            <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 rounded-lg border border-[var(--color-sand)] shadow-sm mt-8">
-                <div className="flex items-center justify-between border-b border-[var(--color-sand)] pb-4">
+            <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 bg-white p-3 md:p-6 rounded-lg border border-[var(--color-sand)] shadow-sm mt-4 md:mt-8">
+                <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-[var(--color-sand)] pb-4 gap-4">
                     <h2 className="text-lg font-bold font-montserrat text-[var(--color-charcoal)]">Home Page Content</h2>
-                    <Button type="submit" isLoading={isLoading} className="gap-2">
+                    <Button type="submit" isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
                         <Save className="h-4 w-4" />
                         Save Changes
                     </Button>

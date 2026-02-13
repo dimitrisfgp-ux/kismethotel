@@ -12,13 +12,30 @@ import { Button } from "@/components/ui/Button";
 import { Edit2, Trash2, Plus, ImageOff } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { BulkEditModal } from "@/components/admin/rooms/BulkEditModal";
+import { RoomsMobileCard } from "./RoomsMobileCard";
+
+// Define the summary type expected by this component
+interface RoomSummary {
+    id: string;
+    name: string;
+    slug: string;
+    pricePerNight: number;
+    maxOccupancy: number;
+    sizeSqm: number;
+    floor: number;
+    checkInTime?: string;
+    checkOutTime?: string;
+    imageUrl?: string;
+    // We keep optional fields for compatibility if we want to pass full Room objects casted
+    media?: { url: string }[];
+}
 
 interface RoomDataTableProps {
-    initialRooms: Room[];
+    initialRooms: RoomSummary[];
 }
 
 export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
-    const [rooms, setRooms] = useState<Room[]>(initialRooms);
+    const [rooms, setRooms] = useState<RoomSummary[]>(initialRooms);
     const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
     const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
     const { showToast } = useToast();
@@ -86,7 +103,7 @@ export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
                 </div>
             </div>
 
-            <div className="rounded-md border border-[var(--color-sand)] bg-white">
+            <div className="rounded-md border border-[var(--color-sand)] bg-white hidden md:block">
                 <Table>
                     <TableHeader>
                         <TableRow>
@@ -119,9 +136,9 @@ export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
                                 </TableCell>
                                 <TableCell>
                                     <div className="relative h-12 w-20 overflow-hidden rounded-md bg-gray-100">
-                                        {room.media && room.media.length > 0 ? (
+                                        {room.imageUrl || (room.media && room.media.length > 0) ? (
                                             <Image
-                                                src={room.media[0].url}
+                                                src={room.imageUrl || room.media?.[0]?.url || ""}
                                                 alt={room.name || "Room Image"}
                                                 fill
                                                 className="object-cover"
@@ -172,6 +189,25 @@ export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
                         )}
                     </TableBody>
                 </Table>
+            </div>
+
+
+
+            {/* Mobile List View */}
+            <div className="md:hidden space-y-3 p-2 bg-[var(--color-warm-white)]/30">
+                {rooms.length === 0 ? (
+                    <div className="text-center py-8 text-[var(--color-charcoal)]/60 italic border border-dashed border-[var(--color-sand)] rounded-lg">
+                        No rooms found.
+                    </div>
+                ) : (
+                    rooms.map((room) => (
+                        <RoomsMobileCard
+                            key={room.id}
+                            room={room}
+                            onDelete={handleDelete}
+                        />
+                    ))
+                )}
             </div>
 
             <BulkEditModal

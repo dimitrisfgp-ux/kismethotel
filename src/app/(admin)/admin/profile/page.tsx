@@ -114,7 +114,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Profile Information Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-black/5 p-8">
+            <div className="bg-white rounded-xl shadow-sm border border-black/5 p-4 md:p-8">
                 <form onSubmit={handleProfileUpdate} className="space-y-6">
                     <h2 className="text-lg font-bold text-[var(--color-charcoal)] flex items-center gap-2 border-b border-gray-100 pb-4">
                         <User className="w-5 h-5 text-[var(--color-aegean-blue)]" />
@@ -174,7 +174,7 @@ export default function ProfilePage() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="bg-[var(--color-aegean-blue)] text-white px-6 py-2.5 rounded-lg hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
+                            className="bg-[var(--color-aegean-blue)] text-white px-6 py-2.5 rounded-lg hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 w-full md:w-auto"
                         >
                             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                             Save Profile
@@ -184,7 +184,7 @@ export default function ProfilePage() {
             </div>
 
             {/* Security Section */}
-            <div className="bg-white rounded-xl shadow-sm border border-black/5 p-8">
+            <div className="bg-white rounded-xl shadow-sm border border-black/5 p-4 md:p-8">
                 <form onSubmit={handlePasswordUpdate} className="space-y-6">
                     <h2 className="text-lg font-bold text-[var(--color-charcoal)] flex items-center gap-2 border-b border-gray-100 pb-4">
                         <Lock className="w-5 h-5 text-[var(--color-aegean-blue)]" />
@@ -218,7 +218,7 @@ export default function ProfilePage() {
                         <button
                             type="submit"
                             disabled={isSaving}
-                            className="bg-gray-800 text-white px-6 py-2.5 rounded-lg hover:bg-black transition-colors font-medium flex items-center gap-2 disabled:opacity-50"
+                            className="bg-gray-800 text-white px-6 py-2.5 rounded-lg hover:bg-black transition-colors font-medium flex items-center justify-center gap-2 disabled:opacity-50 w-full md:w-auto"
                         >
                             {isSaving ? <Loader2 className="w-4 h-4 animate-spin" /> : <Save className="w-4 h-4" />}
                             Update Password

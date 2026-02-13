@@ -2,7 +2,7 @@ import { roomService } from "@/services/roomService";
 import { RoomDataTable } from "@/components/admin/rooms/RoomDataTable";
 
 export default async function RoomsPage() {
-    const rooms = await roomService.getRooms();
+    const rooms = await roomService.getRoomsSummary();
 
     return (
         <div className="max-w-5xl mx-auto space-y-8 pb-12">

@@ -126,7 +126,7 @@ export function RoleManagementSection({ initialRoles = [], initialPermissions = 
 
     return (
         <div className="space-y-6">
-            <div className="flex justify-between items-center">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                 <div>
                     <h3 className="text-lg font-bold font-montserrat text-[var(--color-aegean-blue)] flex items-center gap-2">
                         <Shield className="w-5 h-5" />
@@ -136,7 +136,7 @@ export function RoleManagementSection({ initialRoles = [], initialPermissions = 
                 </div>
                 <button
                     onClick={openCreateModal}
-                    className="flex items-center gap-2 px-4 py-2 bg-[var(--color-aegean-blue)] text-white rounded-lg hover:bg-[var(--color-aegean-blue)]/90 transition-colors"
+                    className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-aegean-blue)] text-white rounded-lg hover:bg-[var(--color-aegean-blue)]/90 transition-colors w-full md:w-auto"
                 >
                     <Plus className="w-4 h-4" />
                     New Role
@@ -214,12 +214,12 @@ export function RoleManagementSection({ initialRoles = [], initialPermissions = 
                                 </h4>
                                 <div className="space-y-6">
                                     {Object.entries(permissionsByModule).map(([module, perms]) => (
-                                        <div key={module} className="bg-gray-50 p-4 rounded-lg">
+                                        <div key={module} className="bg-gray-50 p-3 md:p-4 rounded-lg">
                                             <h5 className="font-bold text-[var(--color-aegean-blue)] uppercase text-xs trackng-wider mb-3 flex items-center gap-2">
                                                 {module} Module
                                                 <span className="text-[var(--color-charcoal)]/40 font-normal normal-case ml-auto text-[10px]">{perms.length} Permissions</span>
                                             </h5>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                                            <div className="grid grid-cols-1 gap-3">
                                                 {perms.map(perm => {
                                                     const isChecked = formData.permissionIds.includes(perm.id);
                                                     return (
@@ -234,10 +234,10 @@ export function RoleManagementSection({ initialRoles = [], initialPermissions = 
                                                                 type="checkbox"
                                                                 checked={isChecked}
                                                                 onChange={() => togglePermission(perm.id)}
-                                                                className="mt-1 w-4 h-4 text-[var(--color-aegean-blue)] rounded focus:ring-[var(--color-aegean-blue)]"
+                                                                className="mt-1 w-4 h-4 text-[var(--color-aegean-blue)] rounded focus:ring-[var(--color-aegean-blue)] shrink-0"
                                                             />
-                                                            <div className="flex-1">
-                                                                <div className="text-sm font-medium text-[var(--color-charcoal)] font-mono text-xs mb-1">
+                                                            <div className="flex-1 min-w-0">
+                                                                <div className="text-sm font-medium text-[var(--color-charcoal)] font-mono text-xs mb-1 truncate">
                                                                     {perm.slug}
                                                                 </div>
                                                                 <div className="text-xs text-gray-500 leading-tight">

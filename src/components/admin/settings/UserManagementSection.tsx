@@ -136,14 +136,14 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
 
     return (
         <div className="space-y-6">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col md:flex-row justify-between md:items-center gap-4">
                 <div>
                     <h2 className="text-xl font-bold font-montserrat text-[var(--color-aegean-blue)]">Team Members</h2>
                     <p className="text-sm text-[var(--color-charcoal)]/60">Manage staff access and roles.</p>
                 </div>
                 <button
                     onClick={openInviteModal}
-                    className="flex items-center gap-2 bg-[var(--color-aegean-blue)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors"
+                    className="flex items-center justify-center gap-2 bg-[var(--color-aegean-blue)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors w-full md:w-auto"
                 >
                     <Plus className="w-4 h-4" />
                     Invite Member
@@ -154,17 +154,17 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
             <div className="bg-white rounded-lg shadow-sm border border-black/5 overflow-hidden">
                 <div className="divide-y divide-gray-100">
                     {users.map((user) => (
-                        <div key={user.id} className="p-4 flex items-center justify-between hover:bg-gray-50 transition-colors">
-                            <div className="flex items-center gap-4">
-                                <div className="w-10 h-10 rounded-full bg-[var(--color-aegean-blue)]/10 flex items-center justify-center text-[var(--color-aegean-blue)]">
+                        <div key={user.id} className="p-4 flex flex-col md:flex-row md:items-center justify-between hover:bg-gray-50 transition-colors gap-3 md:gap-0">
+                            <div className="flex items-center gap-4 w-full md:w-auto">
+                                <div className="w-10 h-10 rounded-full bg-[var(--color-aegean-blue)]/10 flex items-center justify-center text-[var(--color-aegean-blue)] shrink-0">
                                     <User className="w-5 h-5" />
                                 </div>
-                                <div>
-                                    <p className="font-medium text-[var(--color-charcoal)]">{user.full_name || 'Unnamed'}</p>
-                                    <p className="text-xs text-[var(--color-charcoal)]/60">{user.email}</p>
+                                <div className="min-w-0 flex-1">
+                                    <p className="font-medium text-[var(--color-charcoal)] truncate">{user.full_name || 'Unnamed'}</p>
+                                    <p className="text-xs text-[var(--color-charcoal)]/60 truncate">{user.email}</p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-4">
+                            <div className="flex items-center justify-between md:justify-end gap-4 w-full md:w-auto pl-14 md:pl-0">
                                 {/* Role Badge */}
                                 <span className={`px-2 py-1 rounded text-[10px] font-bold uppercase tracking-wider bg-gray-100 text-gray-600`}>
                                     {user.roles?.name || user.role}

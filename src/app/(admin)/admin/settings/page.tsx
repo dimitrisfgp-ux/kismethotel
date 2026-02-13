@@ -26,9 +26,9 @@ export default async function SettingsPage() {
     return (
         <div className="max-w-4xl mx-auto space-y-12 pb-12">
             {/* Header */}
-            <div className="border-b border-[var(--color-sand)] pb-6">
-                <h1 className="text-3xl font-bold font-montserrat text-[var(--color-charcoal)]">Global Settings</h1>
-                <p className="text-[var(--color-charcoal)]/60 mt-2">Manage hotel configuration, team members, and contact details.</p>
+            <div className="border-b border-[var(--color-sand)] pb-4 md:pb-6 px-4 md:px-0">
+                <h1 className="text-2xl md:text-3xl font-bold font-montserrat text-[var(--color-charcoal)]">Global Settings</h1>
+                <p className="text-[var(--color-charcoal)]/60 mt-1 md:mt-2 text-sm md:text-base">Manage hotel configuration, team members, and contact details.</p>
             </div>
 
             {/* User Management (Admin Only - Component handles internal guard, but we pass props) */}

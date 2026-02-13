@@ -32,14 +32,15 @@ export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
     return (
         <div className="space-y-6">
             {/* Header */}
-            <div className="flex items-center justify-between border-b border-[var(--color-sand)] pb-4 bg-white p-6 rounded-lg shadow-sm">
+            {/* Header */}
+            <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-[var(--color-sand)] pb-4 bg-white p-4 md:p-6 rounded-lg shadow-sm gap-4">
                 <div>
                     <h2 className="text-xl font-bold font-montserrat text-[var(--color-charcoal)]">
                         {isNew ? "Create Room" : "Edit Room"}
                     </h2>
                     <p className="text-sm text-gray-500">{room.name || "New Room"}</p>
                 </div>
-                <Button type="button" onClick={handleSubmit} isLoading={isLoading} className="gap-2">
+                <Button type="button" onClick={handleSubmit} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
                     <Save className="h-4 w-4" />
                     Save Room
                 </Button>
@@ -75,7 +76,7 @@ export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
 
             {/* DETAILS TAB */}
             {activeTab === 'details' && (
-                <form onSubmit={handleSubmit} className="space-y-8 bg-white p-6 rounded-lg border border-[var(--color-sand)] shadow-sm animate-in fade-in duration-300">
+                <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 bg-white p-3 md:p-6 rounded-lg border border-[var(--color-sand)] shadow-sm animate-in fade-in duration-300">
                     <RoomBasicInfo
                         room={room}
                         errors={errors}

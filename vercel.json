@@ -5,8 +5,8 @@
             "schedule": "0 0 * * *"
         },
         {
-            "path": "/api/cron/pre-checkout?hoursAhead=1.2",
-            "schedule": "0 * * * *"
+            "path": "/api/cron/pre-checkout",
+            "schedule": "0 7 * * *"
         }
     ]
 }

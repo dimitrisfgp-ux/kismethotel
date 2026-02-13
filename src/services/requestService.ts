@@ -58,8 +58,13 @@ export const requestService = {
         };
     },
 
-    createRequest: async (request: ContactRequest): Promise<boolean> => {
+    createRequest: async (request: ContactRequest): Promise<{ success: boolean; error?: any }> => {
         const supabase = await createClient();
+        console.log('Creating request payload:', {
+            id: request.id,
+            subject: request.subject,
+            booking_id: request.bookingId
+        });
         const { error } = await supabase
             .from('contact_requests')
             .insert({
@@ -77,7 +82,11 @@ export const requestService = {
                 status: request.status || 'pending'
             });
 
-        return !error;
+        if (error) {
+            console.error("Error creating request:", error);
+            return { success: false, error };
+        }
+        return { success: true };
     },
 
     updateRequestStatus: async (

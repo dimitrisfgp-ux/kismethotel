@@ -32,15 +32,15 @@ export function BookingsPageClient({
     return (
         <div className="max-w-[1600px] mx-auto space-y-8 pb-12 px-4">
             {/* Header */}
-            <div className="border-b border-[var(--color-sand)] pb-6 flex justify-between items-end">
+            <div className="border-b border-[var(--color-sand)] pb-6 flex flex-col md:flex-row justify-between md:items-end gap-4">
                 <div>
-                    <h1 className="text-3xl font-bold font-montserrat text-[var(--color-charcoal)]">Bookings & Availability</h1>
-                    <p className="text-[var(--color-charcoal)]/60 mt-2">Manage guest reservations and block room dates.</p>
+                    <h1 className="text-2xl md:text-3xl font-bold font-montserrat text-[var(--color-charcoal)]">Bookings & Availability</h1>
+                    <p className="text-[var(--color-charcoal)]/60 mt-1 md:mt-2 text-sm md:text-base">Manage guest reservations and block room dates.</p>
                 </div>
                 {['admin', 'manager', 'receptionist'].includes(userRole) && (
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
-                        className="bg-[var(--color-aegean-blue)] text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors flex items-center gap-2 shadow-sm"
+                        className="bg-[var(--color-aegean-blue)] w-full md:w-auto text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors flex items-center justify-center gap-2 shadow-sm"
                     >
                         <Plus className="w-4 h-4" />
                         New Booking

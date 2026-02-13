@@ -51,9 +51,11 @@ interface AdminSidebarProps {
     user: AuthUser | null;
     role: string;
     fullName: string | null;
+    className?: string;
+    onNavigate?: () => void;
 }
 
-export function AdminSidebar({ user, role, fullName }: AdminSidebarProps) {
+export function AdminSidebar({ user, role, fullName, className, onNavigate }: AdminSidebarProps) {
     const pathname = usePathname();
 
     // Mapping roles to display names and colors
@@ -65,7 +67,10 @@ export function AdminSidebar({ user, role, fullName }: AdminSidebarProps) {
     }[role] || { label: "Staff", color: "bg-gray-500" };
 
     return (
-        <aside className="fixed left-0 top-0 h-screen w-64 bg-[var(--color-aegean-blue)] text-white flex flex-col z-50 shadow-xl">
+        <aside className={cn(
+            "fixed left-0 top-0 h-screen w-64 bg-[var(--color-aegean-blue)] text-white flex flex-col z-50 shadow-xl transition-transform duration-300",
+            className
+        )}>
             {/* Branding */}
             <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
                 <span className="font-montserrat font-bold text-xl tracking-[0.1em] uppercase">
@@ -82,6 +87,7 @@ export function AdminSidebar({ user, role, fullName }: AdminSidebarProps) {
                         <Link
                             key={item.href}
                             href={item.href}
+                            onClick={onNavigate}
                             className={cn(
                                 "flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium transition-colors",
                                 isActive
@@ -99,7 +105,11 @@ export function AdminSidebar({ user, role, fullName }: AdminSidebarProps) {
             {/* User Profile Footer */}
             <div className="p-4 border-t border-white/10 space-y-4 shrink-0 bg-black/20">
                 {user && (
-                    <Link href="/admin/profile" className="flex items-center gap-3 px-2 group hover:bg-white/5 rounded-lg transition-colors p-2">
+                    <Link
+                        href="/admin/profile"
+                        onClick={onNavigate}
+                        className="flex items-center gap-3 px-2 group hover:bg-white/5 rounded-lg transition-colors p-2"
+                    >
                         <div className="h-10 w-10 rounded-full bg-white/10 flex items-center justify-center shrink-0 group-hover:bg-white/20 transition-colors">
                             <User className="h-5 w-5 text-white/80" />
                         </div>
