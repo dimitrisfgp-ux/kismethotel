@@ -26,20 +26,40 @@ const getCachedUser = cache(async () => {
  * Cached per-request: get user + profile + role.
  * Reuses getCachedUser() so getUser() is only called once.
  */
-const getCachedUserWithRole = cache(async (): Promise<{ user: User; roleName: string; roleId: string | null; fullName: string } | null> => {
+const getCachedUserWithRole = cache(async (): Promise<{ user: User; roleName: string; roleId: string | null; fullName: string; permissions: string[] } | null> => {
     const user = await getCachedUser();
     if (!user) return null;
 
     const supabase = await createClient();
+
+    // Step 1: Get Profile & Role
     const { data: profile } = await supabase
         .from('profiles')
-        .select('role_id, full_name, roles ( name )')
+        .select(`
+            role_id, 
+            full_name, 
+            roles ( name )
+        `)
         .eq('id', user.id)
         .single();
 
     const roleName = extractRoleName(profile?.roles) ?? 'viewer';
     const fullName = (profile?.full_name as string) || user.email?.split('@')[0] || 'User';
-    return { user, roleName, roleId: profile?.role_id ?? null, fullName };
+
+    // Step 2: Get Permissions separately to avoid join issues or data recursion
+    let permissions: string[] = [];
+    if (profile?.role_id) {
+        const { data: rolePerms } = await supabase
+            .from('role_permissions')
+            .select('permissions ( slug )')
+            .eq('role_id', profile.role_id);
+
+        if (rolePerms) {
+            permissions = rolePerms.map((rp: any) => rp.permissions?.slug).filter(Boolean);
+        }
+    }
+
+    return { user, roleName, roleId: profile?.role_id ?? null, fullName, permissions };
 });
 
 /**
@@ -64,8 +84,7 @@ export async function checkPermission(permissionSlug: string): Promise<boolean> 
     const result = await getCachedUserWithRole();
     if (!result || !result.roleId) return false;
 
-    // Admin bypass
-    if (result.roleName === 'admin') return true;
+
 
     // Check specific permission
     const supabase = await createClient();
@@ -99,10 +118,7 @@ export async function requirePermission(permissionSlug: string): Promise<User> {
         throw new Error("Unauthorized: No role assigned");
     }
 
-    // Admin bypass — allow all permissions to prevent lockout
-    if (result.roleName === 'admin') {
-        return result.user;
-    }
+
 
     // Check specific permission
     const supabase = await createClient();

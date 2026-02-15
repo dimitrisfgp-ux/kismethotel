@@ -7,43 +7,45 @@ import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/admin/auth/LogoutButton";
 import type { User as AuthUser } from "@supabase/supabase-js";
 
-// Define Nav Items with required roles (if any)
+import { usePermission } from "@/contexts/PermissionContext";
+
+// Define Nav Items with required permissions
 const NAV_ITEMS = [
     {
         label: "Bookings",
         href: "/admin/bookings",
         icon: CalendarCheck,
-        roles: ['admin', 'manager', 'receptionist']
+        permission: 'bookings.view'
     },
     {
         label: "Requests",
         href: "/admin/requests",
         icon: MessageSquare,
-        roles: ['admin', 'manager', 'receptionist'] // Receptionist view only
+        permission: 'requests.view'
     },
     {
         label: "Rooms",
         href: "/admin/rooms",
         icon: BedDouble,
-        roles: ['admin', 'manager', 'receptionist'] // Receptionist availability only
+        permission: 'rooms.view'
     },
     {
         label: "Page Content",
         href: "/admin/page-content",
         icon: LayoutDashboard,
-        roles: ['admin', 'manager']
+        permission: 'content.view'
     },
     {
         label: "Media Library",
         href: "/admin/media",
         icon: Image,
-        roles: ['admin', 'manager']
+        permission: 'media.view'
     },
     {
         label: "Settings",
         href: "/admin/settings",
         icon: Settings,
-        roles: ['admin', 'manager']
+        permission: null // Public to all admin/staff (or check 'settings.view' if exists)
     }
 ];
 
@@ -57,6 +59,7 @@ interface AdminSidebarProps {
 
 export function AdminSidebar({ user, role, fullName, className, onNavigate }: AdminSidebarProps) {
     const pathname = usePathname();
+    const { can } = usePermission();
 
     // Mapping roles to display names and colors
     const roleBadge = {
@@ -80,7 +83,7 @@ export function AdminSidebar({ user, role, fullName, className, onNavigate }: Ad
 
             {/* Navigation */}
             <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-                {NAV_ITEMS.filter(item => item.roles.includes(role)).map((item) => {
+                {NAV_ITEMS.filter(item => !item.permission || can(item.permission)).map((item) => {
                     const isActive = pathname.startsWith(item.href);
                     const Icon = item.icon;
                     return (

@@ -7,6 +7,7 @@ import { Plus, Trash2, User, Loader2, Edit2, X, Key, Mail, Shield } from 'lucide
 import { PasswordInput } from '@/components/ui/PasswordInput';
 import { useToast } from '@/contexts/ToastContext';
 import { Role } from '@/types';
+import { usePermission } from '@/contexts/PermissionContext';
 
 interface UserProfile {
     id: string;
@@ -27,6 +28,7 @@ interface UserManagementSectionProps {
 
 export function UserManagementSection({ currentUserRole, currentUserId, initialUsers = [], initialRoles = [] }: UserManagementSectionProps) {
     const { showToast } = useToast();
+    const { can } = usePermission();
 
     // Filter out current user immediately from initial data if present
     const [users, setUsers] = useState<UserProfile[]>(initialUsers.filter(u => u.id !== currentUserId));
@@ -141,13 +143,15 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
                     <h2 className="text-xl font-bold font-montserrat text-[var(--color-aegean-blue)]">Team Members</h2>
                     <p className="text-sm text-[var(--color-charcoal)]/60">Manage staff access and roles.</p>
                 </div>
-                <button
-                    onClick={openInviteModal}
-                    className="flex items-center justify-center gap-2 bg-[var(--color-aegean-blue)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors w-full md:w-auto"
-                >
-                    <Plus className="w-4 h-4" />
-                    Invite Member
-                </button>
+                {can('users.manage') && (
+                    <button
+                        onClick={openInviteModal}
+                        className="flex items-center justify-center gap-2 bg-[var(--color-aegean-blue)] text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors w-full md:w-auto"
+                    >
+                        <Plus className="w-4 h-4" />
+                        Invite Member
+                    </button>
+                )}
             </div>
 
             {/* List */}
@@ -172,22 +176,26 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
 
                                 {/* Actions */}
                                 <div className="flex gap-2">
-                                    <button
-                                        onClick={() => openEditModal(user)}
-                                        className="p-2 text-gray-400 hover:text-[var(--color-aegean-blue)] bg-gray-50 hover:bg-blue-50 rounded-full transition-colors"
-                                        title="Edit User"
-                                    >
-                                        <Edit2 className="w-4 h-4" />
-                                    </button>
+                                    {can('users.manage') && (
+                                        <>
+                                            <button
+                                                onClick={() => openEditModal(user)}
+                                                className="p-2 text-gray-400 hover:text-[var(--color-aegean-blue)] bg-gray-50 hover:bg-blue-50 rounded-full transition-colors"
+                                                title="Edit User"
+                                            >
+                                                <Edit2 className="w-4 h-4" />
+                                            </button>
 
-                                    {user.id !== currentUserId && (
-                                        <button
-                                            onClick={() => handleDelete(user.id)}
-                                            className="p-2 text-gray-400 hover:text-red-600 bg-gray-50 hover:bg-red-50 rounded-full transition-colors"
-                                            title="Remove User"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                            {user.id !== currentUserId && (
+                                                <button
+                                                    onClick={() => handleDelete(user.id)}
+                                                    className="p-2 text-gray-400 hover:text-red-600 bg-gray-50 hover:bg-red-50 rounded-full transition-colors"
+                                                    title="Remove User"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            )}
+                                        </>
                                     )}
                                 </div>
                             </div>

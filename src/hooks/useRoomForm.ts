@@ -33,7 +33,29 @@ export function useRoomForm({ initialRoom, isNew = false }: UseRoomFormProps) {
     const [availableAmenities, setAvailableAmenities] = useState<Amenity[]>([]);
 
     // Media State
-    const [attachedMedia, setAttachedMedia] = useState<RoomMedia[]>(initialRoom?.media || []);
+    const [attachedMedia, setAttachedMedia] = useState<RoomMedia[]>(() => {
+        const media = initialRoom?.media || [];
+
+        // Auto-correct categories for CMS display if they are all defaulted to 'gallery'
+        if (media.every(m => m.category === 'gallery') && media.length > 0) {
+            const corrected = media.map(m => {
+                if (m.isPrimary) {
+                    return { ...m, category: 'primary' };
+                }
+                // Recover secondary based on display order (heuristic)
+                // Assuming primary is 0, secondary are 1 and 2
+                if (m.displayOrder === 1 || m.displayOrder === 2) {
+                    return { ...m, category: 'secondary' };
+                }
+                return m;
+            });
+            return corrected;
+        }
+
+        return media;
+        return media;
+    });
+
     const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);
     const [pickingCategory, setPickingCategory] = useState<RoomMediaCategory | null>(null);
 

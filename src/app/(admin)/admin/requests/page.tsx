@@ -4,8 +4,8 @@ import { RequestsTable } from "@/components/admin/requests/RequestsTable";
 
 export default async function RequestsPage() {
     const [requests, bookings] = await Promise.all([
-        requestService.getRequests(),
-        bookingService.getBookings()
+        requestService.getRequests(1, 100).then(res => res.data), // Temporary: fetch 100 to avoid breaking linked booking logic immediately
+        bookingService.getBookings(1, 100).then(res => res.data) // Temporary: same reason
     ]);
 
     return (

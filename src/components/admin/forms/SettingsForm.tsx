@@ -8,12 +8,14 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/contexts/ToastContext";
 import { Save } from "lucide-react";
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface SettingsFormProps {
     initialSettings: HotelSettings;
 }
 
 export function SettingsForm({ initialSettings }: SettingsFormProps) {
+    const { can } = usePermission();
     const [settings, setSettings] = useState<HotelSettings>(initialSettings);
     const [isLoading, setIsLoading] = useState(false);
     const { showToast } = useToast();
@@ -53,10 +55,12 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
         <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 bg-white p-3 md:p-6 rounded-lg border border-[var(--color-sand)] shadow-sm">
             <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-[var(--color-sand)] pb-4 gap-4">
                 <h2 className="text-lg font-bold font-montserrat text-[var(--color-charcoal)]">Global Information</h2>
-                <Button type="submit" isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
-                    <Save className="h-4 w-4" />
-                    Save Changes
-                </Button>
+                {can('content.settings') && (
+                    <Button type="submit" isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
+                        <Save className="h-4 w-4" />
+                        Save Changes
+                    </Button>
+                )}
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -68,30 +72,35 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                         value={settings.name}
                         onChange={(e) => setSettings({ ...settings, name: e.target.value })}
                         required
+                        disabled={!can('content.settings')}
                     />
 
                     <Input
                         label="Description"
                         value={settings.description}
                         onChange={(e) => setSettings({ ...settings, description: e.target.value })}
+                        disabled={!can('content.settings')}
                     />
 
                     <Input
                         label="Address"
                         value={settings.contact.address}
                         onChange={(e) => updateContact('address', e.target.value)}
+                        disabled={!can('content.settings')}
                     />
 
                     <Input
                         label="Phone"
                         value={settings.contact.phone}
                         onChange={(e) => updateContact('phone', e.target.value)}
+                        disabled={!can('content.settings')}
                     />
 
                     <Input
                         label="Email"
                         value={settings.contact.email}
                         onChange={(e) => updateContact('email', e.target.value)}
+                        disabled={!can('content.settings')}
                     />
                 </div>
 
@@ -99,27 +108,17 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                     <h3 className="font-medium text-[var(--color-aegean-blue)] border-b pb-1">Social Media</h3>
 
                     <Input
-                        label="Instagram URL"
-                        value={settings.socials.instagram}
-                        onChange={(e) => updateSocials('instagram', e.target.value)}
-                    />
-
-                    <Input
-                        label="Facebook URL"
-                        value={settings.socials.facebook}
-                        onChange={(e) => updateSocials('facebook', e.target.value)}
-                    />
-
-                    <Input
                         label="WhatsApp URL"
                         value={settings.socials.whatsapp}
                         onChange={(e) => updateSocials('whatsapp', e.target.value)}
+                        disabled={!can('content.settings')}
                     />
 
                     <Input
                         label="Viber URL"
                         value={settings.socials.viber}
                         onChange={(e) => updateSocials('viber', e.target.value)}
+                        disabled={!can('content.settings')}
                     />
                 </div>
             </div>

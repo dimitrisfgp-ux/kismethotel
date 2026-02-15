@@ -30,6 +30,7 @@ export async function submitContactRequestAction(request: ContactRequest) {
 }
 
 export async function getRequestsAction() {
+    await requirePermission('requests.view');
     return requestService.getRequests();
 }
 

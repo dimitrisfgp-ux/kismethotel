@@ -3,6 +3,7 @@ import { adminCreateBookingAction } from '@/app/actions/bookings';
 import { RoomSummary } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import { X } from 'lucide-react';
+import { usePermission } from '@/contexts/PermissionContext';
 import { useBookingForm } from '@/hooks/useBookingForm';
 import { BookingForm } from './BookingForm';
 
@@ -19,8 +20,10 @@ export function CreateBookingModal({ isOpen, onClose, rooms, currentUserRole }: 
 
     // Use the Custom Hook
     const { formData, updateField, handleRoomChange, calculatePrice } = useBookingForm(rooms);
+    const { can } = usePermission();
 
     if (!isOpen) return null;
+    if (!can('bookings.create')) return null;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();

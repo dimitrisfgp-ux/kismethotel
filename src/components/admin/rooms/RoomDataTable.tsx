@@ -9,10 +9,11 @@ import {
     Table, TableBody, TableCell, TableHead, TableHeader, TableRow
 } from "@/components/ui/admin/Table";
 import { Button } from "@/components/ui/Button";
-import { Edit2, Trash2, Plus, ImageOff } from "lucide-react";
+import { Edit2, Trash2, Plus, ImageOff, Copy, Eye } from "lucide-react";
 import { useToast } from "@/contexts/ToastContext";
 import { BulkEditModal } from "@/components/admin/rooms/BulkEditModal";
 import { RoomsMobileCard } from "./RoomsMobileCard";
+import { usePermission } from "@/contexts/PermissionContext";
 
 // Define the summary type expected by this component
 interface RoomSummary {
@@ -35,6 +36,7 @@ interface RoomDataTableProps {
 }
 
 export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
+    const { can } = usePermission();
     const [rooms, setRooms] = useState<RoomSummary[]>(initialRooms);
     const [selectedRoomIds, setSelectedRoomIds] = useState<string[]>([]);
     const [isBulkEditOpen, setIsBulkEditOpen] = useState(false);
@@ -85,7 +87,7 @@ export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
                     All Rooms ({rooms.length})
                 </h2>
                 <div className="flex gap-2">
-                    {selectedRoomIds.length > 0 && (
+                    {(selectedRoomIds.length > 0 && can('rooms.update')) && (
                         <Button
                             variant="secondary"
                             onClick={() => setIsBulkEditOpen(true)}
@@ -94,12 +96,14 @@ export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
                             Bulk Edit ({selectedRoomIds.length})
                         </Button>
                     )}
-                    <Link href="/admin/rooms/new">
-                        <Button className="gap-2">
-                            <Plus className="h-4 w-4" />
-                            Add Room
-                        </Button>
-                    </Link>
+                    {can('rooms.create') && (
+                        <Link href="/admin/rooms/new">
+                            <Button className="gap-2">
+                                <Plus className="h-4 w-4" />
+                                Add Room
+                            </Button>
+                        </Link>
+                    )}
                 </div>
             </div>
 
@@ -163,19 +167,23 @@ export function RoomDataTable({ initialRooms }: RoomDataTableProps) {
                                 </TableCell>
                                 <TableCell className="text-right">
                                     <div className="flex items-center justify-end gap-2">
-                                        <Link href={`/admin/rooms/${room.slug}`}>
-                                            <Button variant="outline" size="sm" className="h-8 w-8 p-0">
-                                                <Edit2 className="h-4 w-4" />
+                                        {can('rooms.update') && (
+                                            <Link href={`/admin/rooms/${room.slug}`}>
+                                                <Button variant="outline" size="sm" className="h-8 w-8 p-0">
+                                                    <Edit2 className="h-4 w-4" />
+                                                </Button>
+                                            </Link>
+                                        )}
+                                        {can('rooms.delete') && (
+                                            <Button
+                                                variant="destructive"
+                                                size="sm"
+                                                className="h-8 w-8 p-0"
+                                                onClick={() => handleDelete(room.id)}
+                                            >
+                                                <Trash2 className="h-4 w-4" />
                                             </Button>
-                                        </Link>
-                                        <Button
-                                            variant="destructive"
-                                            size="sm"
-                                            className="h-8 w-8 p-0"
-                                            onClick={() => handleDelete(room.id)}
-                                        >
-                                            <Trash2 className="h-4 w-4" />
-                                        </Button>
+                                        )}
                                     </div>
                                 </TableCell>
                             </TableRow>

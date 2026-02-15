@@ -8,6 +8,4 @@ export const CONTACT_INFO = {
 };
 
 export const SOCIAL_LINKS = {
-    instagram: "https://instagram.com/kismethotel",
-    facebook: "https://facebook.com/kismethotel"
 };

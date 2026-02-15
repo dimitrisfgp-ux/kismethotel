@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { Select } from "@/components/ui/admin/Select";
 import { X, Tag, Plus } from "lucide-react";
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface RoomLayoutSectionProps {
     section: RoomLayoutCategory;
@@ -31,6 +32,8 @@ export function RoomLayoutSection({
     onOpenAmenityPicker,
     onRemoveAmenity
 }: RoomLayoutSectionProps) {
+    const { can } = usePermission();
+
     return (
         <div className="p-4 border border-[var(--color-sand)] rounded-md bg-[var(--color-warm-white)]/30 space-y-4">
             <div className="flex flex-col md:flex-row gap-4 relative">
@@ -39,6 +42,7 @@ export function RoomLayoutSection({
                     value={section.title}
                     onChange={e => updateSection(index, 'title', e.target.value)}
                     className="flex-1"
+                    disabled={!can('rooms.update')}
                 />
                 <div className="w-full md:w-[200px]">
                     <Select
@@ -53,12 +57,15 @@ export function RoomLayoutSection({
                         ]}
                         value={section.type}
                         onChange={e => updateSection(index, 'type', e.target.value)}
+                        disabled={!can('rooms.update')}
                     />
                 </div>
                 <div className="absolute top-0 right-0 md:static md:mt-7">
-                    <Button type="button" variant="ghost" onClick={() => removeSection(index)} className="p-2 h-8 w-8 text-gray-400 hover:text-red-500">
-                        <X className="h-5 w-5" />
-                    </Button>
+                    {can('rooms.update') && (
+                        <Button type="button" variant="ghost" onClick={() => removeSection(index)} className="p-2 h-8 w-8 text-gray-400 hover:text-red-500">
+                            <X className="h-5 w-5" />
+                        </Button>
+                    )}
                 </div>
             </div>
 
@@ -70,18 +77,22 @@ export function RoomLayoutSection({
                         <span key={fIdx} className="inline-flex items-center gap-1 bg-white border border-[var(--color-sand)] px-2 py-1 rounded-full text-xs text-[var(--color-charcoal)]">
                             <Tag className="w-3 h-3 opacity-50" />
                             {feature}
-                            <button type="button" onClick={() => onRemoveFeature(index, feature)} className="hover:text-red-500 ml-1"><X className="h-3 w-3" /></button>
+                            {can('rooms.update') && (
+                                <button type="button" onClick={() => onRemoveFeature(index, feature)} className="hover:text-red-500 ml-1"><X className="h-3 w-3" /></button>
+                            )}
                         </span>
                     ))}
                 </div>
-                <button
-                    type="button"
-                    onClick={() => onOpenFeaturePicker(index)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-dashed border-[var(--color-sand)] text-[var(--color-charcoal)]/70 text-xs font-medium rounded-full hover:border-[var(--color-aegean-blue)] hover:text-[var(--color-aegean-blue)] transition-colors"
-                >
-                    <Plus className="w-3 h-3" />
-                    Add {section.type === 'bedroom' ? 'Feature' : 'Detail'}
-                </button>
+                {can('rooms.update') && (
+                    <button
+                        type="button"
+                        onClick={() => onOpenFeaturePicker(index)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-white border border-dashed border-[var(--color-sand)] text-[var(--color-charcoal)]/70 text-xs font-medium rounded-full hover:border-[var(--color-aegean-blue)] hover:text-[var(--color-aegean-blue)] transition-colors"
+                    >
+                        <Plus className="w-3 h-3" />
+                        Add {section.type === 'bedroom' ? 'Feature' : 'Detail'}
+                    </button>
+                )}
             </div>
 
             {/* Amenities */}
@@ -91,18 +102,22 @@ export function RoomLayoutSection({
                     {section.amenities.map(amenity => (
                         <span key={amenity.id} className="inline-flex items-center gap-1 bg-white border border-[var(--color-sand)] px-2 py-1 rounded-full text-xs">
                             {amenity.name}
-                            <button type="button" onClick={() => onRemoveAmenity(index, amenity.id)} className="hover:text-red-500"><X className="h-3 w-3" /></button>
+                            {can('rooms.update') && (
+                                <button type="button" onClick={() => onRemoveAmenity(index, amenity.id)} className="hover:text-red-500"><X className="h-3 w-3" /></button>
+                            )}
                         </span>
                     ))}
                 </div>
-                <button
-                    type="button"
-                    onClick={() => onOpenAmenityPicker(index)}
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 mt-2 bg-white border border-dashed border-[var(--color-aegean-blue)] text-[var(--color-aegean-blue)] text-xs font-medium rounded-full hover:bg-[var(--color-aegean-blue)]/5 transition-colors"
-                >
-                    <Plus className="w-3 h-3" />
-                    Add Amenities
-                </button>
+                {can('rooms.update') && (
+                    <button
+                        type="button"
+                        onClick={() => onOpenAmenityPicker(index)}
+                        className="inline-flex items-center gap-1.5 px-3 py-1.5 mt-2 bg-white border border-dashed border-[var(--color-aegean-blue)] text-[var(--color-aegean-blue)] text-xs font-medium rounded-full hover:bg-[var(--color-aegean-blue)]/5 transition-colors"
+                    >
+                        <Plus className="w-3 h-3" />
+                        Add Amenities
+                    </button>
+                )}
             </div>
         </div>
     );

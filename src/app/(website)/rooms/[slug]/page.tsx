@@ -13,6 +13,8 @@ interface RoomPageProps {
 
 export const dynamic = 'force-dynamic';
 
+import { DateProvider } from "@/contexts/DateContext";
+
 export default async function RoomPage({ params }: RoomPageProps) {
     const { slug } = await params;
     const room = await roomService.getRoomBySlug(slug);
@@ -23,33 +25,35 @@ export default async function RoomPage({ params }: RoomPageProps) {
 
     const [blockedDates, bookings] = await Promise.all([
         bookingService.getBlockedDates(room.id),
-        bookingService.getBookings(room.id)
+        bookingService.getRoomBookings(room.id)
     ]);
 
     return (
-        <article className="">
-            {/* 1. Gallery */}
-            <ImageGallery media={room.media} roomName={room.name} />
+        <DateProvider>
+            <article className="">
+                {/* 1. Gallery */}
+                <ImageGallery media={room.media} roomName={room.name} />
 
-            {/* 2. Content Grid */}
-            <Container className="py-16 md:py-24">
-                <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
+                {/* 2. Content Grid */}
+                <Container className="py-16 md:py-24">
+                    <div className="grid grid-cols-1 lg:grid-cols-3 gap-16">
 
-                    {/* Main Info (Left 2 cols) */}
-                    <div className="lg:col-span-2">
-                        <RoomInfo room={room} />
+                        {/* Main Info (Left 2 cols) */}
+                        <div className="lg:col-span-2">
+                            <RoomInfo room={room} />
+                        </div>
+
+                        {/* Sticky Sidebar (Right 1 col) */}
+                        <div className="relative">
+                            <BookingCard room={room} blockedDates={blockedDates} bookings={bookings} />
+                        </div>
+
                     </div>
+                </Container>
 
-                    {/* Sticky Sidebar (Right 1 col) */}
-                    <div className="relative">
-                        <BookingCard room={room} blockedDates={blockedDates} bookings={bookings} />
-                    </div>
-
-                </div>
-            </Container>
-
-            {/* 3. CTA */}
-            <ContactCTA />
-        </article>
+                {/* 3. CTA */}
+                <ContactCTA />
+            </article>
+        </DateProvider>
     );
 }

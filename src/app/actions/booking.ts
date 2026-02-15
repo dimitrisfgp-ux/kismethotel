@@ -47,7 +47,9 @@ export async function getRoomByIdAction(roomId: string) {
 }
 
 export async function getRoomAvailabilityAction(roomId: string) {
-    const bookings = await bookingService.getBookings(roomId);
+    // Fetch bookings for specific room, increased limit for availability check
+    const bookingsResponse = await bookingService.getBookings(1, 1000, { roomId });
+    const bookings = bookingsResponse.data;
     const blockedDates = await bookingService.getBlockedDates(roomId);
 
     const unavailableDates: { from: string; to: string; type: 'booked' | 'blocked' }[] = [];
@@ -126,11 +128,11 @@ export async function createBookingAction(booking: Booking, holdId?: string) {
 }
 
 export async function getAvailabilityAction() {
-    const [bookings, blockedDates] = await Promise.all([
-        bookingService.getBookings(),
+    const [bookingsResponse, blockedDates] = await Promise.all([
+        bookingService.getBookings(1, 1000), // Fetch up to 1000 for availability check
         bookingService.getBlockedDates()
     ]);
-    return { bookings, blockedDates };
+    return { bookings: bookingsResponse.data, blockedDates };
 }
 
 export async function getBookingByIdAction(bookingId: string) {

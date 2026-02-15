@@ -10,13 +10,13 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
     const page = Number(params.page) || 1;
     const limit = 10;
 
-    // All queries run in parallel — getRoomsSummary is lightweight (no deep joins)
-    const [rooms, bookingsData, requestsData, roleResult] = await Promise.all([
-        roomService.getRoomsSummary(),
-        bookingService.getBookings(page, limit),
-        requestService.getRequests(page, limit),
-        getUserRole()
-    ]);
+    console.log('BookingsPage params:', { page, limit });
+
+    // Run sequentially to debug potential race conditions with cookies/supabase client
+    const rooms = await roomService.getRoomsSummary();
+    const bookingsData = await bookingService.getBookings(page, limit);
+    const requestsData = await requestService.getRequests(page, limit);
+    const roleResult = await getUserRole();
 
     const userRole = roleResult?.roleName ?? 'viewer';
 

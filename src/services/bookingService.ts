@@ -5,6 +5,39 @@ import { formatLocalDate } from "@/lib/dateUtils";
 export const bookingService = {
     // --- Availability & Bookings ---
 
+    getRoomBookings: async (roomId: string): Promise<Booking[]> => {
+        const supabase = await createClient();
+
+        // Fetch future bookings or active ones for calendar blocking
+        // We only care about confirmed/active/pending bookings that block dates
+        const { data, error } = await supabase
+            .from('bookings')
+            .select('*')
+            .eq('room_id', roomId)
+            .in('status', ['confirmed', 'active', 'pending'])
+            .gte('check_out', new Date().toISOString()); // Only future/current bookings
+
+        if (error) {
+            console.error('Error fetching room bookings:', error);
+            return [];
+        }
+
+        return (data || []).map(b => ({
+            id: b.id,
+            roomId: b.room_id,
+            checkIn: b.check_in,
+            checkOut: b.check_out,
+            guestName: b.guest_name,
+            guestEmail: b.guest_email,
+            guestPhone: b.guest_phone,
+            guestsCount: b.guests_count,
+            totalPrice: b.total_price,
+            status: b.status,
+            createdAt: b.created_at,
+            preCheckoutEmailSent: b.pre_checkout_email_sent
+        }));
+    },
+
     getBookings: async (
         page: number = 1,
         limit: number = 10,
@@ -57,6 +90,7 @@ export const bookingService = {
             limit
         };
     },
+
 
     getBookingById: async (bookingId: string): Promise<Booking | undefined> => {
         const supabase = await createClient();

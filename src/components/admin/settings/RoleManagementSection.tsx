@@ -12,6 +12,7 @@ import {
 } from '@/app/actions/roles';
 import { useToast } from '@/contexts/ToastContext';
 import { Loader2, Plus, Shield, Edit2, Trash2, Check, X } from 'lucide-react';
+import { usePermission } from '@/contexts/PermissionContext';
 
 interface RoleManagementSectionProps {
     initialRoles?: Role[];
@@ -20,6 +21,7 @@ interface RoleManagementSectionProps {
 
 export function RoleManagementSection({ initialRoles = [], initialPermissions = [] }: RoleManagementSectionProps) {
     const { showToast } = useToast();
+    const { can } = usePermission();
     const [roles, setRoles] = useState<Role[]>(initialRoles);
     const [permissions, setPermissions] = useState<Permission[]>(initialPermissions);
     const [isLoading, setIsLoading] = useState(false);
@@ -134,13 +136,15 @@ export function RoleManagementSection({ initialRoles = [], initialPermissions = 
                     </h3>
                     <p className="text-sm text-[var(--color-charcoal)]/60">Manage staff access levels and granular permissions.</p>
                 </div>
-                <button
-                    onClick={openCreateModal}
-                    className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-aegean-blue)] text-white rounded-lg hover:bg-[var(--color-aegean-blue)]/90 transition-colors w-full md:w-auto"
-                >
-                    <Plus className="w-4 h-4" />
-                    New Role
-                </button>
+                {can('roles.manage') && (
+                    <button
+                        onClick={openCreateModal}
+                        className="flex items-center justify-center gap-2 px-4 py-2 bg-[var(--color-aegean-blue)] text-white rounded-lg hover:bg-[var(--color-aegean-blue)]/90 transition-colors w-full md:w-auto"
+                    >
+                        <Plus className="w-4 h-4" />
+                        New Role
+                    </button>
+                )}
             </div>
 
             {/* Role List */}
@@ -153,10 +157,12 @@ export function RoleManagementSection({ initialRoles = [], initialPermissions = 
                                 {role.isSystem && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-1 rounded-full mt-1 inline-block">System Role</span>}
                             </div>
                             <div className="flex gap-2">
-                                <button onClick={() => openEditModal(role)} className="p-2 text-gray-400 hover:text-[var(--color-aegean-blue)] bg-gray-50 hover:bg-blue-50 rounded-full transition-colors">
-                                    <Edit2 className="w-4 h-4" />
-                                </button>
-                                {!role.isSystem && (
+                                {can('roles.manage') && (
+                                    <button onClick={() => openEditModal(role)} className="p-2 text-gray-400 hover:text-[var(--color-aegean-blue)] bg-gray-50 hover:bg-blue-50 rounded-full transition-colors">
+                                        <Edit2 className="w-4 h-4" />
+                                    </button>
+                                )}
+                                {(!role.isSystem && can('roles.manage')) && (
                                     <button onClick={() => handleDelete(role)} className="p-2 text-gray-400 hover:text-red-600 bg-gray-50 hover:bg-red-50 rounded-full transition-colors">
                                         <Trash2 className="w-4 h-4" />
                                     </button>

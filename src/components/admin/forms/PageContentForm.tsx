@@ -10,12 +10,14 @@ import { useToast } from "@/contexts/ToastContext";
 import { Save, Image as ImageIcon, Video, X } from "lucide-react";
 import Image from "next/image";
 import { MediaPickerModal } from "@/components/admin/media/MediaPickerModal";
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface PageContentFormProps {
     initialContent: PageContent;
 }
 
 export function PageContentForm({ initialContent }: PageContentFormProps) {
+    const { can } = usePermission();
     const [content, setContent] = useState<PageContent>(initialContent);
     const [isLoading, setIsLoading] = useState(false);
     const { showToast } = useToast();
@@ -25,17 +27,20 @@ export function PageContentForm({ initialContent }: PageContentFormProps) {
     const [pickingField, setPickingField] = useState<'poster' | 'ios' | 'android' | 'desktop' | null>(null);
 
     const handleSubmit = async (e: React.FormEvent) => {
-        // ... same ...
         e.preventDefault();
         setIsLoading(true);
+
         try {
             const success = await updatePageContentAction(content);
+
             if (success) {
                 showToast("Page content updated successfully", "success");
             } else {
+                // console.error('Update returned false');
                 showToast("Failed to update content", "error");
             }
-        } catch (_error) {
+        } catch (error) {
+            console.error('Update Action Error:', error);
             showToast("An error occurred", "error");
         } finally {
             setIsLoading(false);
@@ -60,13 +65,19 @@ export function PageContentForm({ initialContent }: PageContentFormProps) {
         if (pickingField === 'poster') {
             updateHero('poster', asset.url);
         } else {
-            setContent(prev => ({
-                ...prev,
-                hero: {
-                    ...prev.hero,
-                    videos: { ...prev.hero.videos, [pickingField]: asset.url }
-                }
-            }));
+            // Ensure videos object exists before spreading
+            const currentVideos = content.hero.videos || { ios: '', android: '', desktop: '' };
+
+            setContent(prev => {
+                const newState = {
+                    ...prev,
+                    hero: {
+                        ...prev.hero,
+                        videos: { ...currentVideos, [pickingField]: asset.url }
+                    }
+                };
+                return newState;
+            });
         }
         setIsPickerOpen(false);
     };
@@ -99,38 +110,48 @@ export function PageContentForm({ initialContent }: PageContentFormProps) {
                                 <video src={value} className="absolute inset-0 w-full h-full object-cover opacity-50" muted preload="none" />
                             </div>
                         )}
-                        <button
-                            type="button"
-                            onClick={() => clearMedia(field)}
-                            className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                            <X className="w-4 h-4" />
-                        </button>
+                        {can('content.pages') && (
+                            <button
+                                type="button"
+                                onClick={() => clearMedia(field)}
+                                className="absolute top-2 right-2 p-1.5 bg-red-500 text-white rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                            >
+                                <X className="w-4 h-4" />
+                            </button>
+                        )}
                         <div className="absolute bottom-2 left-2 right-2 px-2 py-1 bg-black/60 text-white text-xs truncate rounded">
                             {value.split('/').pop()}
                         </div>
                     </>
                 ) : (
+                    can('content.pages') ? (
+                        <button
+                            type="button"
+                            onClick={() => openPicker(field)}
+                            className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2"
+                        >
+                            {type === 'image' ? <ImageIcon className="w-8 h-8" /> : <Video className="w-8 h-8" />}
+                            <span className="text-xs">Select {label}</span>
+                        </button>
+                    ) : (
+                        <div className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2 bg-gray-100">
+                            <span className="text-xs">Empty {label}</span>
+                        </div>
+                    )
+                )}
+            </div>
+            {
+                (value && can('content.pages')) && (
                     <button
                         type="button"
                         onClick={() => openPicker(field)}
-                        className="w-full h-full flex flex-col items-center justify-center text-gray-400 gap-2"
+                        className="text-xs text-[var(--color-aegean-blue)] hover:underline"
                     >
-                        {type === 'image' ? <ImageIcon className="w-8 h-8" /> : <Video className="w-8 h-8" />}
-                        <span className="text-xs">Select {label}</span>
+                        Change {label}
                     </button>
-                )}
-            </div>
-            {value && (
-                <button
-                    type="button"
-                    onClick={() => openPicker(field)}
-                    className="text-xs text-[var(--color-aegean-blue)] hover:underline"
-                >
-                    Change {label}
-                </button>
-            )}
-        </div>
+                )
+            }
+        </div >
     );
 
     return (
@@ -138,10 +159,12 @@ export function PageContentForm({ initialContent }: PageContentFormProps) {
             <form onSubmit={handleSubmit} className="space-y-6 md:space-y-8 bg-white p-3 md:p-6 rounded-lg border border-[var(--color-sand)] shadow-sm mt-4 md:mt-8">
                 <div className="flex flex-col md:flex-row justify-between md:items-center border-b border-[var(--color-sand)] pb-4 gap-4">
                     <h2 className="text-lg font-bold font-montserrat text-[var(--color-charcoal)]">Home Page Content</h2>
-                    <Button type="submit" isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
-                        <Save className="h-4 w-4" />
-                        Save Changes
-                    </Button>
+                    {can('content.pages') && (
+                        <Button type="submit" isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
+                            <Save className="h-4 w-4" />
+                            Save Changes
+                        </Button>
+                    )}
                 </div>
 
                 <div className="grid grid-cols-1 gap-6">
@@ -153,6 +176,7 @@ export function PageContentForm({ initialContent }: PageContentFormProps) {
                             value={content.hero.title}
                             onChange={(e) => updateHero('title', e.target.value)}
                             required
+                            disabled={!can('content.pages')}
                         />
 
                         <TextArea
@@ -160,12 +184,14 @@ export function PageContentForm({ initialContent }: PageContentFormProps) {
                             value={content.hero.subtitle}
                             onChange={(e) => updateHero('subtitle', e.target.value)}
                             rows={3}
+                            disabled={!can('content.pages')}
                         />
 
                         <Input
                             label="CTA Text"
                             value={content.hero.ctaText}
                             onChange={(e) => updateHero('ctaText', e.target.value)}
+                            disabled={!can('content.pages')}
                         />
                     </div>
 

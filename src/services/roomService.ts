@@ -1,74 +1,9 @@
 import { createClient } from "@/lib/supabase/server";
 import { Room } from "@/types";
 
-interface RoomMediaJoin {
-    display_order: number;
-    is_primary: boolean;
-    category?: string;
-    media_assets: Record<string, unknown>;
-}
+import { transformRoom } from "@/lib/mappers/roomMapper";
 
-import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from "@/lib/constants";
-
-// Helper to transform Supabase room data to our Room type
-function transformRoom(dbRoom: Record<string, unknown>): Room {
-    // Media System
-    const media = ((dbRoom.room_media as RoomMediaJoin[]) || [])
-        // ... (existing map logic) ...
-        .map(rm => ({
-            ...(rm.media_assets as any),
-            id: rm.media_assets.id,
-            mediaType: rm.media_assets.media_type,
-            mimeType: rm.media_assets.mime_type,
-            sizeBytes: rm.media_assets.size_bytes,
-            altText: rm.media_assets.alt_text,
-            originalFilename: rm.media_assets.original_filename,
-            storagePath: rm.media_assets.storage_path,
-            bucket: rm.media_assets.bucket,
-            folder: rm.media_assets.folder,
-            width: rm.media_assets.width,
-            height: rm.media_assets.height,
-            caption: rm.media_assets.caption,
-            createdAt: rm.media_assets.created_at,
-            updatedAt: rm.media_assets.updated_at,
-            createdBy: rm.media_assets.created_by,
-            // Junction props
-            displayOrder: rm.display_order,
-            isPrimary: rm.is_primary,
-            category: rm.category || (rm.is_primary ? 'primary' : (rm.display_order === 1 || rm.display_order === 2 ? 'secondary' : 'gallery'))
-        }))
-        .sort((a, b) => (a.displayOrder as number) - (b.displayOrder as number));
-
-    return {
-        id: dbRoom.id as string,
-        slug: dbRoom.slug as string,
-        name: dbRoom.name as string,
-        checkInTime: (dbRoom.check_in_time as string)?.slice(0, 5) || DEFAULT_CHECK_IN_TIME,
-        checkOutTime: (dbRoom.check_out_time as string)?.slice(0, 5) || DEFAULT_CHECK_OUT_TIME,
-        description: dbRoom.description as string || '',
-        sizeSqm: dbRoom.size_sqm as number,
-        floor: dbRoom.floor as number,
-        maxOccupancy: dbRoom.max_occupancy as number,
-        pricePerNight: dbRoom.price_per_night as number,
-        highlights: (dbRoom.highlights as string[]) || [],
-        beds: ((dbRoom.room_beds as Array<{ type: string; count: number }>) || []).map(b => ({
-            type: b.type as 'single' | 'double',
-            count: b.count
-        })),
-        layout: ((dbRoom.room_layout_sections as Array<Record<string, unknown>>) || []).map(section => ({
-            type: section.type as string,
-            title: section.title as string,
-            details: (section.details as string[]) || [],
-            amenities: ((section.room_layout_amenities as Array<{ amenities: { id: number; name: string; icon_name: string } }>) || [])
-                .map(a => ({
-                    id: a.amenities.id,
-                    name: a.amenities.name,
-                    iconName: a.amenities.icon_name
-                }))
-        })),
-        media: media
-    };
-}
+// ROOM_SELECT_QUERY remains here as it defines WHAT we fetch, enabling the mapper to work.
 
 const ROOM_SELECT_QUERY = `
     *,

@@ -6,6 +6,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Eye, Check, X } from "lucide-react";
 import { SUBJECT_LABELS_SHORT, SUBJECT_COLORS } from "@/lib/constants/requestStyles";
 import { REQUEST_STATUS_COLORS } from "@/lib/constants/statusStyles";
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface RequestsMobileCardProps {
     request: ContactRequest;
@@ -15,6 +16,8 @@ interface RequestsMobileCardProps {
 }
 
 export function RequestsMobileCard({ request, onViewDetails, onApprove, onDiscard }: RequestsMobileCardProps) {
+    const { can } = usePermission();
+
     return (
         <div className="bg-white p-3 rounded-lg border border-[var(--color-sand)] shadow-sm space-y-2">
             {/* Header */}
@@ -52,7 +55,7 @@ export function RequestsMobileCard({ request, onViewDetails, onApprove, onDiscar
 
             {/* Actions */}
             <div className="flex gap-2 pt-2 border-t border-[var(--color-sand)]/30 mt-1">
-                {request.status === 'pending' && (
+                {(request.status === 'pending' && can('requests.manage')) && (
                     <>
                         <button
                             onClick={onDiscard}

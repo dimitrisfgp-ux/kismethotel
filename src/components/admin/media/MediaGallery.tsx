@@ -8,6 +8,7 @@ import { PaginationControls } from '@/components/ui/admin/PaginationControls';
 import { useToast } from '@/contexts/ToastContext';
 import { MediaAsset } from '@/types';
 import { format } from 'date-fns';
+import { usePermission } from '@/contexts/PermissionContext';
 
 interface MediaGalleryProps {
     onSelect?: (media: MediaAsset) => void;
@@ -22,6 +23,7 @@ export function MediaGallery({
     filterType = 'all',
     initialSelection = []
 }: MediaGalleryProps) {
+    const { can } = usePermission();
     const [media, setMedia] = useState<MediaAsset[]>([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState<'all' | 'image' | 'video'>(filterType);
@@ -231,8 +233,39 @@ export function MediaGallery({
                                             className="absolute inset-0 w-full h-full object-cover opacity-50 group-hover:opacity-100 transition-opacity"
                                             muted
                                             loop
-                                            onMouseOver={e => (e.target as HTMLVideoElement).play()}
-                                            onMouseOut={e => (e.target as HTMLVideoElement).pause()}
+                                            ref={(el) => {
+                                                if (!el) return;
+                                                // Store verify play promise to prevent race conditions
+                                                (el as any)._playPromise = undefined;
+                                            }}
+                                            onMouseOver={(e) => {
+                                                const video = e.target as HTMLVideoElement;
+                                                const promise = video.play();
+                                                if (promise !== undefined) {
+                                                    (video as any)._playPromise = promise;
+                                                    promise.catch((error) => {
+                                                        // Auto-play was prevented or interrupted - ignore abort errors
+                                                        if (error.name !== 'AbortError') {
+                                                            console.error('Video play error:', error);
+                                                        }
+                                                    });
+                                                }
+                                            }}
+                                            onMouseOut={(e) => {
+                                                const video = e.target as HTMLVideoElement;
+                                                const playPromise = (video as any)._playPromise;
+                                                if (playPromise !== undefined) {
+                                                    playPromise
+                                                        .then(() => {
+                                                            video.pause();
+                                                        })
+                                                        .catch(() => {
+                                                            // Play was aborted, so we don't need to pause
+                                                        });
+                                                } else {
+                                                    video.pause();
+                                                }
+                                            }}
                                         />
                                     </div>
                                 )}
@@ -254,14 +287,16 @@ export function MediaGallery({
                                         </button>
 
                                         {/* Delete Button */}
-                                        <button
-                                            type="button"
-                                            onClick={(e) => handleDelete(e, asset)}
-                                            className="p-1.5 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition-colors"
-                                            title="Delete"
-                                        >
-                                            <Trash2 className="w-4 h-4" />
-                                        </button>
+                                        {can('media.delete') && (
+                                            <button
+                                                type="button"
+                                                onClick={(e) => handleDelete(e, asset)}
+                                                className="p-1.5 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition-colors"
+                                                title="Delete"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
+                                        )}
                                     </div>
                                     <div className="text-xs text-white truncate drop-shadow-md">
                                         {asset.originalFilename}

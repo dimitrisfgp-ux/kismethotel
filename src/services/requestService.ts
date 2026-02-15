@@ -11,9 +11,26 @@ export const requestService = {
         const from = (page - 1) * limit;
         const to = from + limit - 1;
 
+        // Check Auth context
+        const { data: { user }, error: authError } = await supabase.auth.getUser();
+
         let query = supabase
             .from('contact_requests')
-            .select('*', { count: 'exact' })
+            .select(`
+                id,
+                subject,
+                name,
+                email,
+                phone,
+                message,
+                booking_id,
+                new_check_in,
+                new_check_out,
+                original_check_in,
+                original_check_out,
+                status,
+                created_at
+            `)
             .order('created_at', { ascending: false })
             .range(from, to);
 
@@ -21,10 +38,33 @@ export const requestService = {
             query = query.eq('status', filters.status);
         }
 
-        const { data, count, error } = await query;
+        const { data, error } = await query;
+
+        // Separate count query to avoid "{" error on empty pages/pagination
+        let countQuery = supabase
+            .from('contact_requests')
+            .select('*', { count: 'exact', head: true });
+
+        if (filters?.status) {
+            countQuery = countQuery.eq('status', filters.status);
+        }
+
+        const { count, error: countError } = await countQuery;
+
+        if (countError) {
+            console.error('ERROR FETCHING COUNT:', countError);
+        }
 
         if (error) {
-            console.error('Error fetching requests:', error);
+            const description = {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            };
+            console.error('FAILED REQUEST:', { page, limit, from, to, filters });
+            console.error('RAW ERROR OBJECT:', error); // Log the raw object
+            console.error('SUPABASE ERROR:', description);
             return { data: [], total: 0, page, limit };
         }
 

@@ -10,6 +10,8 @@ import { FilterableHeader } from "./FilterableHeader";
 import { RequestBadge } from "./RequestBadge";
 import { getStatusColor } from "@/lib/constants/statusStyles";
 import { FilterKey, SortConfig } from "@/hooks/useBookingFilters";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/admin/Table";
+import { AdminActionButton } from "@/components/ui/admin/AdminActionButton";
 
 interface BookingsDesktopTableProps {
     bookings: Booking[];
@@ -24,6 +26,8 @@ interface BookingsDesktopTableProps {
     cycleSort: (key: string) => void;
 }
 
+import { usePermission } from "@/contexts/PermissionContext";
+
 export function BookingsDesktopTable({
     bookings,
     requestsByBookingId,
@@ -37,16 +41,17 @@ export function BookingsDesktopTable({
     cycleSort
 }: BookingsDesktopTableProps) {
     const { showToast } = useToast();
+    const { can } = usePermission();
 
     const getRoomName = (id: string) => {
         return rooms.find(r => r.id === id)?.name || "Unknown Room";
     };
 
     return (
-        <div className="hidden md:block overflow-x-auto">
-            <table className="w-full text-left text-sm">
-                <thead className="bg-[var(--color-warm-white)] border-b border-[var(--color-sand)]">
-                    <tr>
+        <div className="hidden md:block">
+            <Table>
+                <TableHeader>
+                    <TableRow>
                         <FilterableHeader
                             label="Booking ID"
                             isActive={isFilterActive("bookingId")}
@@ -110,55 +115,55 @@ export function BookingsDesktopTable({
                             sortDirection={sortConfig?.key === "createdAt" ? sortConfig.direction : null}
                             onSort={() => cycleSort("createdAt")}
                         />
-                        <th className="p-4 font-bold text-[var(--color-charcoal)] text-right">Actions</th>
-                    </tr>
-                </thead>
-                <tbody className="divide-y divide-[var(--color-sand)]">
+                        <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                </TableHeader>
+                <TableBody>
                     {bookings.length === 0 ? (
-                        <tr>
-                            <td colSpan={10} className="p-8 text-center text-[var(--color-charcoal)]/60 italic">
+                        <TableRow>
+                            <TableCell colSpan={10} className="h-24 text-center text-[var(--color-charcoal)]/60 italic">
                                 No bookings match the current filters.
-                            </td>
-                        </tr>
+                            </TableCell>
+                        </TableRow>
                     ) : (
                         bookings.map((booking) => {
                             const bookingRequests = requestsByBookingId.get(booking.id) || [];
                             return (
-                                <tr key={booking.id} className="hover:bg-[var(--color-warm-white)]/20 transition-colors">
-                                    <td className="p-4 whitespace-nowrap">
+                                <TableRow key={booking.id}>
+                                    <TableCell className="whitespace-nowrap">
                                         <code className="text-xs font-mono text-[var(--color-charcoal)]/70 bg-[var(--color-warm-white)] px-1.5 py-0.5 rounded">
-                                            {booking.id}
+                                            {booking.id.slice(0, 8)}
                                         </code>
-                                    </td>
-                                    <td className="p-4 whitespace-nowrap">
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap">
                                         <div className="font-bold text-[var(--color-aegean-blue)]">{booking.guestName}</div>
                                         <div className="text-xs text-[var(--color-charcoal)]/60">{booking.guestEmail}</div>
-                                    </td>
-                                    <td className="p-4 font-medium whitespace-nowrap">
+                                    </TableCell>
+                                    <TableCell className="font-medium whitespace-nowrap">
                                         {getRoomName(booking.roomId)}
-                                    </td>
-                                    <td className="p-4 whitespace-nowrap">
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap">
                                         <div className="flex flex-col">
                                             <span>{format(new Date(booking.checkIn), "MMM d, yyyy")}</span>
                                             <span className="text-[10px] text-[var(--color-charcoal)]/50">to</span>
                                             <span>{format(new Date(booking.checkOut), "MMM d, yyyy")}</span>
                                         </div>
-                                    </td>
-                                    <td className="p-4 whitespace-nowrap">
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap">
                                         {booking.guestsCount}
-                                    </td>
-                                    <td className="p-4 font-mono font-bold whitespace-nowrap">
+                                    </TableCell>
+                                    <TableCell className="font-mono font-bold whitespace-nowrap">
                                         {formatCurrency(booking.totalPrice)}
-                                    </td>
-                                    <td className="p-4 whitespace-nowrap">
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap">
                                         <Badge
                                             variant="outline"
                                             className={getStatusColor(booking.status, 'booking')}
                                         >
                                             {booking.status}
                                         </Badge>
-                                    </td>
-                                    <td className="p-4 whitespace-nowrap">
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap">
                                         <RequestBadge
                                             requests={bookingRequests}
                                             onClick={() => {
@@ -166,22 +171,24 @@ export function BookingsDesktopTable({
                                                 if (pending) onSelectRequest(pending);
                                             }}
                                         />
-                                    </td>
-                                    <td className="p-4 text-sm text-[var(--color-charcoal)]/70 whitespace-nowrap">
+                                    </TableCell>
+                                    <TableCell className="text-sm text-[var(--color-charcoal)]/70 whitespace-nowrap">
                                         {format(new Date(booking.createdAt), "MMM d, yyyy")}
-                                    </td>
-                                    <td className="p-4 whitespace-nowrap text-right">
+                                    </TableCell>
+                                    <TableCell className="whitespace-nowrap text-right">
                                         <div className="flex items-center justify-end gap-2">
-                                            <button
+                                            <AdminActionButton
+                                                icon={Eye}
                                                 onClick={() => onSelectBooking(booking)}
-                                                className="p-1.5 text-[var(--color-aegean-blue)] hover:bg-[var(--color-aegean-blue)]/5 rounded-md transition-colors"
-                                                title="View Details"
-                                            >
-                                                <Eye className="h-4 w-4" />
-                                            </button>
+                                                tooltip="View Details"
+                                                variant="secondary"
+                                            />
 
-                                            {userRole === 'admin' && (
-                                                <button
+                                            {can('bookings.manage') && (
+                                                <AdminActionButton
+                                                    icon={Trash2}
+                                                    variant="destructive"
+                                                    tooltip="Delete Booking"
                                                     onClick={async () => {
                                                         if (confirm('Are you sure you want to delete this booking? This action cannot be undone.')) {
                                                             try {
@@ -192,34 +199,30 @@ export function BookingsDesktopTable({
                                                             }
                                                         }
                                                     }}
-                                                    className="p-1.5 text-gray-400 hover:text-red-600 hover:bg-red-50 rounded-md transition-colors"
-                                                    title="Delete Booking (Admin Only)"
-                                                >
-                                                    <Trash2 className="h-4 w-4" />
-                                                </button>
+                                                />
                                             )}
 
                                             {booking.status === 'confirmed' && (
-                                                <button
+                                                <AdminActionButton
+                                                    icon={XCircle}
+                                                    variant="destructive"
+                                                    tooltip="Cancel Booking"
+                                                    className="bg-red-50 text-red-500 hover:bg-red-100 hover:text-red-700 hover:border-red-200" // Custom style overriding standard destructive if needed, or just rely on variant
                                                     onClick={async () => {
                                                         if (confirm('Are you sure you want to cancel this booking? This action cannot be undone.')) {
                                                             await adminCancelBookingAction(booking.id);
                                                         }
                                                     }}
-                                                    className="p-1.5 text-red-400 hover:bg-red-50 hover:text-red-600 rounded-md transition-colors"
-                                                    title="Cancel Booking"
-                                                >
-                                                    <XCircle className="h-4 w-4" />
-                                                </button>
+                                                />
                                             )}
                                         </div>
-                                    </td>
-                                </tr>
+                                    </TableCell>
+                                </TableRow>
                             );
                         })
                     )}
-                </tbody>
-            </table>
+                </TableBody>
+            </Table>
         </div>
     );
 }

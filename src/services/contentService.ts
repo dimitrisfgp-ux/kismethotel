@@ -43,29 +43,49 @@ export const contentService = {
 
         // 1. Get existing IDs to identify deletions
         const { data: existing } = await supabase.from('conveniences').select('id');
-        const existingIds = (existing || []).map(r => r.id);
-        const incomingIds = locations.map(c => c.id).filter(Boolean);
+        const existingIds = (existing || []).map(r => r.id); // These are numbers from DB
+
+        // Normalize incoming IDs for comparison (handle both strings and numbers)
+        const incomingIds = locations.map(c => String(c.id)).filter(Boolean);
 
         // 2. Delete items that are no longer present
-        const toDelete = existingIds.filter(id => !incomingIds.includes(id));
+        // Convert existing ID to string for comparison, but keep original ID for deletion
+        const toDelete = existingIds.filter(id => !incomingIds.includes(String(id)));
+
         if (toDelete.length > 0) {
-            await supabase.from('conveniences').delete().in('id', toDelete);
+            const { error: deleteError } = await supabase.from('conveniences').delete().in('id', toDelete);
+            if (deleteError) {
+                console.error('Service: Convenience Delete Failed:', deleteError);
+                return false;
+            }
         }
 
         // 3. Upsert incoming items
         if (locations.length > 0) {
-            const { error } = await supabase.from('conveniences').upsert(
-                locations.map((c: Convenience) => ({
-                    id: c.id,
+            const upsertPayload = locations.map((c: Convenience) => {
+                // Determine if ID is a valid existing ID (numeric) or a temp ID (string/loc_...)
+                const idStr = String(c.id);
+                const isTempId = idStr.startsWith('loc_') || isNaN(Number(idStr));
+
+                // If it's a temp ID, we UNDEFINE it so Postgres generates a new serial ID.
+                // If it's a valid ID, we cast to number.
+                return {
+                    ...(isTempId ? {} : { id: Number(idStr) }),
                     name: c.name,
                     category_id: c.categoryId,
                     type: c.type,
                     lat: c.lat,
                     lng: c.lng,
                     distance_label: c.distanceLabel
-                }))
-            );
-            return !error;
+                };
+            });
+
+            const { error } = await supabase.from('conveniences').upsert(upsertPayload);
+
+            if (error) {
+                console.error('Service: Convenience Upsert Failed:', error);
+                return false;
+            }
         }
         return true;
     },
@@ -152,17 +172,15 @@ export const contentService = {
             return {
                 name: 'Kismet',
                 description: 'Boutique Accommodations',
-                websiteUrl: 'https://kismethotel.com',
                 holdDurationMinutes: 5,
                 contact: { address: '', phone: '', email: '' },
-                socials: { whatsapp: '', viber: '', instagram: '', facebook: '', googleReviews: '' }
+                socials: { whatsapp: '', viber: '', googleReviews: '' }
             };
         }
 
         return {
             name: data.name,
             description: data.description,
-            websiteUrl: data.website_url || 'https://kismethotel.com',
             holdDurationMinutes: data.hold_duration_minutes || 5,
             contact: data.contact as HotelSettings['contact'],
             socials: data.socials as HotelSettings['socials']
@@ -171,19 +189,25 @@ export const contentService = {
 
     updateSettings: async (settings: HotelSettings): Promise<boolean> => {
         const supabase = await createClient();
+        console.log('Service: Updating Settings...', settings);
+
         const { error } = await supabase
             .from('hotel_settings')
             .upsert({
                 id: 1,
                 name: settings.name,
                 description: settings.description,
-                website_url: settings.websiteUrl,
                 hold_duration_minutes: settings.holdDurationMinutes,
                 contact: settings.contact,
                 socials: settings.socials
             });
 
-        return !error;
+        if (error) {
+            console.error('Service: Settings Update Failed:', error);
+            return false;
+        }
+
+        return true;
     },
 
     getPageContent: async (): Promise<PageContent> => {
@@ -217,16 +241,34 @@ export const contentService = {
 
     updatePageContent: async (content: PageContent): Promise<boolean> => {
         const supabase = await createClient();
+        console.log('Service: Updating Page Content...');
+
+        const payload = {
+            id: 1,
+            hero: content.hero,
+            locations_section: content.locationsSection,
+            sections: content.sections
+        };
+
+        // Debug payload structure
+        // console.log('Payload:', JSON.stringify(payload, null, 2));
+
         const { error } = await supabase
             .from('page_content')
-            .upsert({
-                id: 1,
-                hero: content.hero,
-                locations_section: content.locationsSection,
-                sections: content.sections
-            });
+            .upsert(payload);
 
-        return !error;
+        if (error) {
+            console.error('Service: Page Content Update Failed:', {
+                message: error.message,
+                details: error.details,
+                hint: error.hint,
+                code: error.code
+            });
+            return false;
+        }
+
+        console.log('Service: Update Success');
+        return true;
     },
 
     updateFAQs: async (faqs: FAQ[]): Promise<boolean> => {

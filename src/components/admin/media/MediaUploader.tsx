@@ -7,6 +7,7 @@ import { Loader2, Upload, FileVideo, FileImage, X } from 'lucide-react';
 import Image from 'next/image';
 import { useToast } from '@/contexts/ToastContext';
 import { Input } from "@/components/ui/Input";
+import { usePermission } from '@/contexts/PermissionContext';
 
 // NOTE: We might not have react-dropzone installed. 
 // I will implement a custom drop zone to avoid dependency issues if possible, 
@@ -31,6 +32,7 @@ export function MediaUploader({
     },
     maxSizeMB = 50
 }: MediaUploaderProps) {
+    const { can } = usePermission();
     const [uploading, setUploading] = useState(false);
     const [progress, setProgress] = useState(0);
     const [dragActive, setDragActive] = useState(false);
@@ -38,16 +40,17 @@ export function MediaUploader({
     const { showToast } = useToast();
     const supabase = createClient();
 
+    if (!can('media.upload')) {
+        return (
+            <div className="w-full p-8 text-center border-2 border-dashed border-gray-200 rounded-xl bg-gray-50 text-gray-400">
+                <p>You do not have permission to upload media.</p>
+            </div>
+        );
+    }
+
     const uploadFile = async (file: File, subPath: string = '') => {
         if (!file) return;
 
-        // Validate Type
-        // const isImage = file.type.startsWith('image/');
-        // const isVideo = file.type.startsWith('video/');
-        // if (!isImage && !isVideo) {
-        //     showToast('Invalid file type', 'error');
-        //     return;
-        // }
 
         if (acceptedTypes) {
             const fileExt = '.' + file.name.split('.').pop()?.toLowerCase();
@@ -75,11 +78,17 @@ export function MediaUploader({
             const fullFolder = subPath ? `${cleanFolder}/${subPath.replace(/\/$/, '')}` : cleanFolder;
             const storagePath = `${fullFolder}/${fileName}`;
 
+
+
             const { data: uploadData, error: uploadError } = await supabase.storage
                 .from(bucket)
                 .upload(storagePath, file, { upsert: false });
 
-            if (uploadError) throw uploadError;
+            if (uploadError) {
+                console.error('❌ Storage Upload Failed:', uploadError);
+                throw createError('Storage Upload Failed', uploadError);
+            }
+
 
             // Get Public URL
             const { data: { publicUrl } } = supabase.storage.from(bucket).getPublicUrl(storagePath);
@@ -113,18 +122,28 @@ export function MediaUploader({
                 .select()
                 .single();
 
-            if (dbError) throw dbError;
+            if (dbError) {
+                console.error('❌ Database Insert Failed:', dbError);
+                throw createError('Database Insert Failed', dbError);
+            }
+
 
             showToast('Upload successful', 'success');
             if (onUploadComplete) onUploadComplete(mediaAsset);
 
         } catch (error: any) {
-            console.error(error);
+            console.error(error); // Keep simple error log
             showToast(error.message || 'Upload failed', 'error');
         } finally {
             setUploading(false);
             setProgress(0);
         }
+    };
+
+    const createError = (stage: string, originalError: any) => {
+        const err = new Error(`${stage}: ${originalError.message}`);
+        (err as any).original = originalError;
+        return err;
     };
 
     const getImageDimensions = (file: File): Promise<{ width: number; height: number }> => {

@@ -7,6 +7,7 @@ import { Badge } from "@/components/ui/Badge";
 import { Button } from "@/components/ui/Button";
 import { SUBJECT_LABELS, SUBJECT_COLORS } from "@/lib/constants/requestStyles";
 import { getStatusColor } from "@/lib/constants/statusStyles";
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface RequestDetailsModalProps {
     request: ContactRequest;
@@ -17,8 +18,10 @@ interface RequestDetailsModalProps {
 }
 
 export function RequestDetailsModal({ request, booking, onClose, onApprove, onDiscard }: RequestDetailsModalProps) {
+    const { can } = usePermission();
     const isPending = request.status === 'pending';
-    const canAction = isPending && request.subject !== 'general';
+    const canAction = isPending && request.subject !== 'general' && can('requests.manage');
+    const canHandleGeneral = isPending && request.subject === 'general' && can('requests.manage');
 
     return (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 animate-fade-in backdrop-blur-sm">
@@ -181,7 +184,7 @@ export function RequestDetailsModal({ request, booking, onClose, onApprove, onDi
                             </Button>
                         </>
                     )}
-                    {isPending && request.subject === 'general' && (
+                    {isPending && request.subject === 'general' && canHandleGeneral && (
                         <Button variant="ghost" onClick={onDiscard}>
                             Mark as Handled
                         </Button>

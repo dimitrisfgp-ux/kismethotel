@@ -19,6 +19,8 @@ interface BookingsMobileCardProps {
     onViewDetails: () => void;
 }
 
+import { usePermission } from "@/contexts/PermissionContext";
+
 export function BookingsMobileCard({
     booking,
     roomName,
@@ -29,6 +31,7 @@ export function BookingsMobileCard({
     onViewDetails
 }: BookingsMobileCardProps) {
     const { showToast } = useToast();
+    const { can } = usePermission();
 
     // Helper for status label
     const bookingStatusLabel = (status: string) => {
@@ -124,7 +127,7 @@ export function BookingsMobileCard({
             {/* Compact Actions */}
             <div className="flex gap-2 pt-2 border-t border-[var(--color-sand)]/30 mt-1">
                 {/* Secondary Actions (Icon Only) */}
-                {userRole === 'admin' && (
+                {can('bookings.manage') && (
                     <button
                         onClick={async (e) => {
                             e.stopPropagation();

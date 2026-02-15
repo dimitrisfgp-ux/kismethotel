@@ -8,6 +8,7 @@ import { useRoomForm } from "@/hooks/useRoomForm";
 import { RoomBasicInfo } from "./RoomBasicInfo";
 import { RoomLayoutEditor } from "./RoomLayoutEditor";
 import { RoomMediaManager } from "./RoomMediaManager";
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface RoomFormProps {
     initialRoom?: Room;
@@ -15,6 +16,7 @@ interface RoomFormProps {
 }
 
 export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
+    const { can } = usePermission();
     const {
         room, isLoading, errors, availableAmenities, availableFeatures,
         attachedMedia, isMediaPickerOpen, setIsMediaPickerOpen, pickingCategory,
@@ -40,10 +42,12 @@ export function RoomForm({ initialRoom, isNew = false }: RoomFormProps) {
                     </h2>
                     <p className="text-sm text-gray-500">{room.name || "New Room"}</p>
                 </div>
-                <Button type="button" onClick={handleSubmit} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
-                    <Save className="h-4 w-4" />
-                    Save Room
-                </Button>
+                {can('rooms.update') && (
+                    <Button type="button" onClick={handleSubmit} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
+                        <Save className="h-4 w-4" />
+                        Save Room
+                    </Button>
+                )}
             </div>
 
             {/* Tabs */}

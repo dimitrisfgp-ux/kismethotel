@@ -3,7 +3,7 @@ import { RoomFilters } from "@/types";
 
 
 // Map Constants
-export const HOTEL_LOCATION_ID = 999;
+export const HOTEL_LOCATION_ID = "999";
 export const HOTEL_COORDINATES: [number, number] = [35.3400, 25.1360];
 export const DEFAULT_HOTEL_COLOR = "var(--color-deep-med)";
 export const DEFAULT_CATEGORY_COLOR = "var(--color-charcoal)";
