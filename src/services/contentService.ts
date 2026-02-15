@@ -1,5 +1,70 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createPublicClient } from "@/lib/supabase/server";
 import { Amenity, Attraction, Convenience, FAQ, HotelSettings, PageContent, LocationCategory } from "@/types";
+import { unstable_cache } from "next/cache";
+
+// Cached Fetchers
+const getCachedSettings = unstable_cache(
+    async (): Promise<HotelSettings> => {
+        const supabase = createPublicClient();
+        const { data, error } = await supabase
+            .from('hotel_settings')
+            .select('*')
+            .eq('id', 1)
+            .single();
+
+        if (error || !data) {
+            return {
+                name: 'Kismet',
+                description: 'Boutique Accommodations',
+                holdDurationMinutes: 5,
+                contact: { address: '', phone: '', email: '' },
+                socials: { whatsapp: '', viber: '', googleReviews: '' }
+            };
+        }
+
+        return {
+            name: data.name,
+            description: data.description,
+            holdDurationMinutes: data.hold_duration_minutes || 5,
+            contact: data.contact as HotelSettings['contact'],
+            socials: data.socials as HotelSettings['socials']
+        };
+    },
+    ['settings'],
+    { tags: ['settings'] }
+);
+
+const getCachedPageContent = unstable_cache(
+    async (): Promise<PageContent> => {
+        const supabase = createPublicClient();
+        const { data, error } = await supabase
+            .from('page_content')
+            .select('*')
+            .eq('id', 1)
+            .single();
+
+        if (error || !data) {
+            return {
+                hero: { title: '', subtitle: '', ctaText: '' },
+                locationsSection: { title: '', subtitle: '' },
+                sections: {
+                    rooms: { title: '', subtitle: '' },
+                    location: { title: '', subtitle: '' },
+                    attractions: { title: '', subtitle: '' },
+                    faq: { title: '', subtitle: '' }
+                }
+            };
+        }
+
+        return {
+            hero: data.hero as PageContent['hero'],
+            locationsSection: data.locations_section as PageContent['locationsSection'],
+            sections: data.sections as PageContent['sections']
+        };
+    },
+    ['page_content'],
+    { tags: ['page_content'] }
+);
 
 export const contentService = {
     getAmenities: async (): Promise<Amenity[]> => {
@@ -28,9 +93,9 @@ export const contentService = {
         if (error) return [];
 
         return (data || []).map(c => ({
-            id: c.id,
+            id: String(c.id),
             name: c.name,
-            categoryId: c.category_id,
+            categoryId: String(c.category_id),
             type: c.type,
             lat: parseFloat(c.lat),
             lng: parseFloat(c.lng),
@@ -43,17 +108,18 @@ export const contentService = {
 
         // 1. Get existing IDs to identify deletions
         const { data: existing } = await supabase.from('conveniences').select('id');
-        const existingIds = (existing || []).map(r => r.id); // These are numbers from DB
+        const existingIds = (existing || []).map(r => String(r.id)); // Convert DB numbers to strings for comparison
 
         // Normalize incoming IDs for comparison (handle both strings and numbers)
         const incomingIds = locations.map(c => String(c.id)).filter(Boolean);
 
         // 2. Delete items that are no longer present
-        // Convert existing ID to string for comparison, but keep original ID for deletion
-        const toDelete = existingIds.filter(id => !incomingIds.includes(String(id)));
+        // existingIds and incomingIds are both strings now
+        const toDelete = existingIds.filter(id => !incomingIds.includes(id));
 
         if (toDelete.length > 0) {
-            const { error: deleteError } = await supabase.from('conveniences').delete().in('id', toDelete);
+            // Convert back to numbers for DB deletion
+            const { error: deleteError } = await supabase.from('conveniences').delete().in('id', toDelete.map(Number));
             if (deleteError) {
                 console.error('Service: Convenience Delete Failed:', deleteError);
                 return false;
@@ -62,29 +128,41 @@ export const contentService = {
 
         // 3. Upsert incoming items
         if (locations.length > 0) {
-            const upsertPayload = locations.map((c: Convenience) => {
-                // Determine if ID is a valid existing ID (numeric) or a temp ID (string/loc_...)
+            const upsertPayload = [];
+
+            for (const c of locations) {
                 const idStr = String(c.id);
+                // Check if it looks like a temp ID
                 const isTempId = idStr.startsWith('loc_') || isNaN(Number(idStr));
 
-                // If it's a temp ID, we UNDEFINE it so Postgres generates a new serial ID.
-                // If it's a valid ID, we cast to number.
-                return {
+                // Validate FK
+                const catId = Number(c.categoryId);
+                if (isNaN(catId)) {
+                    console.error("Service: Invalid Category ID for location:", c.name, c.categoryId);
+                    continue; // Skip invalid items instead of crashing the whole batch
+                }
+
+                const newItem = {
                     ...(isTempId ? {} : { id: Number(idStr) }),
                     name: c.name,
-                    category_id: c.categoryId,
-                    type: c.type,
+                    category_id: catId,
+                    type: c.type || 'Attraction', // Default if missing
                     lat: c.lat,
                     lng: c.lng,
                     distance_label: c.distanceLabel
                 };
-            });
+                upsertPayload.push(newItem);
+            }
 
-            const { error } = await supabase.from('conveniences').upsert(upsertPayload);
+            console.log('Service: Upserting conveniences payload:', JSON.stringify(upsertPayload, null, 2));
 
-            if (error) {
-                console.error('Service: Convenience Upsert Failed:', error);
-                return false;
+            if (upsertPayload.length > 0) {
+                const { error } = await supabase.from('conveniences').upsert(upsertPayload);
+
+                if (error) {
+                    console.error('Service: Convenience Upsert Failed (Full Error):', JSON.stringify(error, null, 2));
+                    return false;
+                }
             }
         }
         return true;
@@ -100,28 +178,65 @@ export const contentService = {
         if (error) return [];
 
         return (data || []).map(c => ({
-            id: c.id,
+            id: String(c.id),
             label: c.label,
             icon: c.icon,
             color: c.color
         }));
     },
 
-    updateCategories: async (categories: LocationCategory[]): Promise<boolean> => {
+    updateCategories: async (categories: LocationCategory[]): Promise<Record<string, string> | null> => {
         const supabase = await createClient();
+        const idMap: Record<string, string> = {};
+        const updates: any[] = [];
 
-        // Upsert categories
-        const { error } = await supabase.from('location_categories').upsert(
-            categories.map((c, i) => ({
-                id: c.id,
-                label: c.label,
-                icon: c.icon,
-                color: c.color,
-                sort_order: i
-            }))
-        );
+        // We must process in order to assign specific sort_order
+        for (let i = 0; i < categories.length; i++) {
+            const cat = categories[i];
+            // Temp IDs are purely client-side strings (e.g. "cat_123") vs Database IDs (Numbers)
+            const isTemp = String(cat.id).startsWith('cat_') || isNaN(Number(cat.id));
 
-        return !error;
+            if (isTemp) {
+                // Insert New
+                const { data, error } = await supabase
+                    .from('location_categories')
+                    .insert({
+                        label: cat.label,
+                        icon: cat.icon,
+                        color: cat.color,
+                        sort_order: i
+                    })
+                    .select('id')
+                    .single();
+
+                if (error || !data) {
+                    console.error("Failed to insert category:", cat.label, error);
+                    return null;
+                }
+
+                idMap[cat.id] = String(data.id);
+            } else {
+                // Collect for Batch Update
+                updates.push({
+                    id: Number(cat.id),
+                    label: cat.label,
+                    icon: cat.icon,
+                    color: cat.color,
+                    sort_order: i
+                });
+            }
+        }
+
+        // Batch execute updates
+        if (updates.length > 0) {
+            const { error } = await supabase.from('location_categories').upsert(updates);
+            if (error) {
+                console.error("Failed to update categories", error);
+                return null;
+            }
+        }
+
+        return idMap;
     },
 
     getAttractions: async (): Promise<Attraction[]> => {
@@ -160,31 +275,7 @@ export const contentService = {
     },
 
     getSettings: async (): Promise<HotelSettings> => {
-        const supabase = await createClient();
-        const { data, error } = await supabase
-            .from('hotel_settings')
-            .select('*')
-            .eq('id', 1)
-            .single();
-
-        if (error || !data) {
-            // Return default settings if not found
-            return {
-                name: 'Kismet',
-                description: 'Boutique Accommodations',
-                holdDurationMinutes: 5,
-                contact: { address: '', phone: '', email: '' },
-                socials: { whatsapp: '', viber: '', googleReviews: '' }
-            };
-        }
-
-        return {
-            name: data.name,
-            description: data.description,
-            holdDurationMinutes: data.hold_duration_minutes || 5,
-            contact: data.contact as HotelSettings['contact'],
-            socials: data.socials as HotelSettings['socials']
-        };
+        return getCachedSettings();
     },
 
     updateSettings: async (settings: HotelSettings): Promise<boolean> => {
@@ -211,32 +302,7 @@ export const contentService = {
     },
 
     getPageContent: async (): Promise<PageContent> => {
-        const supabase = await createClient();
-        const { data, error } = await supabase
-            .from('page_content')
-            .select('*')
-            .eq('id', 1)
-            .single();
-
-        if (error || !data) {
-            // Return default content if not found
-            return {
-                hero: { title: '', subtitle: '', ctaText: '' },
-                locationsSection: { title: '', subtitle: '' },
-                sections: {
-                    rooms: { title: '', subtitle: '' },
-                    location: { title: '', subtitle: '' },
-                    attractions: { title: '', subtitle: '' },
-                    faq: { title: '', subtitle: '' }
-                }
-            };
-        }
-
-        return {
-            hero: data.hero as PageContent['hero'],
-            locationsSection: data.locations_section as PageContent['locationsSection'],
-            sections: data.sections as PageContent['sections']
-        };
+        return getCachedPageContent();
     },
 
     updatePageContent: async (content: PageContent): Promise<boolean> => {
@@ -249,9 +315,6 @@ export const contentService = {
             locations_section: content.locationsSection,
             sections: content.sections
         };
-
-        // Debug payload structure
-        // console.log('Payload:', JSON.stringify(payload, null, 2));
 
         const { error } = await supabase
             .from('page_content')
@@ -279,18 +342,6 @@ export const contentService = {
         const existingIds = (existing || []).map(r => r.id);
         const incomingIds = faqs.map(f => f.id).filter(Boolean); // Assuming FAQs have IDs, if new they might be auto-generated by DB?
 
-        // Note: If FAQs don't have IDs on the client side (e.g. new ones), we can't track them for update vs insert easily without an ID.
-        // However, the `delete().not('id', 'is', null)` strategy implied we just wipe and rewrite.
-        // If we want to be safe, we should ensure FAQs have IDs or handle "new" ones.
-        // Assuming the current UI generates temp IDs or we just want to preserve stability.
-
-        // Actually, for FAQs specifically, often they are just a sorted list. 
-        // If we use the "Delete All" strategy, we lose data if insert fails.
-        // A safer strategy if IDs are unstable is to use a transaction, but we can't here easily.
-        // Let's stick to the same pattern: Delete Missing + Upsert.
-        // But wait, if new FAQs rely on serial auto-increment, we can't upsert them with "temp" IDs.
-        // The type definition says `id: number`.
-
         // Safe Strategy for ID-based entities:
         const toDelete = existingIds.filter(id => !incomingIds.includes(id));
 
@@ -301,9 +352,6 @@ export const contentService = {
         if (faqs.length > 0) {
             const { error } = await supabase.from('faqs').upsert(
                 faqs.map((f, i) => ({
-                    // If id is a valid number (existing), use it. If it's a temp/negative number or 0, maybe omit it? 
-                    // Supabase upsert needs the PK to match for update.
-                    // If the UI passes 0 for new items, we should OMIT id so Postgres generates it.
                     ...(f.id > 0 ? { id: f.id } : {}),
                     question: f.question,
                     answer: f.answer,

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { adminCreateBookingAction } from '@/app/actions/bookings';
+import { adminCreateBookingAction, getRoomAvailabilityAction } from "@/app/actions/bookings";
 import { RoomSummary } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
 import { X } from 'lucide-react';

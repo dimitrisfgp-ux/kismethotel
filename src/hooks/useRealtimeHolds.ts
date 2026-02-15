@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef, useMemo } from "react";
 import { createClient } from "@/lib/supabase/client";
 import { BookingHold } from "@/types";
-import { getRoomHoldsAction } from "@/app/actions/booking";
+import { createHoldAction, releaseHoldAction, extendHoldAction, getRoomHoldsAction, checkBookingStatusAction } from "@/app/actions/bookings";
 
 /** Shape of a booking_holds row as returned by Supabase realtime payloads */
 interface BookingHoldRow {

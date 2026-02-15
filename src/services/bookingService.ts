@@ -202,7 +202,7 @@ export const bookingService = {
                 guest_phone: booking.guestPhone,
                 guests_count: booking.guestsCount,
                 total_price: booking.totalPrice,
-                status: 'confirmed'
+                status: booking.status
             });
 
         return !error;

@@ -1,5 +1,6 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createPublicClient } from "@/lib/supabase/server";
 import { Room } from "@/types";
+import { unstable_cache } from "next/cache";
 
 import { transformRoom } from "@/lib/mappers/roomMapper";
 
@@ -20,9 +21,10 @@ const ROOM_SELECT_QUERY = `
     )
 `;
 
-export const roomService = {
-    getRooms: async (): Promise<Room[]> => {
-        const supabase = await createClient();
+// Cached Fetchers
+const getCachedRooms = unstable_cache(
+    async (): Promise<Room[]> => {
+        const supabase = createPublicClient();
         const { data, error } = await supabase
             .from('rooms')
             .select(ROOM_SELECT_QUERY)
@@ -35,24 +37,13 @@ export const roomService = {
 
         return (data || []).map(transformRoom);
     },
+    ['rooms-list'],
+    { tags: ['rooms'] }
+);
 
-    getRoomById: async (roomId: string): Promise<Room | undefined> => {
-        const supabase = await createClient();
-        const { data, error } = await supabase
-            .from('rooms')
-            .select(ROOM_SELECT_QUERY)
-            .eq('id', roomId)
-            .single();
-
-        if (error || !data) return undefined;
-        return transformRoom(data);
-    },
-
-    /**
-     * Lightweight query returning only basic room info (for admin lists, dropdowns, emails).
-     */
-    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number; maxOccupancy: number; sizeSqm: number; floor: number; checkInTime?: string; checkOutTime?: string; imageUrl?: string }[]> => {
-        const supabase = await createClient();
+const getCachedRoomsSummary = unstable_cache(
+    async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number; maxOccupancy: number; sizeSqm: number; floor: number; checkInTime?: string; checkOutTime?: string; imageUrl?: string }[]> => {
+        const supabase = createPublicClient();
         const { data, error } = await supabase
             .from('rooms')
             .select(`
@@ -85,6 +76,33 @@ export const roomService = {
                 imageUrl
             };
         });
+    },
+    ['rooms-summary'],
+    { tags: ['rooms'] }
+);
+
+export const roomService = {
+    getRooms: async (): Promise<Room[]> => {
+        return getCachedRooms();
+    },
+
+    getRoomById: async (roomId: string): Promise<Room | undefined> => {
+        const supabase = await createClient();
+        const { data, error } = await supabase
+            .from('rooms')
+            .select(ROOM_SELECT_QUERY)
+            .eq('id', roomId)
+            .single();
+
+        if (error || !data) return undefined;
+        return transformRoom(data);
+    },
+
+    /**
+     * Lightweight query returning only basic room info (for admin lists, dropdowns, emails).
+     */
+    getRoomsSummary: async (): Promise<{ id: string; name: string; slug: string; pricePerNight: number; maxOccupancy: number; sizeSqm: number; floor: number; checkInTime?: string; checkOutTime?: string; imageUrl?: string }[]> => {
+        return getCachedRoomsSummary();
     },
 
     getRoomBySlug: async (slug: string): Promise<Room | undefined> => {
@@ -206,11 +224,36 @@ export const roomService = {
 
         console.log("Room updated successfully. Rows modified:", count);
 
-        // Sync Media: Delete existing and re-insert
-        await supabase.from('room_media').delete().eq('room_id', room.id);
+        // Sync Media: Smart Diff (Non-Destructive)
+        // 1. Fetch existing media links to determine what to remove
+        const { data: existingMedia } = await supabase
+            .from('room_media')
+            .select('media_id')
+            .eq('room_id', room.id);
 
+        const existingIds = (existingMedia || []).map(m => m.media_id);
+        const incomingIds = (room.media || []).map(m => m.id);
+
+        // 2. Determine Removals: IDs in DB but NOT in new payload
+        const toRemove = existingIds.filter(id => !incomingIds.includes(id));
+
+        if (toRemove.length > 0) {
+            console.log(`RoomService: Removing ${toRemove.length} media links from room ${room.id}`);
+            const { error: deleteError } = await supabase
+                .from('room_media')
+                .delete()
+                .eq('room_id', room.id)
+                .in('media_id', toRemove);
+
+            if (deleteError) {
+                console.error("Error removing detached media:", deleteError);
+                // We typically continue here to try and save the new state anyway
+            }
+        }
+
+        // 3. Upsert New/Updated Media
         if (room.media?.length) {
-            const mediaInserts = room.media.map((m, index) => ({
+            const mediaUpserts = room.media.map((m, index) => ({
                 room_id: room.id,
                 media_id: m.id,
                 display_order: index,
@@ -220,9 +263,12 @@ export const roomService = {
 
             const { error: mediaError } = await supabase
                 .from('room_media')
-                .insert(mediaInserts);
+                .upsert(mediaUpserts, { onConflict: 'room_id, media_id' }); // Ensure we update if exists
 
-            if (mediaError) console.error("Error linking media:", mediaError);
+            if (mediaError) {
+                console.error("Error upserting media links:", mediaError);
+                return false;
+            }
         }
 
         return true;

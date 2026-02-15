@@ -12,7 +12,7 @@ import { StepItinerary } from "./steps/StepItinerary";
 import { StepGuestDetails, GuestData } from "./steps/StepGuestDetails";
 import { BookingSummary } from "./BookingSummary";
 import { ContentionTimer } from "./ContentionTimer";
-import { createBookingAction, createHoldAction, extendHoldAction } from "@/app/actions/booking";
+import { createBookingAction, createHoldAction, extendHoldAction } from "@/app/actions/bookings";
 import { useToast } from "@/contexts/ToastContext";
 import { formatLocalDate } from "@/lib/dateUtils";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";

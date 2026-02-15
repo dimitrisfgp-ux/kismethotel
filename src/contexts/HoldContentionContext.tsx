@@ -2,7 +2,7 @@
 
 import { createContext, useContext, useState, useCallback, ReactNode } from 'react';
 import { BookingHold } from '@/types';
-import { clearContentionAction, checkBookingStatusAction, pingHoldAction } from '@/app/actions/booking';
+import { clearContentionAction, checkBookingStatusAction, pingHoldAction } from '@/app/actions/bookings';
 
 type UserBChoice = 'idle' | 'watching' | 'dismissed';
 type OutcomeStatus = 'available' | 'booked' | null;

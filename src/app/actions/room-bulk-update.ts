@@ -1,6 +1,6 @@
 "use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, revalidateTag } from "next/cache";
 import { roomService } from "@/services/roomService";
 import { Room } from "@/types";
 import { requirePermission } from "@/lib/auth/guards";
@@ -20,7 +20,8 @@ export async function bulkUpdateRoomsAction(roomIds: string[], updates: Partial<
         const success = await roomService.bulkUpdateRooms(roomIds, updates);
 
         if (success) {
-            revalidatePath("/admin/rooms");
+            revalidatePath("/admin/rooms", "page");
+            revalidateTag("rooms", "default");
             return { success: true, message: `Successfully updated ${roomIds.length} rooms` };
         } else {
             return { success: false, message: "Failed to update rooms" };

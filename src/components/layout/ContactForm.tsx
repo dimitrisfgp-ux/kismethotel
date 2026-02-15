@@ -8,7 +8,7 @@ import { Button } from "../ui/Button";
 import { Input } from "../ui/Input";
 import { Calendar } from "../ui/Calendar";
 import { Search, Loader2, Check, Calendar as CalendarIcon } from "lucide-react";
-import { getBookingByIdAction, getRoomAvailabilityAction } from "@/app/actions/booking";
+import { getBookingByIdAction, getRoomAvailabilityAction } from "@/app/actions/bookings";
 import { submitContactRequestAction } from "@/app/actions/request";
 import { TIMEZONE_DISCLAIMER } from "@/lib/constants";
 import { formatLocalDate } from "@/lib/dateUtils";

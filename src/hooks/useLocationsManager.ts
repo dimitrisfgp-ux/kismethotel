@@ -104,21 +104,54 @@ export function useLocationsManager({ initialLocations, initialCategories, initi
                 await Promise.all(deletedCategoryIds.map(id => deleteCategoryAction(id)));
             }
 
-            const results = await Promise.all([
-                updateCategoriesAction(categories),
-                updateLocationsAction(locations),
-                updatePageContentAction(updatedContent)
-            ]);
+            // 1. Save Categories First (Sequential)
+            // This returns a mapping of TempID -> RealID for any newly created categories
+            const idMap = await updateCategoriesAction(categories);
 
-            if (results.every(r => r)) {
-                showToast("All changes saved successfully", "success");
-                setPersistedIds(new Set(categories.map(c => c.id)));
-                setDeletedCategoryIds([]);
-                setEditingCategoryId(null);
-                setEditingLocationId(null);
-            } else {
-                showToast("Saved with some errors", "error");
+            if (!idMap) {
+                throw new Error("Failed to save categories");
             }
+
+            // 2. Update Locations with new Category IDs
+            // If a location was assigned to a temp category "cat_123", and that category became ID "5",
+            // we must update the location's categoryId to "5" before saving.
+            const updatedLocations = locations.map(l => ({
+                ...l,
+                categoryId: idMap[l.categoryId] || l.categoryId
+            }));
+
+            // 3. Save Locations (using valid FKs)
+            const locationsSuccess = await updateLocationsAction(updatedLocations);
+            if (!locationsSuccess) {
+                throw new Error("Failed to save locations");
+            }
+
+            // 4. Save Page Content
+            const contentSuccess = await updatePageContentAction(updatedContent);
+            if (!contentSuccess) {
+                throw new Error("Failed to save content");
+            }
+
+            // 5. Update Local State with new Real IDs
+            // We need to update the UI so subsequent saves don't try to create them again
+            setCategories(prev => prev.map(c => idMap[c.id] ? { ...c, id: idMap[c.id] } : c));
+            setLocations(updatedLocations);
+
+            showToast("All changes saved successfully", "success");
+
+            // Re-calculate persisted IDs based on result
+            // (We need the NEW ids for the set)
+            const newCategoryIds = categories.map(c => idMap[c.id] || c.id);
+            setPersistedIds(new Set(newCategoryIds));
+
+            setDeletedCategoryIds([]);
+            setEditingCategoryId(null);
+            setEditingLocationId(null);
+
+            // We return early here as we handled success/error flow manually
+            return;
+
+
         } catch (_error) {
             showToast("An error occurred while saving", "error");
         } finally {

@@ -7,7 +7,7 @@ import { useDateContext } from "@/contexts/DateContext";
 import { Calendar } from "../ui/Calendar";
 import { Button } from "../ui/Button";
 import { formatCurrency, calculateTotal } from "@/lib/priceCalculator";
-import { differenceInDays, addDays } from "date-fns";
+import { differenceInDays, addDays, format } from "date-fns";
 import { useRouter } from "next/navigation";
 import { TIMEZONE_DISCLAIMER, DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from "@/lib/constants";
 import { useRealtimeHolds } from "@/hooks/useRealtimeHolds";
@@ -87,7 +87,22 @@ export function BookingCard({ room, blockedDates = [], bookings = [] }: BookingC
         }
 
         // Navigate to booking flow
-        router.push(`/book?roomId=${room.id}`);
+        // Navigate to booking flow with dates
+        const params = new URLSearchParams();
+        params.set('roomId', room.id);
+
+        if (dateRange.from) {
+            params.set('checkIn', format(dateRange.from, 'yyyy-MM-dd'));
+        }
+
+        if (dateRange.to) {
+            params.set('checkOut', format(dateRange.to, 'yyyy-MM-dd'));
+        } else if (dateRange.from) {
+            // Default to 1 night if no checkout selected
+            params.set('checkOut', format(addDays(dateRange.from, 1), 'yyyy-MM-dd'));
+        }
+
+        router.push(`/book?${params.toString()}`);
     };
 
     // Modifiers Calculation

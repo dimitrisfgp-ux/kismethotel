@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Room, BlockedDate } from "@/types";
-import { addBlockedDateAction, removeBlockedDateAction } from "@/app/actions/booking";
+import { addBlockedDateAction, removeBlockedDateAction, getRoomAvailabilityAction } from "@/app/actions/bookings";
 import { useToast } from "@/contexts/ToastContext";
 import { Button } from "@/components/ui/Button";
 import { Plus } from "lucide-react";

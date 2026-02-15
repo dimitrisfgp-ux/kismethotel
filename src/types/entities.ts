@@ -3,7 +3,7 @@
 export type BedType = 'single' | 'double';
 // SectionType is now just a string alias for clarity, but allows any value for CMS flexibility
 export type SectionType = string;
-export type BookingStatus = 'held' | 'pending' | 'confirmed' | 'active' | 'completed' | 'cancelled' | 'expired';
+export type BookingStatus = 'held' | 'pending' | 'awaiting_payment' | 'payment_failed' | 'confirmed' | 'active' | 'completed' | 'cancelled' | 'expired' | 'refunding';
 export type BlockReason = 'Maintenance' | 'Renovations' | 'Out of Season' | 'Other';
 export type RoomSizeCategory = 'small' | 'medium' | 'large';
 export type RequestSubject = 'general' | 'reschedule' | 'cancellation';

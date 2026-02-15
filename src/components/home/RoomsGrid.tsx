@@ -13,7 +13,7 @@ import { useRoomFilters } from "@/hooks/useRoomFilters";
 import { scrollToElement } from "@/lib/utils";
 import { useIntersectionObserver } from "@/hooks/useIntersectionObserver";
 import { useDateContext } from "@/contexts/DateContext";
-import { getAvailabilityAction } from "@/app/actions/booking";
+import { getAvailabilityAction } from "@/app/actions/bookings";
 
 // Dynamic import for FilterPanel - only loads when filter drawer is opened
 const FilterPanel = dynamic(() => import("./FilterPanel").then(m => m.FilterPanel), {
