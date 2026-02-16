@@ -6,7 +6,7 @@ import {
     TooltipContent,
     TooltipProvider,
     TooltipTrigger,
-} from "@/components/ui/Tooltip";
+} from "@/components/ui/UiTooltip";
 
 interface AdminActionButtonProps {
     onClick: (e: React.MouseEvent) => void;
