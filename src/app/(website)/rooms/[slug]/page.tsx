@@ -11,7 +11,16 @@ interface RoomPageProps {
     params: Promise<{ slug: string }>;
 }
 
-export const dynamic = 'force-dynamic';
+// Generate static params for all existing rooms at build time
+export async function generateStaticParams() {
+    const rooms = await roomService.getRooms();
+    return rooms.map((room) => ({
+        slug: room.slug,
+    }));
+}
+
+export const dynamicParams = true; // Allow new rooms (not in build) to be generated on demand
+// export const dynamic = 'force-dynamic'; // Removed to enable caching
 
 import { DateProvider } from "@/contexts/DateContext";
 

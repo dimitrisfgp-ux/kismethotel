@@ -81,6 +81,22 @@ const getCachedRoomsSummary = unstable_cache(
     { tags: ['rooms'] }
 );
 
+const getCachedRoomBySlug = unstable_cache(
+    async (slug: string): Promise<Room | undefined> => {
+        const supabase = createPublicClient();
+        const { data, error } = await supabase
+            .from('rooms')
+            .select(ROOM_SELECT_QUERY)
+            .eq('slug', slug)
+            .single();
+
+        if (error || !data) return undefined;
+        return transformRoom(data);
+    },
+    ['room-by-slug'],
+    { tags: ['rooms'] }
+);
+
 export const roomService = {
     getRooms: async (): Promise<Room[]> => {
         return getCachedRooms();
@@ -106,15 +122,8 @@ export const roomService = {
     },
 
     getRoomBySlug: async (slug: string): Promise<Room | undefined> => {
-        const supabase = await createClient();
-        const { data, error } = await supabase
-            .from('rooms')
-            .select(ROOM_SELECT_QUERY)
-            .eq('slug', slug)
-            .single();
-
-        if (error || !data) return undefined;
-        return transformRoom(data);
+        // Use cached version for high-traffic public pages
+        return getCachedRoomBySlug(slug);
     },
 
     getFeaturedRooms: async (): Promise<Room[]> => {
