@@ -3,8 +3,9 @@
 import { useState } from 'react';
 import { MediaGallery } from './MediaGallery';
 import { MediaUploader } from './MediaUploader';
-import { X, Image as ImageIcon, Upload } from 'lucide-react';
+import { Image as ImageIcon, Upload } from 'lucide-react';
 import { MediaAsset } from '@/types';
+import { Modal, ModalHeader, ModalBody } from '@/components/ui/Modal';
 
 interface MediaPickerModalProps {
     isOpen: boolean;
@@ -20,47 +21,39 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, acceptedTypes, fil
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div
-                className="bg-white rounded-xl w-full max-w-4xl max-h-[90vh] flex flex-col shadow-2xl overflow-hidden animate-in zoom-in-95 duration-200"
-                onClick={e => e.stopPropagation()}
-            >
-                {/* Header */}
-                <div className="flex justify-between items-center p-4 border-b border-gray-100 bg-gray-50/50">
-                    <h3 className="text-lg font-bold font-montserrat text-[var(--color-aegean-blue)]">
-                        Select Media
-                    </h3>
-                    <button type="button" onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500">
-                        <X className="w-5 h-5" />
-                    </button>
-                </div>
+        <Modal isOpen={isOpen} onClose={onClose} className="max-w-4xl max-h-[90vh]">
+            <ModalHeader onClose={onClose} className="bg-gray-50/50">
+                <h3 className="text-lg font-bold font-montserrat text-[var(--color-aegean-blue)]">
+                    Select Media
+                </h3>
+            </ModalHeader>
 
-                {/* Tabs */}
-                <div className="flex border-b border-gray-200">
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('library')}
-                        className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'library'
-                            ? 'bg-white text-[var(--color-aegean-blue)] border-b-2 border-[var(--color-aegean-blue)]'
-                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                            }`}
-                    >
-                        <ImageIcon className="w-4 h-4" /> Media Library
-                    </button>
-                    <button
-                        type="button"
-                        onClick={() => setActiveTab('upload')}
-                        className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'upload'
-                            ? 'bg-white text-[var(--color-aegean-blue)] border-b-2 border-[var(--color-aegean-blue)]'
-                            : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
-                            }`}
-                    >
-                        <Upload className="w-4 h-4" /> Upload New
-                    </button>
-                </div>
+            {/* Tabs - Placed between Header and Body */}
+            <div className="flex border-b border-gray-200">
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('library')}
+                    className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'library'
+                        ? 'bg-white text-[var(--color-aegean-blue)] border-b-2 border-[var(--color-aegean-blue)]'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                        }`}
+                >
+                    <ImageIcon className="w-4 h-4" /> Media Library
+                </button>
+                <button
+                    type="button"
+                    onClick={() => setActiveTab('upload')}
+                    className={`flex-1 py-3 text-sm font-medium flex items-center justify-center gap-2 transition-colors ${activeTab === 'upload'
+                        ? 'bg-white text-[var(--color-aegean-blue)] border-b-2 border-[var(--color-aegean-blue)]'
+                        : 'bg-gray-50 text-gray-600 hover:bg-gray-100'
+                        }`}
+                >
+                    <Upload className="w-4 h-4" /> Upload New
+                </button>
+            </div>
 
-                {/* Content */}
-                <div className="flex-1 overflow-y-auto p-6 bg-white min-h-[400px]">
+            <ModalBody className="p-0 flex-1 overflow-hidden flex flex-col min-h-[400px]">
+                <div className="flex-1 overflow-y-auto p-6 bg-white">
                     {activeTab === 'library' ? (
                         <MediaGallery
                             selectable={true}
@@ -88,7 +81,7 @@ export function MediaPickerModal({ isOpen, onClose, onSelect, acceptedTypes, fil
                         </div>
                     )}
                 </div>
-            </div>
-        </div>
+            </ModalBody>
+        </Modal>
     );
 }

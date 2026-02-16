@@ -184,7 +184,7 @@ export function BookingsDesktopTable({
                                                 variant="secondary"
                                             />
 
-                                            {can('bookings.manage') && (
+                                            {can('bookings.delete') && (
                                                 <AdminActionButton
                                                     icon={Trash2}
                                                     variant="destructive"
@@ -202,7 +202,7 @@ export function BookingsDesktopTable({
                                                 />
                                             )}
 
-                                            {booking.status === 'confirmed' && (
+                                            {booking.status === 'confirmed' && can('bookings.cancel') && (
                                                 <AdminActionButton
                                                     icon={XCircle}
                                                     variant="destructive"

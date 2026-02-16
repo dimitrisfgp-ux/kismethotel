@@ -15,7 +15,10 @@ interface LocationsManagerProps {
     initialPageContent: PageContent;
 }
 
+import { usePermission } from "@/contexts/PermissionContext";
+
 export function LocationsManager({ initialLocations, initialCategories, initialPageContent }: LocationsManagerProps) {
+    const { can } = usePermission();
     const {
         locations,
         categories,
@@ -54,10 +57,12 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
                         <p className="text-sm text-[var(--color-charcoal)]/60">Manage map groups and pins.</p>
                     </div>
                 </div>
-                <Button onClick={saveChanges} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
-                    <Save className="h-4 w-4" />
-                    Save Changes
-                </Button>
+                {can('content.locations') && (
+                    <Button onClick={saveChanges} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
+                        <Save className="h-4 w-4" />
+                        Save Changes
+                    </Button>
+                )}
             </div>
 
             {/* Section Title Settings */}
@@ -70,11 +75,13 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
                         label="Section Title"
                         value={sectionTitle}
                         onChange={(e) => setSectionTitle(e.target.value)}
+                        disabled={!can('content.locations')}
                     />
                     <Input
                         label="Subtitle"
                         value={sectionSubtitle}
                         onChange={(e) => setSectionSubtitle(e.target.value)}
+                        disabled={!can('content.locations')}
                     />
                 </div>
             </div>
@@ -97,15 +104,19 @@ export function LocationsManager({ initialLocations, initialCategories, initialP
                 ))}
             </div>
 
-            <Button
-                variant="outline"
-                onClick={addCategory}
-                className="w-full py-4 border-2 border-dashed text-[var(--color-charcoal)]/60 font-medium"
-            >
-                <Plus className="h-4 w-4 mr-2" />
-                Add New Category Group
-            </Button>
+            {
+                can('content.locations') && (
+                    <Button
+                        variant="outline"
+                        onClick={addCategory}
+                        className="w-full py-4 border-2 border-dashed text-[var(--color-charcoal)]/60 font-medium"
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add New Category Group
+                    </Button>
+                )
+            }
 
-        </div>
+        </div >
     );
 }

@@ -17,11 +17,13 @@ interface FAQManagerProps {
 
 const FAQ_CATEGORIES = ["General", "Booking", "Services", "Dining", "Policies", "Location"];
 
+import { usePermission } from "@/contexts/PermissionContext";
 export function FAQManager({ initialFAQs }: FAQManagerProps) {
     const [faqs, setFaqs] = useState<FAQ[]>(initialFAQs);
     const [isLoading, setIsLoading] = useState(false);
     const [expandedIds, setExpandedIds] = useState<number[]>([]);
     const { showToast } = useToast();
+    const { can } = usePermission();
 
     // Toggle accordion
     const toggleExpand = (id: number) => {
@@ -82,10 +84,12 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                         <p className="text-sm text-[var(--color-charcoal)]/60">Manage the Q&A displayed on the home page.</p>
                     </div>
                 </div>
-                <Button onClick={handleSave} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
-                    <Save className="h-4 w-4" />
-                    Save FAQs
-                </Button>
+                {can('content.faqs') && (
+                    <Button onClick={handleSave} isLoading={isLoading} className="gap-2 w-full md:w-auto justify-center">
+                        <Save className="h-4 w-4" />
+                        Save FAQs
+                    </Button>
+                )}
             </div>
 
             <div className="space-y-4">
@@ -113,14 +117,16 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                                     </span>
                                 </div>
                                 <div className="flex items-center gap-2 ml-auto md:ml-4">
-                                    <button
-                                        type="button"
-                                        onClick={(e) => { e.stopPropagation(); deleteFAQ(faq.id); }}
-                                        className="p-2 text-[var(--color-charcoal)]/40 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                                        title="Delete FAQ"
-                                    >
-                                        <Trash2 className="h-4 w-4" />
-                                    </button>
+                                    {can('content.faqs') && (
+                                        <button
+                                            type="button"
+                                            onClick={(e) => { e.stopPropagation(); deleteFAQ(faq.id); }}
+                                            className="p-2 text-[var(--color-charcoal)]/40 hover:text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                                            title="Delete FAQ"
+                                        >
+                                            <Trash2 className="h-4 w-4" />
+                                        </button>
+                                    )}
                                     {expandedIds.includes(faq.id) ? (
                                         <ChevronUp className="h-4 w-4 text-[var(--color-charcoal)]/40" />
                                     ) : (
@@ -139,6 +145,7 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                                                 value={faq.question}
                                                 onChange={(e) => updateFAQ(faq.id, 'question', e.target.value)}
                                                 placeholder="e.g. What is the check-in time?"
+                                                disabled={!can('content.faqs')}
                                             />
                                         </div>
                                         <div>
@@ -147,6 +154,7 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                                                 value={faq.category}
                                                 onChange={(e) => updateFAQ(faq.id, 'category', e.target.value)}
                                                 options={FAQ_CATEGORIES.map(c => ({ value: c, label: c }))}
+                                                disabled={!can('content.faqs')}
                                             />
                                         </div>
                                     </div>
@@ -156,6 +164,7 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                                         onChange={(e) => updateFAQ(faq.id, 'answer', e.target.value)}
                                         rows={3}
                                         placeholder="Provides a helpful answer..."
+                                        disabled={!can('content.faqs')}
                                     />
                                 </div>
                             )}
@@ -164,14 +173,18 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                 )}
             </div>
 
-            <Button
-                variant="outline"
-                onClick={addFAQ}
-                className="w-full py-4 border-dashed border-2 hover:border-[var(--color-aegean-blue)] hover:text-[var(--color-aegean-blue)] transition-colors"
-            >
-                <Plus className="h-4 w-4 mr-2" />
-                Add Question
-            </Button>
-        </div>
+            {
+                can('content.faqs') && (
+                    <Button
+                        variant="outline"
+                        onClick={addFAQ}
+                        className="w-full py-4 border-dashed border-2 hover:border-[var(--color-aegean-blue)] hover:text-[var(--color-aegean-blue)] transition-colors"
+                    >
+                        <Plus className="h-4 w-4 mr-2" />
+                        Add Question
+                    </Button>
+                )
+            }
+        </div >
     );
 }

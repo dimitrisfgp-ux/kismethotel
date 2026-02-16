@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils";
 import { iconMap } from "@/components/ui/icons/iconMap";
 import { useState } from "react";
 import { LocationItem } from "./LocationItem";
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface CategoryRowProps {
     category: LocationCategory;
@@ -31,6 +32,7 @@ export function CategoryRow({
     onUpdateLocation,
     onDeleteLocation
 }: CategoryRowProps) {
+    const { can } = usePermission();
     const [isEditing, setIsEditing] = useState(false);
     const CategoryIcon = iconMap[category.icon] || MapPin;
 
@@ -74,27 +76,31 @@ export function CategoryRow({
                             </div>
                             <span className="font-bold font-montserrat text-[var(--color-charcoal)] truncate text-sm md:text-base">{category.label || "Unnamed Category"}</span>
                             <span className="text-xs text-[var(--color-charcoal)]/40 ml-1 md:ml-2 shrink-0">({locations.length}<span className="hidden md:inline"> locations</span>)</span>
-                            <Button
-                                size="sm"
-                                variant="ghost"
-                                className="ml-auto p-2 h-8 w-8 rounded-full text-[var(--color-charcoal)]/60 hover:text-[var(--color-aegean-blue)] hover:bg-[var(--color-aegean-blue)]/10"
-                                onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
-                                title="Edit Group"
-                            >
-                                <Pencil className="h-4 w-4" />
-                            </Button>
+                            {can('content.locations') && (
+                                <Button
+                                    size="sm"
+                                    variant="ghost"
+                                    className="ml-auto p-2 h-8 w-8 rounded-full text-[var(--color-charcoal)]/60 hover:text-[var(--color-aegean-blue)] hover:bg-[var(--color-aegean-blue)]/10"
+                                    onClick={(e) => { e.stopPropagation(); setIsEditing(true); }}
+                                    title="Edit Group"
+                                >
+                                    <Pencil className="h-4 w-4" />
+                                </Button>
+                            )}
                         </>
                     )}
                 </div>
 
                 <div className="flex items-center gap-2">
-                    <button
-                        onClick={(e) => { e.stopPropagation(); onDelete(category.id); }}
-                        className="p-2 text-[var(--color-charcoal)]/40 hover:text-red-500 rounded-full"
-                        title="Delete Category"
-                    >
-                        <Trash2 className="h-4 w-4" />
-                    </button>
+                    {can('content.locations') && (
+                        <button
+                            onClick={(e) => { e.stopPropagation(); onDelete(category.id); }}
+                            className="p-2 text-[var(--color-charcoal)]/40 hover:text-red-500 rounded-full"
+                            title="Delete Category"
+                        >
+                            <Trash2 className="h-4 w-4" />
+                        </button>
+                    )}
                     {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
                 </div>
             </div>
@@ -117,15 +123,17 @@ export function CategoryRow({
                         </div>
                     ))}
 
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={() => onAddLocation(category.id)}
-                        className="w-full border border-dashed border-[var(--color-sand)] text-[var(--color-charcoal)]/60 hover:text-[var(--color-aegean-blue)] hover:border-[var(--color-aegean-blue)]"
-                    >
-                        <Plus className="h-3 w-3 mr-2" />
-                        Add Location to {category.label}
-                    </Button>
+                    {can('content.locations') && (
+                        <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => onAddLocation(category.id)}
+                            className="w-full border border-dashed border-[var(--color-sand)] text-[var(--color-charcoal)]/60 hover:text-[var(--color-aegean-blue)] hover:border-[var(--color-aegean-blue)]"
+                        >
+                            <Plus className="h-3 w-3 mr-2" />
+                            Add Location to {category.label}
+                        </Button>
+                    )}
                 </div>
             )}
         </div>

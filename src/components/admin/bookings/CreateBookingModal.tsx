@@ -2,8 +2,8 @@ import { useState } from 'react';
 import { adminCreateBookingAction, getRoomAvailabilityAction } from "@/app/actions/bookings";
 import { RoomSummary } from '@/types';
 import { useToast } from '@/contexts/ToastContext';
-import { X } from 'lucide-react';
 import { usePermission } from '@/contexts/PermissionContext';
+import { Modal, ModalHeader, ModalBody } from '@/components/ui/Modal';
 import { useBookingForm } from '@/hooks/useBookingForm';
 import { BookingForm } from './BookingForm';
 
@@ -45,35 +45,27 @@ export function CreateBookingModal({ isOpen, onClose, rooms, currentUserRole }: 
     };
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl overflow-hidden flex flex-col max-h-[90vh]">
-
-                {/* Header */}
-                <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-                    <div>
-                        <h2 className="text-xl font-bold font-montserrat text-[var(--color-aegean-blue)]">New Reservation</h2>
-                        <p className="text-xs text-gray-500">Manually create a booking for phone/walk-in guests.</p>
-                    </div>
-                    <button onClick={onClose} className="p-2 hover:bg-gray-200 rounded-full transition-colors">
-                        <X className="w-5 h-5 text-gray-500" />
-                    </button>
+        <Modal isOpen={true} onClose={onClose} className="max-w-2xl">
+            <ModalHeader onClose={onClose} className="bg-gray-50/50">
+                <div>
+                    <h2 className="text-xl font-bold font-montserrat text-[var(--color-aegean-blue)]">New Reservation</h2>
+                    <p className="text-xs text-gray-500">Manually create a booking for phone/walk-in guests.</p>
                 </div>
+            </ModalHeader>
 
-                {/* Body */}
-                <div className="overflow-y-auto p-6">
-                    <BookingForm
-                        formData={formData}
-                        rooms={rooms}
-                        currentUserRole={currentUserRole}
-                        startLoading={isLoading}
-                        onChange={updateField}
-                        onRoomChange={handleRoomChange}
-                        onCalculatePrice={calculatePrice}
-                        onSubmit={handleSubmit}
-                        onCancel={onClose}
-                    />
-                </div>
-            </div>
-        </div>
+            <ModalBody>
+                <BookingForm
+                    formData={formData}
+                    rooms={rooms}
+                    currentUserRole={currentUserRole}
+                    startLoading={isLoading}
+                    onChange={updateField}
+                    onRoomChange={handleRoomChange}
+                    onCalculatePrice={calculatePrice}
+                    onSubmit={handleSubmit}
+                    onCancel={onClose}
+                />
+            </ModalBody>
+        </Modal>
     );
 }

@@ -1,18 +1,27 @@
 'use server';
 
-import { createClient } from "@/lib/supabase/server"; // Use valid implementation
+import { createClient } from "@/lib/supabase/server";
 import { revalidatePath } from "next/cache";
 import { requirePermission } from "@/lib/auth/guards";
 import { Role, Permission } from "@/types";
+import { DbRole, DbPermission, DbRolePermission } from "@/types/db";
+
+// Helper to map DB Role (snake_case) to App Role (camelCase)
+function mapRole(role: DbRole, permissions: Permission[] = []): Role {
+    return {
+        id: role.id,
+        name: role.name,
+        description: role.description || undefined,
+        isSystem: role.is_system,
+        createdAt: role.created_at,
+        permissions: permissions.length > 0 ? permissions : undefined
+    };
+}
 
 /**
- * Fetch all roles (with simplified logic)
+ * Fetch all roles
  */
-export async function getRolesAction() {
-    // We allow 'users.manage' OR 'roles.manage' to see roles
-    // But let's simplify: Any staff member who can manage users needs to see roles.
-    // Let's use a lower permission if needed, but for now 'users.view' might be enough?
-    // Actually, 'roles.view' is the specific permission.
+export async function getRolesAction(): Promise<Role[]> {
     await requirePermission('roles.view');
 
     const supabase = await createClient();
@@ -23,20 +32,14 @@ export async function getRolesAction() {
 
     if (error) throw new Error(error.message);
 
-    // Map snake_case to camelCase
-    return roles.map((r: { id: string; name: string; description: string | null; is_system: boolean; created_at: string }) => ({
-        id: r.id,
-        name: r.name,
-        description: r.description,
-        isSystem: r.is_system,
-        createdAt: r.created_at
-    })) as Role[];
+    // Safe casting to known DB type, then mapping
+    return (roles as unknown as DbRole[]).map(r => mapRole(r));
 }
 
 /**
- * Fetch all available permissions (for the Role Editor)
+ * Fetch all available permissions
  */
-export async function getPermissionsAction() {
+export async function getPermissionsAction(): Promise<Permission[]> {
     await requirePermission('roles.manage');
 
     const supabase = await createClient();
@@ -53,19 +56,20 @@ export async function getPermissionsAction() {
 /**
  * Get a single role with its permissions
  */
-export async function getRoleDetailsAction(roleId: string) {
+export async function getRoleDetailsAction(roleId: string): Promise<Role> {
     await requirePermission('roles.view');
 
     const supabase = await createClient();
 
     // 1. Get Role
-    const { data: role, error: roleError } = await supabase
+    const { data: roleData, error: roleError } = await supabase
         .from('roles')
         .select('*')
         .eq('id', roleId)
         .single();
 
     if (roleError) throw new Error(roleError.message);
+    const role = roleData as unknown as DbRole;
 
     // 2. Get Permissions for this role
     const { data: rolePerms, error: permError } = await supabase
@@ -75,13 +79,10 @@ export async function getRoleDetailsAction(roleId: string) {
 
     if (permError) throw new Error(permError.message);
 
-    const permissions = rolePerms.map((rp: { permissions: Permission }) => rp.permissions);
+    // Map nested permissions
+    const permissions = rolePerms.map((rp: any) => rp.permissions as Permission);
 
-    return {
-        ...role,
-        isSystem: role.is_system,
-        permissions
-    } as Role;
+    return mapRole(role, permissions);
 }
 
 /**
@@ -92,7 +93,7 @@ export async function createRoleAction(data: { name: string; description?: strin
     const supabase = await createClient();
 
     // 1. Create Role
-    const { data: newRole, error: createError } = await supabase
+    const { data: newRoleData, error: createError } = await supabase
         .from('roles')
         .insert({
             name: data.name,
@@ -103,6 +104,7 @@ export async function createRoleAction(data: { name: string; description?: strin
         .single();
 
     if (createError) throw new Error(createError.message);
+    const newRole = newRoleData as unknown as DbRole;
 
     // 2. Assign Permissions
     if (data.permissionIds.length > 0) {
@@ -116,7 +118,6 @@ export async function createRoleAction(data: { name: string; description?: strin
             .insert(payload);
 
         if (permError) {
-            // Cleanup? Ideally explicit transaction, but for now we throw
             console.error('Failed to assign permissions to new role:', permError);
             throw new Error('Role created but permissions failed to save.');
         }
@@ -127,16 +128,13 @@ export async function createRoleAction(data: { name: string; description?: strin
 }
 
 /**
- * Update an existing Role
+ * Update an existing Role (SAFE DIFF IMPLEMENTATION)
  */
 export async function updateRoleAction(roleId: string, data: { name: string; description?: string; permissionIds: string[] }) {
     await requirePermission('roles.manage');
     const supabase = await createClient();
 
-    // 1. Check if System Role (prevent renaming if needed, but managing permissions is allowed)
-    // For now, full update allowed.
-
-    // 2. Update Metadata
+    // 1. Update Metadata
     const { error: updateError } = await supabase
         .from('roles')
         .update({
@@ -147,17 +145,36 @@ export async function updateRoleAction(roleId: string, data: { name: string; des
 
     if (updateError) throw new Error(updateError.message);
 
-    // 3. Sync Permissions (Delete All + Insert New) 
-    // This is simple and effective for this scale
-    const { error: deleteError } = await supabase
+    // 2. Sync Permissions (Fail-Safe Diff)
+    // Fetch existing
+    const { data: existingPerms, error: fetchError } = await supabase
         .from('role_permissions')
-        .delete()
+        .select('permission_id')
         .eq('role_id', roleId);
 
-    if (deleteError) throw new Error(deleteError.message);
+    if (fetchError) throw new Error(fetchError.message);
 
-    if (data.permissionIds.length > 0) {
-        const payload = data.permissionIds.map(pid => ({
+    const existingIds = new Set((existingPerms as DbRolePermission[]).map(p => p.permission_id));
+    const newIds = new Set(data.permissionIds);
+
+    // Calculate Diff
+    const toAdd = [...newIds].filter(id => !existingIds.has(id));
+    const toRemove = [...existingIds].filter(id => !newIds.has(id));
+
+    // Execute DELETE (only what needs removing)
+    if (toRemove.length > 0) {
+        const { error: deleteError } = await supabase
+            .from('role_permissions')
+            .delete()
+            .eq('role_id', roleId)
+            .in('permission_id', toRemove);
+
+        if (deleteError) throw new Error(`Failed to remove permissions: ${deleteError.message}`);
+    }
+
+    // Execute INSERT (only what needs adding)
+    if (toAdd.length > 0) {
+        const payload = toAdd.map(pid => ({
             role_id: roleId,
             permission_id: pid
         }));
@@ -166,7 +183,7 @@ export async function updateRoleAction(roleId: string, data: { name: string; des
             .from('role_permissions')
             .insert(payload);
 
-        if (insertError) throw new Error(insertError.message);
+        if (insertError) throw new Error(`Failed to add permissions: ${insertError.message}`);
     }
 
     revalidatePath('/admin/settings');

@@ -3,12 +3,14 @@
 import { useState, useEffect } from 'react';
 import { createClient } from '@/lib/supabase/client';
 import Image from 'next/image';
-import { Loader2, Trash2, Check, ExternalLink, Film, X } from 'lucide-react';
+import { Loader2, Trash2, Check, ExternalLink, Film, X, AlertTriangle } from 'lucide-react';
 import { PaginationControls } from '@/components/ui/admin/PaginationControls';
 import { useToast } from '@/contexts/ToastContext';
 import { MediaAsset } from '@/types';
 import { format } from 'date-fns';
 import { usePermission } from '@/contexts/PermissionContext';
+import { checkMediaUsageAction, deleteMediaAction, MediaUsage } from '@/app/actions/media';
+import { Modal, ModalHeader, ModalBody, ModalFooter } from '@/components/ui/Modal';
 
 interface MediaGalleryProps {
     onSelect?: (media: MediaAsset) => void;
@@ -35,6 +37,10 @@ export function MediaGallery({
 
     const { showToast } = useToast();
     const supabase = createClient();
+
+    // Warning Modal State
+    const [usageWarning, setUsageWarning] = useState<{ asset: MediaAsset; usages: MediaUsage[] } | null>(null);
+    const [isDeleting, setIsDeleting] = useState(false);
 
     useEffect(() => {
         setCurrentPage(1);
@@ -94,40 +100,41 @@ export function MediaGallery({
         }
     }
 
-    async function handleDelete(e: React.MouseEvent, asset: MediaAsset) {
+    async function handleDeleteClick(e: React.MouseEvent, asset: MediaAsset) {
         e.stopPropagation();
-        if (!confirm('Are you sure you want to delete this file?')) return;
-
+        setIsDeleting(true);
         try {
-            // Delete from Storage
-            const { error: storageError } = await supabase.storage
-                .from(asset.bucket)
-                .remove([asset.storagePath]);
+            const usages = await checkMediaUsageAction(asset.id);
+            if (usages.length > 0) {
+                setUsageWarning({ asset, usages });
+            } else {
+                if (confirm('Are you sure you want to delete this file permanently?')) {
+                    await executeDelete(asset.id);
+                }
+            }
+        } catch (error) {
+            console.error('Failed to check usage:', error);
+            showToast('Failed to check file usage', 'error');
+        } finally {
+            setIsDeleting(false);
+        }
+    }
 
-            if (storageError) throw storageError;
-
-            // Delete from DB
-            const { error: dbError } = await supabase
-                .from('media_assets')
-                .delete()
-                .eq('id', asset.id);
-
-            if (dbError) throw dbError;
-
-            showToast('File deleted', 'success');
-            setMedia(prev => prev.filter(m => m.id !== asset.id));
+    async function executeDelete(assetId: string) {
+        try {
+            const result = await deleteMediaAction(assetId);
+            if (result.success) {
+                showToast('File deleted', 'success');
+                setMedia(prev => prev.filter(m => m.id !== assetId));
+                setUsageWarning(null);
+            }
         } catch (error: any) {
             console.error(error);
-            showToast('Failed to delete file', 'error');
+            showToast(error.message || 'Failed to delete file', 'error');
         }
     }
 
     const [selectedFolder, setSelectedFolder] = useState<string>('all');
-    // ... existing state ...
-
-    // ... useEffect ...
-
-    // ... fetchMedia ...
 
     // Derive Folders
     const folders = ['all', ...Array.from(new Set(media.map(m => m.folder || 'uploads'))).sort()];
@@ -138,18 +145,12 @@ export function MediaGallery({
         return true;
     });
 
-    // ... handleDelete ...
-
     // Lightbox State
     const [lightboxAsset, setLightboxAsset] = useState<MediaAsset | null>(null);
 
-    // ... handle delete ...
-
     return (
         <div className="space-y-4">
-            {/* Filters ... */}
-
-            {/* ... Filters JSX ... */}
+            {/* Filters */}
             <div className="flex flex-col gap-4 pb-4 border-b border-gray-100">
                 {/* Folder Filters */}
                 <div className="flex gap-2 flex-wrap">
@@ -235,7 +236,6 @@ export function MediaGallery({
                                             loop
                                             ref={(el) => {
                                                 if (!el) return;
-                                                // Store verify play promise to prevent race conditions
                                                 (el as any)._playPromise = undefined;
                                             }}
                                             onMouseOver={(e) => {
@@ -244,7 +244,6 @@ export function MediaGallery({
                                                 if (promise !== undefined) {
                                                     (video as any)._playPromise = promise;
                                                     promise.catch((error) => {
-                                                        // Auto-play was prevented or interrupted - ignore abort errors
                                                         if (error.name !== 'AbortError') {
                                                             console.error('Video play error:', error);
                                                         }
@@ -255,13 +254,7 @@ export function MediaGallery({
                                                 const video = e.target as HTMLVideoElement;
                                                 const playPromise = (video as any)._playPromise;
                                                 if (playPromise !== undefined) {
-                                                    playPromise
-                                                        .then(() => {
-                                                            video.pause();
-                                                        })
-                                                        .catch(() => {
-                                                            // Play was aborted, so we don't need to pause
-                                                        });
+                                                    playPromise.then(() => video.pause()).catch(() => { });
                                                 } else {
                                                     video.pause();
                                                 }
@@ -290,8 +283,9 @@ export function MediaGallery({
                                         {can('media.delete') && (
                                             <button
                                                 type="button"
-                                                onClick={(e) => handleDelete(e, asset)}
-                                                className="p-1.5 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition-colors"
+                                                onClick={(e) => handleDeleteClick(e, asset)}
+                                                disabled={isDeleting}
+                                                className="p-1.5 bg-red-500/80 text-white rounded-full hover:bg-red-600 transition-colors disabled:opacity-50"
                                                 title="Delete"
                                             >
                                                 <Trash2 className="w-4 h-4" />
@@ -362,7 +356,6 @@ export function MediaGallery({
                             />
                         )}
 
-                        {/* Metadata Footer */}
                         <div className="absolute bottom-4 left-1/2 -translate-x-1/2 bg-black/60 text-white px-4 py-2 rounded-full backdrop-blur-md text-sm">
                             {lightboxAsset.originalFilename} • {(lightboxAsset.sizeBytes / 1024).toFixed(1)} KB
                             {lightboxAsset.width && ` • ${lightboxAsset.width}x${lightboxAsset.height}`}
@@ -370,6 +363,49 @@ export function MediaGallery({
                     </div>
                 </div>
             )}
+
+            {/* Usage Warning Modal */}
+            <Modal isOpen={!!usageWarning} onClose={() => setUsageWarning(null)} size="md">
+                <ModalHeader onClose={() => setUsageWarning(null)} className="text-red-600">
+                    <div className="flex items-center gap-2">
+                        <AlertTriangle className="w-5 h-5" />
+                        File In Use
+                    </div>
+                </ModalHeader>
+                <ModalBody>
+                    <div className="space-y-4">
+                        <p className="text-gray-600">
+                            The file <span className="font-semibold">{usageWarning?.asset.originalFilename}</span> is currently used in the following places:
+                        </p>
+                        <div className="bg-orange-50 border border-orange-100 rounded-md p-3 max-h-40 overflow-y-auto">
+                            <ul className="list-disc list-inside space-y-1 text-sm text-orange-800">
+                                {usageWarning?.usages.map((usage, i) => (
+                                    <li key={i}>
+                                        <span className="font-medium">{usage.name}</span> <span className="text-xs opacity-75">({usage.type})</span>
+                                    </li>
+                                ))}
+                            </ul>
+                        </div>
+                        <p className="text-sm text-gray-500">
+                            Deleting this file will result in <strong>broken images/placeholders</strong> on the public website. Are you sure you want to proceed?
+                        </p>
+                    </div>
+                </ModalBody>
+                <ModalFooter>
+                    <button
+                        onClick={() => setUsageWarning(null)}
+                        className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-md"
+                    >
+                        Cancel
+                    </button>
+                    <button
+                        onClick={() => usageWarning && executeDelete(usageWarning.asset.id)}
+                        className="px-4 py-2 bg-red-600 text-white hover:bg-red-700 rounded-md"
+                    >
+                        Yes, Delete Anyway
+                    </button>
+                </ModalFooter>
+            </Modal>
         </div>
     );
 }

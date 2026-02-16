@@ -6,6 +6,7 @@ import { RoomSummary, Booking, ContactRequest, PaginatedResponse } from "@/types
 import { BookingsTable } from "@/components/admin/bookings/BookingsTable";
 import { CreateBookingModal } from "@/components/admin/bookings/CreateBookingModal";
 import { Plus } from 'lucide-react';
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface BookingsPageClientProps {
     rooms: RoomSummary[];
@@ -26,6 +27,7 @@ export function BookingsPageClient({
     discardFn
 }: BookingsPageClientProps) {
     const [isCreateModalOpen, setIsCreateModalOpen] = useState(false);
+    const { can } = usePermission();
     const router = useRouter();
     const pathname = usePathname();
     const searchParams = useSearchParams();
@@ -51,7 +53,7 @@ export function BookingsPageClient({
                     <h1 className="text-2xl md:text-3xl font-bold font-montserrat text-[var(--color-charcoal)]">Bookings & Availability</h1>
                     <p className="text-[var(--color-charcoal)]/60 mt-1 md:mt-2 text-sm md:text-base">Manage guest reservations and block room dates.</p>
                 </div>
-                {['admin', 'manager', 'receptionist'].includes(userRole) && (
+                {can('bookings.create') && (
                     <button
                         onClick={() => setIsCreateModalOpen(true)}
                         className="bg-[var(--color-aegean-blue)] w-full md:w-auto text-white px-4 py-2 rounded-lg text-sm font-bold hover:bg-[#0fd0d6] hover:text-[var(--color-aegean-blue)] transition-colors flex items-center justify-center gap-2 shadow-sm"

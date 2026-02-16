@@ -7,9 +7,9 @@ import { Calendar } from "@/components/ui/Calendar";
 import { Button } from "@/components/ui/Button";
 import { Select } from "@/components/ui/admin/Select";
 import { Input } from "@/components/ui/Input";
-import { X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { formatLocalDate } from "@/lib/dateUtils";
+import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/ui/Modal";
 
 interface BlockDateModalProps {
     rooms: Room[];
@@ -71,90 +71,78 @@ export function BlockDateModal({ rooms, isOpen, onClose, onSave, initialData }: 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white rounded-lg shadow-xl w-full max-w-md overflow-hidden animate-slide-up flex flex-col max-h-[90vh]">
+        <Modal isOpen={true} onClose={onClose} size="sm">
+            <ModalHeader onClose={onClose}>
+                {initialData ? "Edit Blocked Dates" : "Block New Dates"}
+            </ModalHeader>
 
-                {/* Header */}
-                <div className="flex items-center justify-between p-4 border-b border-[var(--color-sand)] bg-[var(--color-warm-white)]">
-                    <h3 className="font-bold font-montserrat text-lg text-[var(--color-charcoal)]">
-                        {initialData ? "Edit Blocked Dates" : "Block New Dates"}
-                    </h3>
-                    <button onClick={onClose} className="p-1 hover:bg-black/5 rounded-full transition-colors">
-                        <X className="w-5 h-5 opacity-60" />
-                    </button>
+            <ModalBody className="space-y-6">
+                {/* Room Select */}
+                <div>
+                    <Select
+                        label="Select Room"
+                        value={selectedRoomId}
+                        onChange={(e) => setSelectedRoomId(e.target.value)}
+                        options={rooms.map(room => ({ label: room.name, value: room.id }))}
+                    />
                 </div>
 
-                {/* Content */}
-                <div className="p-6 space-y-6 overflow-y-auto custom-scrollbar">
-
-                    {/* Room Select */}
-                    <div>
-                        <Select
-                            label="Select Room"
-                            value={selectedRoomId}
-                            onChange={(e) => setSelectedRoomId(e.target.value)}
-                            options={rooms.map(room => ({ label: room.name, value: room.id }))}
-                        />
+                {/* Reason Select */}
+                <div>
+                    <label className="block text-sm font-medium mb-2 text-[var(--color-charcoal)]">Reason</label>
+                    <div className="flex flex-wrap gap-2">
+                        {BLOCK_REASONS.map(r => (
+                            <button
+                                key={r}
+                                onClick={() => setReason(r)}
+                                className={cn(
+                                    "px-3 py-1.5 text-xs uppercase tracking-wider rounded-full border transition-all",
+                                    reason === r
+                                        ? "bg-[var(--color-aegean-blue)] text-white border-transparent"
+                                        : "border-[var(--color-sand)] text-[var(--color-charcoal)] hover:border-[var(--color-aegean-blue)]"
+                                )}
+                            >
+                                {r}
+                            </button>
+                        ))}
                     </div>
+                </div>
 
-                    {/* Reason Select */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2 text-[var(--color-charcoal)]">Reason</label>
-                        <div className="flex flex-wrap gap-2">
-                            {BLOCK_REASONS.map(r => (
-                                <button
-                                    key={r}
-                                    onClick={() => setReason(r)}
-                                    className={cn(
-                                        "px-3 py-1.5 text-xs uppercase tracking-wider rounded-full border transition-all",
-                                        reason === r
-                                            ? "bg-[var(--color-aegean-blue)] text-white border-transparent"
-                                            : "border-[var(--color-sand)] text-[var(--color-charcoal)] hover:border-[var(--color-aegean-blue)]"
-                                    )}
-                                >
-                                    {r}
-                                </button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Date Picker */}
-                    <div>
-                        <label className="block text-sm font-medium mb-2 text-[var(--color-charcoal)]">Select Range</label>
-                        <div className="border border-[var(--color-sand)] rounded-md p-2 flex justify-center">
-                            <Calendar
-                                className="calendar-light p-3"
-                                mode="range"
-                                selected={dateRange}
-                                onSelect={setDateRange}
-                                numberOfMonths={1}
-                            />
-                        </div>
-                    </div>
-
-                    {/* Notes */}
-                    <div>
-                        <Input
-                            label="Notes (Optional)"
-                            value={note}
-                            onChange={(e) => setNote(e.target.value)}
-                            placeholder="e.g. Painting walls..."
+                {/* Date Picker */}
+                <div>
+                    <label className="block text-sm font-medium mb-2 text-[var(--color-charcoal)]">Select Range</label>
+                    <div className="border border-[var(--color-sand)] rounded-md p-2 flex justify-center">
+                        <Calendar
+                            className="calendar-light p-3"
+                            mode="range"
+                            selected={dateRange}
+                            onSelect={setDateRange}
+                            numberOfMonths={1}
                         />
                     </div>
                 </div>
 
-                {/* Footer */}
-                <div className="p-4 border-t border-[var(--color-sand)] bg-[var(--color-warm-white)]/50 flex justify-end gap-3">
-                    <Button variant="ghost" onClick={onClose}>Cancel</Button>
-                    <Button
-                        onClick={handleSave}
-                        isLoading={isLoading}
-                        disabled={!dateRange?.from || !dateRange?.to}
-                    >
-                        {initialData ? "Update Block" : "Block Dates"}
-                    </Button>
+                {/* Notes */}
+                <div>
+                    <Input
+                        label="Notes (Optional)"
+                        value={note}
+                        onChange={(e) => setNote(e.target.value)}
+                        placeholder="e.g. Painting walls..."
+                    />
                 </div>
-            </div>
-        </div>
+            </ModalBody>
+
+            <ModalFooter>
+                <Button variant="ghost" onClick={onClose}>Cancel</Button>
+                <Button
+                    onClick={handleSave}
+                    isLoading={isLoading}
+                    disabled={!dateRange?.from || !dateRange?.to}
+                >
+                    {initialData ? "Update Block" : "Block Dates"}
+                </Button>
+            </ModalFooter>
+        </Modal>
     );
 }

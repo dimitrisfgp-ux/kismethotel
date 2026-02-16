@@ -21,12 +21,15 @@ interface RoomSummary {
     media?: { url: string }[];
 }
 
+import { usePermission } from "@/contexts/PermissionContext";
+
 interface RoomsMobileCardProps {
     room: RoomSummary;
     onDelete: (id: string) => Promise<void>;
 }
 
 export function RoomsMobileCard({ room, onDelete }: RoomsMobileCardProps) {
+    const { can } = usePermission();
     return (
         <div className="bg-white p-3 rounded-lg border border-[var(--color-sand)] shadow-sm space-y-3">
             <div className="flex gap-3">
@@ -78,20 +81,24 @@ export function RoomsMobileCard({ room, onDelete }: RoomsMobileCardProps) {
 
             {/* Actions */}
             <div className="flex gap-2 pt-2 border-t border-[var(--color-sand)]/30">
-                <Button
-                    variant="outline"
-                    className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 border-transparent hover:border-red-100"
-                    onClick={() => onDelete(room.id)}
-                >
-                    <Trash2 className="h-4 w-4" />
-                </Button>
-
-                <Link href={`/admin/rooms/${room.slug}`} className="flex-1">
-                    <Button className="w-full h-8 bg-[var(--color-aegean-blue)] hover:bg-[var(--color-aegean-blue)]/90 text-xs uppercase tracking-wide font-bold gap-2">
-                        <Edit2 className="h-3 w-3" />
-                        Edit Room
+                {can('rooms.delete') && (
+                    <Button
+                        variant="outline"
+                        className="h-8 w-8 p-0 text-red-400 hover:text-red-600 hover:bg-red-50 border-transparent hover:border-red-100"
+                        onClick={() => onDelete(room.id)}
+                    >
+                        <Trash2 className="h-4 w-4" />
                     </Button>
-                </Link>
+                )}
+
+                {can('rooms.update') && (
+                    <Link href={`/admin/rooms/${room.slug}`} className="flex-1">
+                        <Button className="w-full h-8 bg-[var(--color-aegean-blue)] hover:bg-[var(--color-aegean-blue)]/90 text-xs uppercase tracking-wide font-bold gap-2">
+                            <Edit2 className="h-3 w-3" />
+                            Edit Room
+                        </Button>
+                    </Link>
+                )}
             </div>
         </div>
     );

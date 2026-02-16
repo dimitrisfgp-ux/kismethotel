@@ -127,7 +127,7 @@ export function BookingsMobileCard({
             {/* Compact Actions */}
             <div className="flex gap-2 pt-2 border-t border-[var(--color-sand)]/30 mt-1">
                 {/* Secondary Actions (Icon Only) */}
-                {can('bookings.manage') && (
+                {can('bookings.delete') && (
                     <button
                         onClick={async (e) => {
                             e.stopPropagation();
@@ -147,7 +147,7 @@ export function BookingsMobileCard({
                     </button>
                 )}
 
-                {booking.status === 'confirmed' && (
+                {booking.status === 'confirmed' && can('bookings.cancel') && (
                     <button
                         onClick={async (e) => {
                             e.stopPropagation();

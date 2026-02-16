@@ -3,6 +3,7 @@
 import { useEffect } from "react";
 import { Clock, Users, X, CheckCircle, AlertCircle } from "lucide-react";
 import { Button } from "../ui/Button";
+import { Modal, ModalBody } from "@/components/ui/Modal";
 import { useCountdown } from "@/hooks/useCountdown";
 import { useHoldContention } from "@/contexts/HoldContentionContext";
 import { useDateContext } from "@/contexts/DateContext";
@@ -77,86 +78,88 @@ export function HoldBlockedModal() {
     const checkOutDisplay = blockedHold ? format(new Date(blockedHold.checkOut), 'MMM d, yyyy') : '';
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm animate-fade-in">
-            <div className="bg-white p-8 rounded-lg max-w-md mx-4 text-center shadow-2xl border border-[var(--color-sand)] relative animate-slide-up">
+        <Modal isOpen={true} onClose={outcomeStatus ? handleAvailableClose : closeModal} size="md">
+            <div className="relative">
                 <button
                     onClick={outcomeStatus ? handleAvailableClose : closeModal}
-                    className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                    className="absolute top-0 right-0 text-gray-400 hover:text-gray-600 transition-colors z-10"
                 >
                     <X className="w-6 h-6" />
                 </button>
 
-                {status === 'held' && (
-                    <>
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
-                            <Users className="h-8 w-8 text-amber-600" />
-                        </div>
-                        <h3 className="font-montserrat text-xl font-bold uppercase tracking-wider mb-3">
-                            Dates Currently Held
-                        </h3>
-                        <p className="text-[var(--color-charcoal)]/70 mb-6 font-inter leading-relaxed">
-                            Another guest is currently booking the dates from{' '}
-                            <strong>{checkInDisplay}</strong> to <strong>{checkOutDisplay}</strong>.
-                        </p>
-                        {userBChoice === 'watching' && blockedHold?.contentionDeadline && (
-                            <div className="flex items-center justify-center gap-2 text-3xl font-mono font-bold text-[var(--color-aegean-blue)] mb-6">
-                                <Clock className="h-6 w-6" />
-                                <span>{formatted}</span>
+                <ModalBody className="p-8 text-center">
+                    {status === 'held' && (
+                        <>
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-amber-100 flex items-center justify-center">
+                                <Users className="h-8 w-8 text-amber-600" />
                             </div>
-                        )}
-                        <p className="text-sm text-[var(--color-charcoal)]/50 font-inter mb-8">
-                            Would you like us to notify you if the dates become available while you browse? (Max waiting time 7 Minutes)
-                        </p>
-                        <div className="space-y-3">
-                            <Button onClick={selectWatching} className="w-full">
-                                Notify me when available
+                            <h3 className="font-montserrat text-xl font-bold uppercase tracking-wider mb-3">
+                                Dates Currently Held
+                            </h3>
+                            <p className="text-[var(--color-charcoal)]/70 mb-6 font-inter leading-relaxed">
+                                Another guest is currently booking the dates from{' '}
+                                <strong>{checkInDisplay}</strong> to <strong>{checkOutDisplay}</strong>.
+                            </p>
+                            {userBChoice === 'watching' && blockedHold?.contentionDeadline && (
+                                <div className="flex items-center justify-center gap-2 text-3xl font-mono font-bold text-[var(--color-aegean-blue)] mb-6">
+                                    <Clock className="h-6 w-6" />
+                                    <span>{formatted}</span>
+                                </div>
+                            )}
+                            <p className="text-sm text-[var(--color-charcoal)]/50 font-inter mb-8">
+                                Would you like us to notify you if the dates become available while you browse? (Max waiting time 7 Minutes)
+                            </p>
+                            <div className="space-y-3">
+                                <Button onClick={selectWatching} className="w-full">
+                                    Notify me when available
+                                </Button>
+                                <button
+                                    onClick={selectDismissed}
+                                    className="w-full text-sm text-[var(--color-aegean-blue)] hover:text-[var(--color-gold)] underline transition-colors py-2"
+                                >
+                                    It&apos;s OK, I&apos;ll check other dates
+                                </button>
+                            </div>
+                        </>
+                    )}
+
+                    {status === 'available' && (
+                        <>
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
+                                <CheckCircle className="h-8 w-8 text-green-600" />
+                            </div>
+                            <h3 className="font-montserrat text-xl font-bold uppercase tracking-wider mb-3">
+                                Good News!
+                            </h3>
+                            <p className="text-[var(--color-charcoal)]/70 mb-6 font-inter">
+                                The dates are now available. You can proceed with your booking.
+                            </p>
+                            <Button onClick={handleAvailableClose} className="w-full">
+                                Book Now
                             </Button>
-                            <button
-                                onClick={selectDismissed}
-                                className="w-full text-sm text-[var(--color-aegean-blue)] hover:text-[var(--color-gold)] underline transition-colors py-2"
-                            >
-                                It&apos;s OK, I&apos;ll check other dates
-                            </button>
-                        </div>
-                    </>
-                )}
+                        </>
+                    )}
 
-                {status === 'available' && (
-                    <>
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-green-100 flex items-center justify-center">
-                            <CheckCircle className="h-8 w-8 text-green-600" />
-                        </div>
-                        <h3 className="font-montserrat text-xl font-bold uppercase tracking-wider mb-3">
-                            Good News!
-                        </h3>
-                        <p className="text-[var(--color-charcoal)]/70 mb-6 font-inter">
-                            The dates are now available. You can proceed with your booking.
-                        </p>
-                        <Button onClick={handleAvailableClose} className="w-full">
-                            Book Now
-                        </Button>
-                    </>
-                )}
-
-                {status === 'booked' && (
-                    <>
-                        <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
-                            <AlertCircle className="h-8 w-8 text-red-600" />
-                        </div>
-                        <h3 className="font-montserrat text-xl font-bold uppercase tracking-wider mb-3">
-                            Dates Booked
-                        </h3>
-                        <p className="text-[var(--color-charcoal)]/70 mb-6 font-inter">
-                            Dates from <strong>{checkInDisplay}</strong> to <strong>{checkOutDisplay}</strong>{' '}
-                            have been booked. Please check other ranges.
-                        </p>
-                        <p className="text-xs text-[var(--color-charcoal)]/40 font-inter">
-                            This window will close shortly...
-                        </p>
-                    </>
-                )}
+                    {status === 'booked' && (
+                        <>
+                            <div className="w-16 h-16 mx-auto mb-4 rounded-full bg-red-100 flex items-center justify-center">
+                                <AlertCircle className="h-8 w-8 text-red-600" />
+                            </div>
+                            <h3 className="font-montserrat text-xl font-bold uppercase tracking-wider mb-3">
+                                Dates Booked
+                            </h3>
+                            <p className="text-[var(--color-charcoal)]/70 mb-6 font-inter">
+                                Dates from <strong>{checkInDisplay}</strong> to <strong>{checkOutDisplay}</strong>{' '}
+                                have been booked. Please check other ranges.
+                            </p>
+                            <p className="text-xs text-[var(--color-charcoal)]/40 font-inter">
+                                This window will close shortly...
+                            </p>
+                        </>
+                    )}
+                </ModalBody>
             </div>
-        </div>
+        </Modal>
     );
 }
 

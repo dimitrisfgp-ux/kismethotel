@@ -16,6 +16,7 @@ import { useToast } from "@/contexts/ToastContext";
 import { getStatusColor } from "@/lib/constants/statusStyles";
 import { formatLocalDate } from "@/lib/dateUtils";
 import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from "@/lib/constants";
+import { usePermission } from "@/contexts/PermissionContext";
 
 interface BookingDetailsModalProps {
     booking: Booking;
@@ -24,6 +25,7 @@ interface BookingDetailsModalProps {
 }
 
 export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsModalProps) {
+    const { can } = usePermission();
     const [isEditingDates, setIsEditingDates] = useState(false);
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: new Date(booking.checkIn),
@@ -128,7 +130,7 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
                             <span className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-[var(--color-aegean-blue)]" /> Stay Details
                             </span>
-                            {localBooking.status === 'confirmed' && !isEditingDates && (
+                            {localBooking.status === 'confirmed' && !isEditingDates && can('bookings.manage') && (
                                 <button
                                     onClick={() => setIsEditingDates(true)}
                                     className="text-xs text-[var(--color-aegean-blue)] hover:underline flex items-center gap-1"

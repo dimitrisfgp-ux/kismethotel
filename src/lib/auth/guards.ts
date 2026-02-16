@@ -66,7 +66,7 @@ const getCachedUserWithRole = cache(async (): Promise<{ user: User; roleName: st
  * Get the current user's role name.
  * Uses per-request cache — safe to call multiple times without extra queries.
  */
-export async function getUserRole(): Promise<{ user: User; roleName: string } | null> {
+export async function getUserRole(): Promise<{ user: User; roleName: string; permissions: string[] } | null> {
     return getCachedUserWithRole();
 }
 

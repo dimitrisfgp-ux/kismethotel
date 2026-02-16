@@ -78,19 +78,14 @@ export async function getRoomAvailabilityAction(roomId: string) {
 // --- Booking Creation ---
 
 export async function createBookingAction(booking: Booking, holdId?: string) {
-    const supabase = await createClient();
+    // Availability check (Standardized with Admin flow)
+    const isAvailable = await bookingService.checkAvailability(
+        booking.roomId,
+        new Date(booking.checkIn),
+        new Date(booking.checkOut)
+    );
 
-    // Final availability check before inserting (guard against race)
-    const { data: conflict } = await supabase
-        .from('bookings')
-        .select('id')
-        .eq('room_id', booking.roomId)
-        .eq('status', 'confirmed')
-        .lt('check_in', booking.checkOut)
-        .gt('check_out', booking.checkIn)
-        .maybeSingle();
-
-    if (conflict) {
+    if (!isAvailable) {
         return false; // Room was booked by someone else
     }
 

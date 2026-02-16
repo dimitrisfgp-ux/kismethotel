@@ -10,18 +10,27 @@ import { getUserRole } from '@/lib/auth/guards';
 export default async function SettingsPage() {
     const supabase = await createClient();
 
-    // Parallel Data Fetching (Server-Side)
-    const [settings, userResult, usersResult, rolesResult, permissionsResult, roleResult] = await Promise.all([
-        contentService.getSettings(),
+    // 1. Fetch User & Role First
+    const [userResult, roleResult] = await Promise.all([
         supabase.auth.getUser(),
-        getUsersAction().catch((err: Error) => { console.error('Failed to fetch users:', err); return []; }),
-        getRolesAction().catch((err: Error) => { console.error('Failed to fetch roles:', err); return []; }),
-        getPermissionsAction().catch((err: Error) => { console.error('Failed to fetch permissions:', err); return []; }),
         getUserRole()
     ]);
 
     const user = userResult.data.user;
     const userRole = roleResult?.roleName ?? 'viewer';
+    const permissions = roleResult?.permissions ?? [];
+
+    // 2. Conditional Data Fetching based on permissions/role
+    const canManageRoles = permissions.includes('roles.manage') || userRole === 'admin';
+    const canViewRoles = permissions.includes('roles.view') || userRole === 'admin';
+    const canViewUsers = permissions.includes('users.view') || userRole === 'admin';
+
+    const [settings, usersResult, rolesResult, permissionsResult] = await Promise.all([
+        contentService.getSettings(),
+        canViewUsers ? getUsersAction().catch((err: Error) => { console.error('Failed to fetch users:', err); return []; }) : Promise.resolve([]),
+        canViewRoles ? getRolesAction().catch((err: Error) => { console.error('Failed to fetch roles:', err); return []; }) : Promise.resolve([]),
+        canManageRoles ? getPermissionsAction().catch((err: Error) => { console.error('Failed to fetch permissions:', err); return []; }) : Promise.resolve([])
+    ]);
 
     return (
         <div className="max-w-4xl mx-auto space-y-12 pb-12">
