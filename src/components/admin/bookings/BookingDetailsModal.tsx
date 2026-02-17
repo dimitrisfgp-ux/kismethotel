@@ -69,8 +69,7 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
     };
 
     return (
-
-        <Modal isOpen={true} onClose={onClose} size="lg">
+        <Modal isOpen={true} onClose={onClose} size="3xl">
             <ModalHeader onClose={onClose} className="bg-[var(--color-warm-white)]">
                 <div>
                     <h2 className="text-xl font-bold font-montserrat text-[var(--color-aegean-blue)]">Booking Details</h2>

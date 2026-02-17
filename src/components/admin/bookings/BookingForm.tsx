@@ -131,9 +131,9 @@ export function BookingForm({
                                     mode="range"
                                     selected={dateRange}
                                     onSelect={setDateRange}
-                                    numberOfMonths={2}
+                                    numberOfMonths={1}
                                     disabled={unavailableDates}
-                                    className="p-0"
+                                    className="p-0 calendar-light"
                                 />
                             </div>
 

@@ -123,7 +123,7 @@ export function BlockDateModal({ rooms, isOpen, onClose, onSave, initialData }: 
                             </div>
                         )}
                         <Calendar
-                            className="calendar-light p-3"
+                            className="calendar-light"
                             mode="range"
                             selected={dateRange}
                             onSelect={setDateRange}
