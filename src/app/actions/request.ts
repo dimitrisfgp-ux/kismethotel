@@ -49,6 +49,18 @@ export async function approveRequestAction(requestId: string) {
         // Capture original dates BEFORE updating the booking
         booking = await bookingService.getBookingById(request.bookingId);
         if (booking) {
+            // SECURITY FIX: Check availability before rescheduling
+            const isAvailable = await bookingService.checkAvailability(
+                booking.roomId,
+                request.newCheckIn,
+                request.newCheckOut
+            );
+
+            if (!isAvailable) {
+                console.error(`[approveRequestAction] Reschedule blocked. Room ${booking.roomId} unavailable for ${request.newCheckIn}-${request.newCheckOut}`);
+                throw new Error("Reschedule failed: The selected dates are not available.");
+            }
+
             originalDates = {
                 originalCheckIn: booking.checkIn,
                 originalCheckOut: booking.checkOut

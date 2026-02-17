@@ -38,6 +38,23 @@ export const bookingService = {
         }));
     },
 
+    hasFutureBookings: async (roomId: string): Promise<boolean> => {
+        const supabase = await createClient();
+        const { count, error } = await supabase
+            .from('bookings')
+            .select('*', { count: 'exact', head: true })
+            .eq('room_id', roomId)
+            .in('status', ['confirmed', 'active', 'pending'])
+            .gte('check_out', new Date().toISOString());
+
+        if (error) {
+            console.error("Error checking future bookings:", error);
+            return true; // Fail safe: assume there are bookings if error
+        }
+
+        return (count || 0) > 0;
+    },
+
     getBookings: async (
         page: number = 1,
         limit: number = 10,

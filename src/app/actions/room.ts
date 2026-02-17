@@ -31,6 +31,16 @@ export async function saveRoomAction(room: Room) {
 
 export async function deleteRoomAction(roomId: string) {
     await requirePermission('rooms.delete');
+
+    // SAFETY CHECK: Prevent deleting rooms with future bookings
+    // (Database ON DELETE SET NULL would orphan them, leaving guests without a room)
+    const { bookingService } = await import("@/services/bookingService");
+    const hasBookings = await bookingService.hasFutureBookings(roomId);
+
+    if (hasBookings) {
+        throw new Error("Cannot delete room: It has active or future bookings. Please cancel or move them first.");
+    }
+
     const success = await roomService.deleteRoom(roomId);
     if (success) {
         revalidatePath("/admin/rooms", "page");
