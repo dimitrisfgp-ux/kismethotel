@@ -193,7 +193,7 @@ export const bookingService = {
         return !error;
     },
 
-    checkAvailability: async (roomId: string, start: Date | string, end: Date | string): Promise<boolean> => {
+    checkAvailability: async (roomId: string, start: Date | string, end: Date | string, excludeBookingId?: string): Promise<boolean> => {
         const supabase = await createClient();
         const startStr = typeof start === 'string' ? start : formatLocalDate(start);
         const endStr = typeof end === 'string' ? end : formatLocalDate(end);
@@ -203,7 +203,8 @@ export const bookingService = {
             .rpc('check_room_availability', {
                 p_room_id: roomId,
                 p_start: startStr,
-                p_end: endStr
+                p_end: endStr,
+                p_exclude_booking_id: excludeBookingId || null
             });
 
         if (error) {

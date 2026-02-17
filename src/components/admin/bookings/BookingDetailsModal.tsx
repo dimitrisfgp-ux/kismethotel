@@ -2,7 +2,7 @@
 
 import { Modal, ModalHeader, ModalBody, ModalFooter } from "@/components/ui/Modal";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Booking, RoomSummary } from "@/types";
 import { DateRange } from "react-day-picker";
 import { format } from "date-fns";
@@ -17,6 +17,7 @@ import { getStatusColor } from "@/lib/constants/statusStyles";
 import { formatLocalDate } from "@/lib/dateUtils";
 import { DEFAULT_CHECK_IN_TIME, DEFAULT_CHECK_OUT_TIME } from "@/lib/constants";
 import { usePermission } from "@/contexts/PermissionContext";
+import { useRoomAvailability } from "@/hooks/useRoomAvailability";
 
 interface BookingDetailsModalProps {
     booking: Booking;
@@ -27,10 +28,18 @@ interface BookingDetailsModalProps {
 export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsModalProps) {
     const { can } = usePermission();
     const [isEditingDates, setIsEditingDates] = useState(false);
+
+    // Fix: Correctly use the hook
+    // We pass roomId only when editing starts to trigger the fetch
+    const { unavailableDates, isLoading: isLoadingAvailability } = useRoomAvailability(
+        isEditingDates ? booking.roomId : undefined
+    );
+
     const [dateRange, setDateRange] = useState<DateRange | undefined>({
         from: new Date(booking.checkIn),
         to: new Date(booking.checkOut)
     });
+
     const [isSaving, setIsSaving] = useState(false);
     const [localBooking, setLocalBooking] = useState(booking);
     const { showToast } = useToast();
@@ -54,7 +63,7 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
             setIsEditingDates(false);
             showToast("Booking dates updated", "success");
         } else {
-            showToast("Failed to update dates", "error");
+            showToast("Failed to update dates. Dates may be unavailable.", "error");
         }
         setIsSaving(false);
     };
@@ -130,7 +139,8 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
                             <span className="flex items-center gap-2">
                                 <Calendar className="h-4 w-4 text-[var(--color-aegean-blue)]" /> Stay Details
                             </span>
-                            {localBooking.status === 'confirmed' && !isEditingDates && can('bookings.manage') && (
+                            {/* FIX: Check for 'bookings.edit' instead of 'bookings.manage' to match Role */}
+                            {localBooking.status === 'confirmed' && !isEditingDates && can('bookings.edit') && (
                                 <button
                                     onClick={() => setIsEditingDates(true)}
                                     className="text-xs text-[var(--color-aegean-blue)] hover:underline flex items-center gap-1"
@@ -154,6 +164,7 @@ export function BookingDetailsModal({ booking, room, onClose }: BookingDetailsMo
                                             onSelect={setDateRange}
                                             numberOfMonths={1}
                                             className="calendar-light"
+                                            disabled={unavailableDates} // Use hook data directly (Date[])
                                         />
                                     </div>
                                     <div className="flex gap-2">

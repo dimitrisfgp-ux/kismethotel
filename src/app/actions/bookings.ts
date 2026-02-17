@@ -143,7 +143,30 @@ export async function getBookingByIdAction(bookingId: string) {
 }
 
 export async function updateBookingDatesAction(bookingId: string, checkIn: string, checkOut: string) {
-    await requirePermission('bookings.manage');
+    // FIX: Admin has 'bookings.edit', not 'bookings.manage'
+    await requirePermission('bookings.edit');
+
+    // 1. Fetch booking to get roomId (needed for availability check)
+    const booking = await bookingService.getBookingById(bookingId);
+    if (!booking) {
+        throw new Error("Booking not found");
+    }
+
+    // 2. SECURITY FIX: Check Availability before update
+    // We pass the current booking ID to exclude it from the check (so we don't conflict with ourselves)
+    const isAvailable = await bookingService.checkAvailability(
+        booking.roomId,
+        checkIn,
+        checkOut,
+        bookingId // <--- The Exclude ID
+    );
+
+    if (!isAvailable) {
+        console.warn(`[updateBookingDatesAction] Room ${booking.roomId} unavailable for dates ${checkIn}-${checkOut}`);
+        // Return false so the UI shows "Failed to update dates"
+        return false;
+    }
+
     const success = await bookingService.updateBookingDates(bookingId, checkIn, checkOut);
     if (success) {
         revalidatePath("/admin/bookings");
