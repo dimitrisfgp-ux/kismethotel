@@ -16,6 +16,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
     const rooms = await roomService.getRoomsSummary();
     const bookingsData = await bookingService.getBookings(page, limit);
     const requestsData = await requestService.getRequests(page, limit);
+    const blockedDates = await bookingService.getBlockedDates(); // Fetch blocked dates
     const roleResult = await getUserRole();
 
     const userRole = roleResult?.roleName ?? 'viewer';
@@ -25,6 +26,7 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
             rooms={rooms}
             initialBookings={bookingsData}
             initialRequests={requestsData}
+            initialBlockedDates={blockedDates}
             userRole={userRole}
             approveFn={async (id: string) => { "use server"; await approveRequestAction(id); }}
             discardFn={async (id: string) => { "use server"; await discardRequestAction(id); }}

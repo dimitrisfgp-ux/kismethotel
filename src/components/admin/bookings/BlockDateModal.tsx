@@ -21,6 +21,8 @@ interface BlockDateModalProps {
 
 const BLOCK_REASONS: BlockReason[] = ["Maintenance", "Renovations", "Out of Season", "Other"];
 
+import { useRoomAvailability } from "@/hooks/useRoomAvailability";
+
 export function BlockDateModal({ rooms, isOpen, onClose, onSave, initialData }: BlockDateModalProps) {
     const [selectedRoomId, setSelectedRoomId] = useState<string>(initialData?.roomId || rooms[0]?.id || "");
     const [dateRange, setDateRange] = useState<DateRange | undefined>(
@@ -29,6 +31,9 @@ export function BlockDateModal({ rooms, isOpen, onClose, onSave, initialData }: 
     const [reason, setReason] = useState<BlockReason>(initialData?.reason || "Maintenance");
     const [note, setNote] = useState(initialData?.note || "");
     const [isLoading, setIsLoading] = useState(false);
+
+    // Fetch availability for the selected room
+    const { unavailableDates, isLoading: isLoadingAvailability } = useRoomAvailability(selectedRoomId);
 
     useEffect(() => {
         if (isOpen) {
@@ -53,7 +58,7 @@ export function BlockDateModal({ rooms, isOpen, onClose, onSave, initialData }: 
         setIsLoading(true);
         try {
             await onSave({
-                id: initialData?.id || Math.random().toString(36).substr(2, 9),
+                id: initialData?.id || crypto.randomUUID(),
                 roomId: selectedRoomId,
                 from: formatLocalDate(dateRange.from),
                 to: formatLocalDate(dateRange.to),
@@ -111,13 +116,19 @@ export function BlockDateModal({ rooms, isOpen, onClose, onSave, initialData }: 
                 {/* Date Picker */}
                 <div>
                     <label className="block text-sm font-medium mb-2 text-[var(--color-charcoal)]">Select Range</label>
-                    <div className="border border-[var(--color-sand)] rounded-md p-2 flex justify-center">
+                    <div className="border border-[var(--color-sand)] rounded-md p-2 flex justify-center relative">
+                        {isLoadingAvailability && (
+                            <div className="absolute inset-0 bg-white/50 z-10 flex items-center justify-center">
+                                <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-[var(--color-aegean-blue)]"></div>
+                            </div>
+                        )}
                         <Calendar
                             className="calendar-light p-3"
                             mode="range"
                             selected={dateRange}
                             onSelect={setDateRange}
                             numberOfMonths={1}
+                            disabled={unavailableDates}
                         />
                     </div>
                 </div>
@@ -138,7 +149,7 @@ export function BlockDateModal({ rooms, isOpen, onClose, onSave, initialData }: 
                 <Button
                     onClick={handleSave}
                     isLoading={isLoading}
-                    disabled={!dateRange?.from || !dateRange?.to}
+                    disabled={!dateRange?.from || !dateRange?.to || isLoadingAvailability}
                 >
                     {initialData ? "Update Block" : "Block Dates"}
                 </Button>

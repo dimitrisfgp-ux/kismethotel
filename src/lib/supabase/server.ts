@@ -46,3 +46,25 @@ export function createPublicClient() {
         }
     )
 }
+
+/**
+ * Service Role client - BYPASSES RLS.
+ * Use ONLY in trusted server-side contexts (Actions/API) where 
+ * verification has already happened.
+ */
+export function createAdminClient() {
+    return createServerClient(
+        process.env.NEXT_PUBLIC_SUPABASE_URL!,
+        process.env.SUPABASE_SERVICE_ROLE_KEY!,
+        {
+            auth: {
+                autoRefreshToken: false,
+                persistSession: false
+            },
+            cookies: {
+                getAll() { return [] },
+                setAll() { }
+            }
+        }
+    )
+}

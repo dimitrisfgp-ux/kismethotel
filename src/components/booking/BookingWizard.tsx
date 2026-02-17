@@ -188,10 +188,16 @@ export function BookingWizard({ room, dateRange }: BookingWizardProps) {
 
             try {
                 // Pass holdId for atomic server-side release (Fix #4)
-                await createBookingAction(booking, holdId ?? undefined);
+                const success = await createBookingAction(booking, holdId ?? undefined);
+
+                if (!success) {
+                    throw new Error("Booking creation failed (Availability or Database error)");
+                }
+
                 showToast("Booking Confirmed!", "success");
                 router.push("/book/success");
-            } catch (_error) {
+            } catch (error) {
+                console.error("Booking error:", error);
                 showToast("Booking failed. Please try again.", "error");
             } finally {
                 setIsLoading(false);

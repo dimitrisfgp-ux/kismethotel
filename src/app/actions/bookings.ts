@@ -78,18 +78,26 @@ export async function getRoomAvailabilityAction(roomId: string) {
 // --- Booking Creation ---
 
 export async function createBookingAction(booking: Booking, holdId?: string) {
+    console.log(`[createBookingAction] Attempting booking for Room ${booking.roomId} (${booking.checkIn} to ${booking.checkOut})`);
+
     // Availability check (Standardized with Admin flow)
+    // We pass strings directly to avoid timezone off-by-one errors during Date conversion
     const isAvailable = await bookingService.checkAvailability(
         booking.roomId,
-        new Date(booking.checkIn),
-        new Date(booking.checkOut)
+        booking.checkIn,
+        booking.checkOut
     );
 
+    console.log(`[createBookingAction] Availability Check Result: ${isAvailable}`);
+
     if (!isAvailable) {
+        console.warn(`[createBookingAction] Room unavailable.`);
         return false; // Room was booked by someone else
     }
 
     const success = await bookingService.createBooking(booking);
+    console.log(`[createBookingAction] Create Booking Result: ${success}`);
+
     if (success) {
         // Release hold server-side
         if (holdId) {

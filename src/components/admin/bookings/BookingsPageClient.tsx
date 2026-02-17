@@ -5,6 +5,7 @@ import { useRouter, useSearchParams, usePathname } from 'next/navigation';
 import { RoomSummary, Booking, ContactRequest, PaginatedResponse } from "@/types";
 import { BookingsTable } from "@/components/admin/bookings/BookingsTable";
 import { CreateBookingModal } from "@/components/admin/bookings/CreateBookingModal";
+import { AvailabilityManager } from "@/components/admin/bookings/AvailabilityManager";
 import { Plus } from 'lucide-react';
 import { usePermission } from "@/contexts/PermissionContext";
 
@@ -12,6 +13,7 @@ interface BookingsPageClientProps {
     rooms: RoomSummary[];
     initialBookings: PaginatedResponse<Booking>;
     initialRequests: PaginatedResponse<ContactRequest>;
+    initialBlockedDates: any[]; // Using any[] temporarily to avoid import cycle if BlockedDate isn't exported from types
     userRole: string;
     // Server Actions passed down
     approveFn: (id: string) => Promise<void>;
@@ -22,6 +24,7 @@ export function BookingsPageClient({
     rooms,
     initialBookings,
     initialRequests,
+    initialBlockedDates,
     userRole,
     approveFn,
     discardFn
@@ -83,6 +86,22 @@ export function BookingsPageClient({
                     onDiscardRequest={async (r) => discardFn(r.id)}
                 />
             </section>
+
+            {/* Blocked Dates Management */}
+            {can('rooms.availability') && (
+                <section>
+                    <div className="border-t border-[var(--color-sand)] pt-8">
+                        <h2 className="text-xl font-bold text-[var(--color-aegean-blue)] mb-4 flex items-center gap-2">
+                            <span className="w-2 h-8 bg-[var(--color-accent-gold)] rounded-full block"></span>
+                            Blocked Dates
+                        </h2>
+                        <AvailabilityManager
+                            rooms={rooms}
+                            initialBlockedDates={initialBlockedDates}
+                        />
+                    </div>
+                </section>
+            )}
 
             {/* Modals */}
             <CreateBookingModal

@@ -142,7 +142,9 @@ export const bookingService = {
     },
 
     addBlockedDate: async (block: BlockedDate): Promise<boolean> => {
-        const supabase = await createClient();
+        // Use Admin Client to bypass RLS (Policy is SELECT-only)
+        const { createAdminClient } = await import("@/lib/supabase/server");
+        const supabase = createAdminClient();
         const { error } = await supabase
             .from('blocked_dates')
             .insert({
@@ -154,11 +156,18 @@ export const bookingService = {
                 note: block.note
             });
 
-        return !error;
+        if (error) {
+            console.error("[bookingService] Failed to add blocked date:", error);
+            return false;
+        }
+
+        return true;
     },
 
     removeBlockedDate: async (blockId: string): Promise<boolean> => {
-        const supabase = await createClient();
+        // Use Admin Client to bypass RLS (Policy is SELECT-only)
+        const { createAdminClient } = await import("@/lib/supabase/server");
+        const supabase = createAdminClient();
         const { error } = await supabase
             .from('blocked_dates')
             .delete()
@@ -167,10 +176,10 @@ export const bookingService = {
         return !error;
     },
 
-    checkAvailability: async (roomId: string, start: Date, end: Date): Promise<boolean> => {
+    checkAvailability: async (roomId: string, start: Date | string, end: Date | string): Promise<boolean> => {
         const supabase = await createClient();
-        const startStr = formatLocalDate(start);
-        const endStr = formatLocalDate(end);
+        const startStr = typeof start === 'string' ? start : formatLocalDate(start);
+        const endStr = typeof end === 'string' ? end : formatLocalDate(end);
 
         // Use the database function we created
         const { data, error } = await supabase
@@ -189,7 +198,19 @@ export const bookingService = {
     },
 
     createBooking: async (booking: Booking): Promise<boolean> => {
-        const supabase = await createClient();
+        let supabase = await createClient();
+
+        // Check if user is authenticated
+        const { data: { user } } = await supabase.auth.getUser();
+
+        // If Guest (no user), use Admin Client to bypass RLS
+        if (!user) {
+            console.log("Guest Booking detected: Switching to Admin Client");
+            // Dynamic import to avoid circular dependency issues if any (though server.ts is safe)
+            const { createAdminClient } = await import("@/lib/supabase/server");
+            supabase = createAdminClient();
+        }
+
         const { error } = await supabase
             .from('bookings')
             .insert({
@@ -202,10 +223,21 @@ export const bookingService = {
                 guest_phone: booking.guestPhone,
                 guests_count: booking.guestsCount,
                 total_price: booking.totalPrice,
-                status: booking.status
+                status: booking.status,
+                // created_by will be NULL for guests, or automatically set by RLS for users (if user context)
+                // If using Admin Client, we rely on the fact that created_by is nullable.
             });
 
-        return !error;
+        if (error) {
+            console.error("Booking Creation Error:", error);
+            // Log full error details for debugging
+            console.error("Error Code:", error.code);
+            console.error("Error Message:", error.message);
+            console.error("Error Details:", error.details);
+            console.error("Error Hint:", error.hint);
+            return false;
+        }
+        return true;
     },
 
     cancelBooking: async (bookingId: string): Promise<boolean> => {

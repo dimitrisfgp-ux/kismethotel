@@ -26,6 +26,8 @@ interface UnavailableDate {
     type: 'booked' | 'blocked';
 }
 
+import { useRoomAvailability } from "@/hooks/useRoomAvailability";
+
 export function ContactForm() {
     const [subject, setSubject] = useState<RequestSubject>("general");
     const [name, setName] = useState("");
@@ -40,16 +42,32 @@ export function ContactForm() {
     const [lookupError, setLookupError] = useState("");
     const [submitted, setSubmitted] = useState(false);
     const [isDatePickerOpen, setIsDatePickerOpen] = useState(false);
-    const [unavailableDates, setUnavailableDates] = useState<UnavailableDate[]>([]);
     const { showToast } = useToast();
+
+    // Centralized Availability Hook
+    const { unavailableDates: rawUnavailableDates, isLoading: isLoadingAvailability } = useRoomAvailability(linkedBooking?.roomId);
+
+    // Filter out the current user's booking dates (so they can pick them for rescheduling if needed, though usually they pick NEW dates)
+    // Actually, usually you want to see that your OLD dates are "booked" (by you). 
+    // But if you are moving dates, you care about the TARGET dates.
+    // The previous logic was: "Exclude the current booking's dates from unavailable"
+    // This allows them to click their OWN dates.
+    const unavailableDates = rawUnavailableDates.filter(range => {
+        if (!linkedBooking) return true;
+        // Check if this range matches the current booking exactly
+        // We use string comparison on dates
+        const rangeFrom = formatLocalDate(range.from);
+        const rangeTo = formatLocalDate(range.to);
+        return !(rangeFrom === linkedBooking.checkIn && rangeTo === linkedBooking.checkOut);
+    });
 
     const requiresBookingId = subject === "reschedule" || subject === "cancellation";
     const requiresNewDates = subject === "reschedule";
 
     // Convert unavailable date ranges to individual disabled dates for calendar
     const disabledDates = unavailableDates.flatMap(range => {
-        const start = new Date(range.from);
-        const end = new Date(range.to);
+        const start = range.from; // Hook returns Date objects
+        const end = range.to;
         return eachDayOfInterval({ start, end });
     });
 
@@ -66,26 +84,25 @@ export function ContactForm() {
         setIsLookingUp(true);
         setLookupError("");
 
-        const booking = await getBookingByIdAction(bookingId.trim());
-        if (booking) {
-            setLinkedBooking(booking);
-            setName(booking.guestName);
-            setEmail(booking.guestEmail);
-            setPhone(booking.guestPhone || "");
-
-            // Fetch availability for this room (so user can't reschedule to booked dates)
-            const availability = await getRoomAvailabilityAction(booking.roomId);
-            // Exclude the current booking's dates from unavailable (user can reschedule within their own dates)
-            const filteredAvailability = availability.filter(range =>
-                !(range.from === booking.checkIn && range.to === booking.checkOut)
-            );
-            setUnavailableDates(filteredAvailability);
-        } else {
-            setLookupError("Booking not found. Please check the ID.");
+        try {
+            const booking = await getBookingByIdAction(bookingId.trim());
+            if (booking) {
+                setLinkedBooking(booking);
+                setName(booking.guestName);
+                setEmail(booking.guestEmail);
+                setPhone(booking.guestPhone || "");
+                // Availability fetching is now handled by the hook reactive to `linkedBooking`
+            } else {
+                setLookupError("Booking not found. Please check the ID.");
+                setLinkedBooking(null);
+            }
+        } catch (err) {
+            console.error(err);
+            setLookupError("Error searching for booking.");
             setLinkedBooking(null);
-            setUnavailableDates([]);
+        } finally {
+            setIsLookingUp(false);
         }
-        setIsLookingUp(false);
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -148,7 +165,6 @@ export function ContactForm() {
         setNewDateRange(undefined);
         setLinkedBooking(null);
         setSubmitted(false);
-        setUnavailableDates([]);
         setIsDatePickerOpen(false);
     };
 
