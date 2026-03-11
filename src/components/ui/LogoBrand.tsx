@@ -16,25 +16,25 @@ interface LogoBrandProps {
 
 const SIZE_CONFIG = {
     sm: {
-        icon: 'h-11 w-auto',
-        text: 'h-11 w-auto',
-        fontSize: 'text-2xl',
-        subtextSize: 'text-[10px]',
-        gap: 'gap-3'
+        icon: 'h-8 sm:h-9 md:h-11 w-auto',
+        text: 'h-8 sm:h-9 md:h-11 w-auto',
+        fontSize: 'text-xl sm:text-2xl',
+        subtextSize: 'text-[8px] sm:text-[10px]',
+        gap: 'gap-2 sm:gap-3'
     },
     md: {
-        icon: 'h-14 w-auto',
-        text: 'h-13 w-auto',
-        fontSize: 'text-3xl',
-        subtextSize: 'text-xs',
-        gap: 'gap-3'
+        icon: 'h-10 sm:h-12 md:h-14 w-auto',
+        text: 'h-10 sm:h-12 md:h-13 w-auto',
+        fontSize: 'text-2xl sm:text-3xl',
+        subtextSize: 'text-[10px] sm:text-xs',
+        gap: 'gap-2 sm:gap-3'
     },
     lg: {
-        icon: 'h-18 w-auto',
-        text: 'h-16 w-auto',
-        fontSize: 'text-4xl',
-        subtextSize: 'text-sm',
-        gap: 'gap-4'
+        icon: 'h-12 sm:h-14 md:h-18 w-auto',
+        text: 'h-12 sm:h-14 md:h-16 w-auto',
+        fontSize: 'text-3xl sm:text-4xl',
+        subtextSize: 'text-xs sm:text-sm',
+        gap: 'gap-3 sm:gap-4'
     }
 } as const;
 

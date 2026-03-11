@@ -36,9 +36,9 @@ export function Hero({ title, subtitle, ctaText, poster, videos }: HeroProps) {
                     className="absolute inset-0 w-full h-full object-cover"
                     poster={poster || PLACEHOLDER_HERO}
                 >
-                    {videos?.ios && <source src={videos.ios} type='video/mp4; codecs="hvc1"' media="(max-width: 768px)" />}
-                    {videos?.android && <source src={videos.android} type="video/mp4" media="(max-width: 768px)" />}
-                    {videos?.desktop && <source src={videos.desktop} type="video/mp4" media="(min-width: 769px)" />}
+                    {videos?.ios && <source src={videos.ios} media="(max-width: 768px)" />}
+                    {videos?.android && <source src={videos.android} media="(max-width: 768px)" />}
+                    {videos?.desktop && <source src={videos.desktop} />}
                     Your browser does not support the video tag.
                 </video>
             </div>
