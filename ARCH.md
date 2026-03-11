@@ -1,6 +1,6 @@
 # Arch Context: `kismethotel`
 
-_Generated 2026-03-11 18:05 UTC · 364 nodes · 702 edges · 159 diagnostics_
+_Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 
 > ⚠ **5 errors · 52 warnings** — review Diagnostics section
 

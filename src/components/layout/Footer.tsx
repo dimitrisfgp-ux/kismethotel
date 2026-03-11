@@ -46,7 +46,7 @@ export function Footer({ settings }: FooterProps) {
 
                     {/* Column 2: Form */}
                     <div className="bg-white/5 p-8 rounded-[var(--radius-subtle)] border border-white/5">
-                        <h4 className="font-montserrat text-white uppercase tracking-widest text-sm mb-6 text-center lg:text-left">Get in Touch</h4>
+                        <h3 className="font-montserrat text-white uppercase tracking-widest text-sm mb-6 text-center lg:text-left">Get in Touch</h3>
                         <ContactForm />
                     </div>
                 </div>

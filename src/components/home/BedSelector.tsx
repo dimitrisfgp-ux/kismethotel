@@ -35,6 +35,7 @@ function Counter({
                 <button
                     onClick={() => onChange(Math.max(0, count - 1))}
                     disabled={count === 0}
+                    aria-label={`Decrease ${label} beds`}
                     className="h-6 w-6 flex items-center justify-center rounded-full bg-white border border-[var(--color-sand)] hover:border-[var(--color-aegean-blue)] disabled:opacity-30 disabled:hover:border-[var(--color-sand)] transition-all"
                 >
                     <Minus className="h-3 w-3" />
@@ -45,6 +46,7 @@ function Counter({
                 <button
                     onClick={() => onChange(Math.min(max || 99, count + 1))}
                     disabled={max !== undefined && count >= max}
+                    aria-label={`Increase ${label} beds`}
                     className="h-6 w-6 flex items-center justify-center rounded-full bg-white border border-[var(--color-sand)] hover:border-[var(--color-aegean-blue)] disabled:opacity-30 disabled:hover:border-[var(--color-sand)] transition-all"
                 >
                     <Plus className="h-3 w-3" />
