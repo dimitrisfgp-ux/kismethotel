@@ -8,6 +8,8 @@ import { MobileMenu } from "./MobileMenu";
 import { BurgerIcon } from "./BurgerIcon";
 import { Container } from "../ui/Container";
 import { useScroll } from "@/hooks/useScroll";
+import { LogoBrand } from "../ui/LogoBrand";
+import { HotelSettings } from "@/types";
 
 interface RoomSummary {
     id: string;
@@ -18,14 +20,21 @@ interface RoomSummary {
 }
 
 export interface HeaderProps {
-    settings?: { name: string };
+    settings?: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' | 'logoTextUrl'>;
     rooms: RoomSummary[];
 }
+
+const DEFAULT_LOGO_SETTINGS: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' | 'logoTextUrl' | 'description'> = {
+    name: 'Kismet',
+    description: '',
+    logoMode: 'image',
+    logoIconUrl: '/images/kismet-logo-icon.svg',
+    logoTextUrl: '/images/kismet-logo-text.svg'
+};
 
 export function Header({ settings, rooms }: HeaderProps) {
     const { isScrolled } = useScroll({ threshold: 50 });
     const [isMobileOpen, setIsMobileOpen] = useState(false);
-    const hotelName = settings?.name || "Kismet";
 
     // Logic: 
     // Top of page (Hero): Transparent bg, White logo/text. (dark prop = true)
@@ -33,6 +42,7 @@ export function Header({ settings, rooms }: HeaderProps) {
     // Mobile Menu Open: White bg equivalent logic (managed by menu overlay).
 
     const isDark = !isScrolled && !isMobileOpen; // "Dark" means dark mode styles (white text)
+    const logoVariant = isMobileOpen ? 'light' : (isDark ? 'light' : 'dark');
 
     return (
         <header
@@ -44,12 +54,11 @@ export function Header({ settings, rooms }: HeaderProps) {
             <Container className="h-full flex items-center justify-between relative">
                 {/* Logo */}
                 <Link href="/" className="z-50 relative">
-                    <span className={cn(
-                        "font-montserrat font-bold text-2xl tracking-[0.2em] uppercase transition-colors duration-300",
-                        isMobileOpen ? "text-white" : (isDark ? "text-white" : "text-[var(--color-charcoal)]")
-                    )}>
-                        {hotelName}
-                    </span>
+                    <LogoBrand
+                        settings={{ ...DEFAULT_LOGO_SETTINGS, ...settings }}
+                        variant={logoVariant}
+                        size="sm"
+                    />
                 </Link>
 
                 {/* Desktop Nav */}

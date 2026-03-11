@@ -1,4 +1,4 @@
-import { Room, RoomFilters } from "@/types";
+import { Room, RoomFilters, RoomSummary } from "@/types";
 
 export function matchesPrice(room: Room, range: [number, number]): boolean {
     return room.pricePerNight >= range[0] && room.pricePerNight <= range[1];
@@ -36,6 +36,10 @@ export function matchesSingleBeds(room: Room, count: number): boolean {
     if (!count || count === 0) return true;
     const singleBeds = room.beds?.find(b => b.type === 'single')?.count || 0;
     return singleBeds === count;
+}
+
+export function getRoomName(rooms: RoomSummary[], id: string): string {
+    return rooms.find(r => r.id === id)?.name || "Unknown Room";
 }
 
 export function filterRooms(rooms: Room[], filters: RoomFilters): Room[] {

@@ -17,6 +17,9 @@ const getCachedSettings = unstable_cache(
                 name: 'Kismet',
                 description: 'Boutique Accommodations',
                 holdDurationMinutes: 5,
+                logoMode: 'image' as const,
+                logoIconUrl: '/images/kismet-logo-icon.svg',
+                logoTextUrl: '/images/kismet-logo-text.svg',
                 contact: { address: '', phone: '', email: '' },
                 socials: { whatsapp: '', viber: '', googleReviews: '' }
             };
@@ -26,6 +29,9 @@ const getCachedSettings = unstable_cache(
             name: data.name,
             description: data.description,
             holdDurationMinutes: data.hold_duration_minutes || 5,
+            logoMode: (data.logo_mode as 'text' | 'image') || 'image',
+            logoIconUrl: data.logo_icon_url || '/images/kismet-logo-icon.svg',
+            logoTextUrl: data.logo_text_url || '/images/kismet-logo-text.svg',
             contact: data.contact as HotelSettings['contact'],
             socials: data.socials as HotelSettings['socials']
         };
@@ -154,8 +160,6 @@ export const contentService = {
                 upsertPayload.push(newItem);
             }
 
-            console.log('Service: Upserting conveniences payload:', JSON.stringify(upsertPayload, null, 2));
-
             if (upsertPayload.length > 0) {
                 const { error } = await supabase.from('conveniences').upsert(upsertPayload);
 
@@ -280,7 +284,6 @@ export const contentService = {
 
     updateSettings: async (settings: HotelSettings): Promise<boolean> => {
         const supabase = await createClient();
-        console.log('Service: Updating Settings...', settings);
 
         const { error } = await supabase
             .from('hotel_settings')
@@ -289,6 +292,9 @@ export const contentService = {
                 name: settings.name,
                 description: settings.description,
                 hold_duration_minutes: settings.holdDurationMinutes,
+                logo_mode: settings.logoMode,
+                logo_icon_url: settings.logoIconUrl,
+                logo_text_url: settings.logoTextUrl,
                 contact: settings.contact,
                 socials: settings.socials
             });
@@ -307,7 +313,6 @@ export const contentService = {
 
     updatePageContent: async (content: PageContent): Promise<boolean> => {
         const supabase = await createClient();
-        console.log('Service: Updating Page Content...');
 
         const payload = {
             id: 1,
@@ -330,7 +335,6 @@ export const contentService = {
             return false;
         }
 
-        console.log('Service: Update Success');
         return true;
     },
 

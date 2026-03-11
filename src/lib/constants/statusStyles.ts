@@ -24,3 +24,15 @@ export function getStatusColor(status: string, type: 'booking' | 'request' = 'bo
     const colors = type === 'booking' ? BOOKING_STATUS_COLORS : REQUEST_STATUS_COLORS;
     return colors[status] || "bg-gray-100 text-gray-600 border-gray-200";
 }
+
+// Helper to get display label for booking status (capitalised)
+export function getStatusLabel(status: string): string {
+    const labels: Record<string, string> = {
+        confirmed: 'Confirmed',
+        active: 'Active',
+        pending: 'Pending',
+        cancelled: 'Cancelled',
+        completed: 'Completed'
+    };
+    return labels[status] || status;
+}

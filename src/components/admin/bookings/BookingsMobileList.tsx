@@ -2,6 +2,7 @@
 import { Booking, RoomSummary, ContactRequest } from "@/types";
 import { BookingsMobileCard } from "./BookingsMobileCard";
 import { FilterKey } from "@/hooks/useBookingFilters";
+import { getRoomName } from "@/lib/filterHelpers";
 
 interface BookingsMobileListProps {
     bookings: Booking[];
@@ -24,10 +25,6 @@ export function BookingsMobileList({
     isFilterActive,
     setOpenFilter
 }: BookingsMobileListProps) {
-
-    const getRoomName = (id: string) => {
-        return rooms.find(r => r.id === id)?.name || "Unknown Room";
-    };
 
     return (
         <div className="md:hidden space-y-3 p-2 bg-[var(--color-warm-white)]/30">
@@ -63,7 +60,7 @@ export function BookingsMobileList({
                         <BookingsMobileCard
                             key={booking.id}
                             booking={booking}
-                            roomName={getRoomName(booking.roomId)}
+                            roomName={getRoomName(rooms, booking.roomId)}
                             roomImage={rooms.find(r => r.id === booking.roomId)?.imageUrl}
                             requestCount={bookingRequests.filter(r => r.status === 'pending').length}
                             userRole={userRole}

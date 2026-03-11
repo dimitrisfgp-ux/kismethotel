@@ -5,6 +5,7 @@ import { updatePasswordAction } from '@/app/actions/auth';
 import { Lock, ArrowLeft, CheckCircle2, AlertCircle, Eye, EyeOff } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import AuthBranding from '@/components/admin/auth/AuthBranding';
+import { LogoBrand } from '@/components/ui/LogoBrand';
 
 export default function ResetPasswordPage() {
     const router = useRouter();
@@ -53,7 +54,11 @@ export default function ResetPasswordPage() {
                 <div className="w-full max-w-md space-y-8">
                     <div className="text-center lg:text-left">
                         <div className="lg:hidden mb-8">
-                            <h1 className="font-montserrat text-3xl font-bold tracking-[0.2em] text-[var(--color-aegean-blue)]">KISMET</h1>
+                            <LogoBrand
+                                settings={{ name: 'Kismet', description: '', logoMode: 'image', logoIconUrl: '/images/kismet-logo-icon.svg', logoTextUrl: '/images/kismet-logo-text.svg' }}
+                                variant="dark"
+                                size="md"
+                            />
                         </div>
                         <h2 className="text-2xl font-bold text-[var(--color-charcoal)]">Choose New Password</h2>
                         <p className="mt-2 text-[var(--color-charcoal)]/60">

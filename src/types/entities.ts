@@ -166,6 +166,9 @@ export interface HotelSettings {
     name: string;
     description: string;
     holdDurationMinutes: number; // For booking hold system
+    logoMode: 'text' | 'image';
+    logoIconUrl: string;
+    logoTextUrl: string;
     contact: {
         address: string;
         phone: string;

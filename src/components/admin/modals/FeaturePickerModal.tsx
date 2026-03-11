@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Search, Tag } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -15,28 +15,10 @@ export function FeaturePickerModal({ isOpen, onClose, onSelect, availableFeature
     const [mode, setMode] = useState<'select' | 'create'>('select');
     const [newFeatureName, setNewFeatureName] = useState("");
     const [searchTerm, setSearchTerm] = useState("");
-    const modalRef = useRef<HTMLDivElement>(null);
-
     // Filter existing features
     const filteredFeatures = availableFeatures.filter(f =>
         f.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    // Close on click outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-                onClose();
-            }
-        };
-
-        if (isOpen) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [isOpen, onClose]);
 
     const handleCreate = () => {
         if (!newFeatureName.trim()) return;

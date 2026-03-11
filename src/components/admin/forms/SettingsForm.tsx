@@ -2,13 +2,14 @@
 
 import { useState } from "react";
 import { HotelSettings } from "@/types";
-// import { contentService } from "@/services/contentService"; // Removed client-side service
 import { updateSettingsAction } from "@/app/actions/content";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { useToast } from "@/contexts/ToastContext";
-import { Save } from "lucide-react";
+import { Save, Type, ImageIcon } from "lucide-react";
 import { usePermission } from "@/contexts/PermissionContext";
+import { MediaPickerModal } from "@/components/admin/media/MediaPickerModal";
+import { cn } from "@/lib/utils";
 
 interface SettingsFormProps {
     initialSettings: HotelSettings;
@@ -19,6 +20,10 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
     const [settings, setSettings] = useState<HotelSettings>(initialSettings);
     const [isLoading, setIsLoading] = useState(false);
     const { showToast } = useToast();
+
+    // Media picker state
+    const [iconPickerOpen, setIconPickerOpen] = useState(false);
+    const [textPickerOpen, setTextPickerOpen] = useState(false);
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -63,24 +68,123 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                 )}
             </div>
 
+            {/* Brand Identity Section */}
+            <div className="space-y-4">
+                <h3 className="font-medium text-[var(--color-aegean-blue)] border-b pb-1">Brand Identity</h3>
+
+                {/* Logo Mode Toggle — Only visible to users with content.branding permission */}
+                {can('content.branding') && (
+                    <div className="space-y-2">
+                        <label className="text-sm font-medium text-[var(--color-charcoal)]">Logo Display Mode</label>
+                        <div className="flex rounded-lg border border-gray-200 overflow-hidden w-fit">
+                            <button
+                                type="button"
+                                onClick={() => setSettings(s => ({ ...s, logoMode: 'text' }))}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors",
+                                    settings.logoMode === 'text'
+                                        ? "bg-[var(--color-aegean-blue)] text-white"
+                                        : "bg-white text-gray-600 hover:bg-gray-50"
+                                )}
+                            >
+                                <Type className="h-4 w-4" />
+                                Text
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() => setSettings(s => ({ ...s, logoMode: 'image' }))}
+                                className={cn(
+                                    "flex items-center gap-2 px-4 py-2.5 text-sm font-medium transition-colors border-l border-gray-200",
+                                    settings.logoMode === 'image'
+                                        ? "bg-[var(--color-aegean-blue)] text-white"
+                                        : "bg-white text-gray-600 hover:bg-gray-50"
+                                )}
+                            >
+                                <ImageIcon className="h-4 w-4" />
+                                Image
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Pipeline A: Text Fields */}
+                {settings.logoMode === 'text' && (
+                    <div className="space-y-3 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        <Input
+                            label="Hotel Name"
+                            value={settings.name}
+                            onChange={(e) => setSettings({ ...settings, name: e.target.value })}
+                            required
+                            disabled={!can('content.settings')}
+                        />
+                        <Input
+                            label="Description"
+                            value={settings.description}
+                            onChange={(e) => setSettings({ ...settings, description: e.target.value })}
+                            disabled={!can('content.settings')}
+                        />
+                    </div>
+                )}
+
+                {/* Pipeline B: Image Fields */}
+                {settings.logoMode === 'image' && (
+                    <div className="space-y-4 p-4 bg-gray-50 rounded-lg border border-gray-100">
+                        {/* Logo Icon */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-[var(--color-charcoal)]">Logo Icon</label>
+                            <div className="flex items-center gap-4">
+                                <div className="h-14 w-14 bg-white rounded-lg border border-gray-200 flex items-center justify-center p-2">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={settings.logoIconUrl}
+                                        alt="Logo Icon"
+                                        className="h-full w-auto object-contain"
+                                    />
+                                </div>
+                                {can('content.settings') && (
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={() => setIconPickerOpen(true)}
+                                        className="text-sm"
+                                    >
+                                        Browse Media
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+
+                        {/* Logo Text */}
+                        <div className="space-y-2">
+                            <label className="text-sm font-medium text-[var(--color-charcoal)]">Logo Text</label>
+                            <div className="flex items-center gap-4">
+                                <div className="h-14 bg-white rounded-lg border border-gray-200 flex items-center justify-center px-4 py-2">
+                                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                                    <img
+                                        src={settings.logoTextUrl}
+                                        alt="Logo Text"
+                                        className="h-full w-auto object-contain"
+                                    />
+                                </div>
+                                {can('content.settings') && (
+                                    <Button
+                                        type="button"
+                                        variant="secondary"
+                                        onClick={() => setTextPickerOpen(true)}
+                                        className="text-sm"
+                                    >
+                                        Browse Media
+                                    </Button>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </div>
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
                     <h3 className="font-medium text-[var(--color-aegean-blue)] border-b pb-1">Contact Details</h3>
-
-                    <Input
-                        label="Hotel Name"
-                        value={settings.name}
-                        onChange={(e) => setSettings({ ...settings, name: e.target.value })}
-                        required
-                        disabled={!can('content.settings')}
-                    />
-
-                    <Input
-                        label="Description"
-                        value={settings.description}
-                        onChange={(e) => setSettings({ ...settings, description: e.target.value })}
-                        disabled={!can('content.settings')}
-                    />
 
                     <Input
                         label="Address"
@@ -122,6 +226,27 @@ export function SettingsForm({ initialSettings }: SettingsFormProps) {
                     />
                 </div>
             </div>
+
+            {/* Media Picker Modals */}
+            <MediaPickerModal
+                isOpen={iconPickerOpen}
+                onClose={() => setIconPickerOpen(false)}
+                onSelect={(media) => {
+                    setSettings(s => ({ ...s, logoIconUrl: media.url }));
+                    setIconPickerOpen(false);
+                }}
+                filterType="image"
+            />
+            <MediaPickerModal
+                isOpen={textPickerOpen}
+                onClose={() => setTextPickerOpen(false)}
+                onSelect={(media) => {
+                    setSettings(s => ({ ...s, logoTextUrl: media.url }));
+                    setTextPickerOpen(false);
+                }}
+                filterType="image"
+            />
         </form>
     );
 }
+

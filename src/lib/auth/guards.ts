@@ -77,32 +77,6 @@ export async function getUserRole(): Promise<{ user: User; roleName: string; per
 export { getCachedUser, getCachedUserWithRole };
 
 /**
- * Checks if the current user has a specific permission.
- * Returns true/false. Does not throw.
- */
-export async function checkPermission(permissionSlug: string): Promise<boolean> {
-    const result = await getCachedUserWithRole();
-    if (!result || !result.roleId) return false;
-
-
-
-    // Check specific permission
-    const supabase = await createClient();
-    const { data: permissions } = await supabase
-        .from('role_permissions')
-        .select(`
-            permissions!inner (
-                slug
-            )
-        `)
-        .eq('role_id', result.roleId)
-        .eq('permissions.slug', permissionSlug)
-        .single();
-
-    return !!permissions;
-}
-
-/**
  * Enforces a permission check.
  * Throws an error if the user does NOT have the permission.
  * Returns the User object if successful.

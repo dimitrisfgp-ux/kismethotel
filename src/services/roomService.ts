@@ -231,8 +231,6 @@ export const roomService = {
             return false;
         }
 
-        console.log("Room updated successfully. Rows modified:", count);
-
         // Sync Media: Smart Diff (Non-Destructive)
         // 1. Fetch existing media links to determine what to remove
         const { data: existingMedia } = await supabase
@@ -247,7 +245,6 @@ export const roomService = {
         const toRemove = existingIds.filter(id => !incomingIds.includes(id));
 
         if (toRemove.length > 0) {
-            console.log(`RoomService: Removing ${toRemove.length} media links from room ${room.id}`);
             const { error: deleteError } = await supabase
                 .from('room_media')
                 .delete()

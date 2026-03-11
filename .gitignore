@@ -49,3 +49,8 @@ next-env.d.ts
 
 # logs
 *.log
+
+
+
+.nx/cache
+.nx/workspace-data

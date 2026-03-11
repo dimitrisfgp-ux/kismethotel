@@ -2,9 +2,14 @@ import { createClient } from '@/lib/supabase/server';
 import { redirect } from 'next/navigation';
 import AuthBranding from '@/components/admin/auth/AuthBranding';
 import LoginForm from '@/components/admin/auth/LoginForm';
+import { contentService } from '@/services/contentService';
+import { LogoBrand } from '@/components/ui/LogoBrand';
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
-    const { error: loginError, success } = await searchParams;
+    const [{ error: loginError, success }, settings] = await Promise.all([
+        searchParams,
+        contentService.getSettings()
+    ]);
 
     async function login(formData: FormData) {
         "use server";
@@ -31,14 +36,14 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
 
     return (
         <div className="min-h-screen grid lg:grid-cols-[380px_1fr]">
-            <AuthBranding />
+            <AuthBranding settings={settings} />
 
             {/* Right: Login Form */}
             <div className="flex items-center justify-center p-8 bg-[var(--color-warm-white)]">
                 <div className="w-full max-w-md space-y-8">
                     <div className="text-center lg:text-left">
                         <div className="lg:hidden mb-8">
-                            <h1 className="font-montserrat text-3xl font-bold tracking-[0.2em] text-[var(--color-aegean-blue)]">KISMET</h1>
+                            <LogoBrand settings={settings} variant="dark" size="md" />
                         </div>
                         <h2 className="text-2xl font-bold text-[var(--color-charcoal)]">CMS Access</h2>
                         <p className="mt-2 text-[var(--color-charcoal)]/60">

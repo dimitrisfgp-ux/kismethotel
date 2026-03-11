@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { useState } from "react";
 import { Plus, Search } from "lucide-react";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
@@ -21,28 +21,10 @@ export function AmenityPickerModal({ isOpen, onClose, onSelect, availableAmeniti
     const [newAmenityName, setNewAmenityName] = useState("");
     const [newAmenityIcon, setNewAmenityIcon] = useState("Star"); // Default icon
     const [searchTerm, setSearchTerm] = useState("");
-    const modalRef = useRef<HTMLDivElement>(null);
-
     // Filter existing amenities
     const filteredAmenities = availableAmenities.filter(a =>
         a.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
-
-    // Close on click outside
-    useEffect(() => {
-        const handleClickOutside = (event: MouseEvent) => {
-            if (modalRef.current && !modalRef.current.contains(event.target as Node)) {
-                onClose();
-            }
-        };
-
-        if (isOpen) {
-            document.addEventListener("mousedown", handleClickOutside);
-        }
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [isOpen, onClose]);
 
     const handleCreateWrapper = () => {
         if (!newAmenityName.trim()) return;

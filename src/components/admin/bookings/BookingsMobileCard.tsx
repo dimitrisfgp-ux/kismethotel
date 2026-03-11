@@ -3,7 +3,7 @@
 import { Booking } from "@/types";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/Badge";
-import { getStatusColor } from "@/lib/constants/statusStyles";
+import { getStatusColor, getStatusLabel } from "@/lib/constants/statusStyles";
 import { Eye, Trash2, XCircle, ImageOff } from "lucide-react";
 import Image from "next/image";
 import { adminDeleteBookingAction, adminCancelBookingAction } from "@/app/actions/bookings";
@@ -32,16 +32,6 @@ export function BookingsMobileCard({
 }: BookingsMobileCardProps) {
     const { showToast } = useToast();
     const { can } = usePermission();
-
-    // Helper for status label
-    const bookingStatusLabel = (status: string) => {
-        if (status === 'confirmed') return 'Confirmed';
-        if (status === 'pending') return 'Pending';
-        if (status === 'cancelled') return 'Cancelled';
-        if (status === 'completed') return 'Completed';
-        if (status === 'active') return 'Active';
-        return status;
-    };
 
     return (
         <div className="bg-white p-3 rounded-lg border border-[var(--color-sand)] shadow-sm space-y-2">
@@ -75,7 +65,7 @@ export function BookingsMobileCard({
                             </div>
                         </div>
                         <Badge variant="outline" className={`${getStatusColor(booking.status, 'booking')} shrink-0 text-[9px] px-1.5 py-0.5 h-auto uppercase tracking-wide`}>
-                            {bookingStatusLabel(booking.status)}
+                            {getStatusLabel(booking.status)}
                         </Badge>
                     </div>
 

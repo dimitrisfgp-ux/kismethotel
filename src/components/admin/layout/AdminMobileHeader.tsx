@@ -5,22 +5,34 @@ import { useState } from "react";
 import { Sheet } from "@/components/ui/Sheet";
 import { AdminSidebar } from "./AdminSidebar";
 import type { User as AuthUser } from "@supabase/supabase-js";
+import { LogoBrand } from "@/components/ui/LogoBrand";
+import { HotelSettings } from "@/types";
 
 interface AdminMobileHeaderProps {
     user: AuthUser | null;
     role: string;
     fullName: string | null;
+    settings?: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' | 'logoTextUrl' | 'description'>;
 }
 
-export function AdminMobileHeader({ user, role, fullName }: AdminMobileHeaderProps) {
+const DEFAULT_SETTINGS: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' | 'logoTextUrl' | 'description'> = {
+    name: 'Kismet',
+    description: '',
+    logoMode: 'image',
+    logoIconUrl: '/images/kismet-logo-icon.svg',
+    logoTextUrl: '/images/kismet-logo-text.svg'
+};
+
+export function AdminMobileHeader({ user, role, fullName, settings }: AdminMobileHeaderProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
         <div className="md:hidden sticky top-0 z-40 bg-[var(--color-aegean-blue)] text-white px-4 h-16 flex items-center justify-between shadow-md">
             {/* Branding */}
-            <span className="font-montserrat font-bold text-lg tracking-[0.1em] uppercase">
-                Kismét CMS
-            </span>
+            <div className="flex items-center gap-2">
+                <LogoBrand settings={{ ...DEFAULT_SETTINGS, ...settings }} variant="light" size="sm" />
+                <span className="font-montserrat font-bold text-xs tracking-wider text-white/50 uppercase">CMS</span>
+            </div>
 
             {/* Menu Button */}
             <button
@@ -37,6 +49,7 @@ export function AdminMobileHeader({ user, role, fullName }: AdminMobileHeaderPro
                     user={user}
                     role={role}
                     fullName={fullName}
+                    settings={settings}
                     className="relative w-full h-full shadow-none"
                     onNavigate={() => setIsOpen(false)}
                 />

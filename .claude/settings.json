@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(xargs grep -l \"useRoomAvailability\\\\|useBookingForm\\\\|useRealtimeHolds\")"
+    ],
+    "additionalDirectories": [
+      "c:\\Users\\dimitris\\Documents\\GitHub\\kismethotel\\src\\lib"
+    ]
+  }
+}

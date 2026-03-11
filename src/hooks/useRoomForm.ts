@@ -53,7 +53,6 @@ export function useRoomForm({ initialRoom, isNew = false }: UseRoomFormProps) {
         }
 
         return media;
-        return media;
     });
 
     const [isMediaPickerOpen, setIsMediaPickerOpen] = useState(false);

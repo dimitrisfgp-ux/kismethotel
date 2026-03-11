@@ -78,8 +78,6 @@ export async function getRoomAvailabilityAction(roomId: string) {
 // --- Booking Creation ---
 
 export async function createBookingAction(booking: Booking, holdId?: string) {
-    console.log(`[createBookingAction] Attempting booking for Room ${booking.roomId} (${booking.checkIn} to ${booking.checkOut})`);
-
     // Availability check (Standardized with Admin flow)
     // We pass strings directly to avoid timezone off-by-one errors during Date conversion
     const isAvailable = await bookingService.checkAvailability(
@@ -88,15 +86,11 @@ export async function createBookingAction(booking: Booking, holdId?: string) {
         booking.checkOut
     );
 
-    console.log(`[createBookingAction] Availability Check Result: ${isAvailable}`);
-
     if (!isAvailable) {
-        console.warn(`[createBookingAction] Room unavailable.`);
         return false; // Room was booked by someone else
     }
 
     const success = await bookingService.createBooking(booking);
-    console.log(`[createBookingAction] Create Booking Result: ${success}`);
 
     if (success) {
         // Release hold server-side
@@ -162,8 +156,6 @@ export async function updateBookingDatesAction(bookingId: string, checkIn: strin
     );
 
     if (!isAvailable) {
-        console.warn(`[updateBookingDatesAction] Room ${booking.roomId} unavailable for dates ${checkIn}-${checkOut}`);
-        // Return false so the UI shows "Failed to update dates"
         return false;
     }
 

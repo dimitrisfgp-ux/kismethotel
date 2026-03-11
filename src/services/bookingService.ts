@@ -1,4 +1,4 @@
-import { createClient } from "@/lib/supabase/server";
+import { createClient, createAdminClient } from "@/lib/supabase/server";
 import { Booking, BlockedDate, BookingStatus, PaginatedResponse } from "@/types";
 import { formatLocalDate } from "@/lib/dateUtils";
 
@@ -160,7 +160,6 @@ export const bookingService = {
 
     addBlockedDate: async (block: BlockedDate): Promise<boolean> => {
         // Use Admin Client to bypass RLS (Policy is SELECT-only)
-        const { createAdminClient } = await import("@/lib/supabase/server");
         const supabase = createAdminClient();
         const { error } = await supabase
             .from('blocked_dates')
@@ -183,7 +182,6 @@ export const bookingService = {
 
     removeBlockedDate: async (blockId: string): Promise<boolean> => {
         // Use Admin Client to bypass RLS (Policy is SELECT-only)
-        const { createAdminClient } = await import("@/lib/supabase/server");
         const supabase = createAdminClient();
         const { error } = await supabase
             .from('blocked_dates')
@@ -223,9 +221,6 @@ export const bookingService = {
 
         // If Guest (no user), use Admin Client to bypass RLS
         if (!user) {
-            console.log("Guest Booking detected: Switching to Admin Client");
-            // Dynamic import to avoid circular dependency issues if any (though server.ts is safe)
-            const { createAdminClient } = await import("@/lib/supabase/server");
             supabase = createAdminClient();
         }
 

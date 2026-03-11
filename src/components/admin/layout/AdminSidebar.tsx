@@ -6,6 +6,8 @@ import { LayoutDashboard, BedDouble, Settings, ExternalLink, CalendarCheck, Mess
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/admin/auth/LogoutButton";
 import type { User as AuthUser } from "@supabase/supabase-js";
+import { LogoBrand } from "@/components/ui/LogoBrand";
+import { HotelSettings } from "@/types";
 
 import { usePermission } from "@/contexts/PermissionContext";
 
@@ -53,11 +55,12 @@ interface AdminSidebarProps {
     user: AuthUser | null;
     role: string;
     fullName: string | null;
+    settings?: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' | 'logoTextUrl' | 'description'>;
     className?: string;
     onNavigate?: () => void;
 }
 
-export function AdminSidebar({ user, role, fullName, className, onNavigate }: AdminSidebarProps) {
+export function AdminSidebar({ user, role, fullName, settings, className, onNavigate }: AdminSidebarProps) {
     const pathname = usePathname();
     const { can } = usePermission();
 
@@ -75,10 +78,13 @@ export function AdminSidebar({ user, role, fullName, className, onNavigate }: Ad
             className
         )}>
             {/* Branding */}
-            <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0">
-                <span className="font-montserrat font-bold text-xl tracking-[0.1em] uppercase">
-                    Kismét CMS
-                </span>
+            <div className="h-16 flex items-center px-6 border-b border-white/10 shrink-0 gap-2">
+                {settings ? (
+                    <LogoBrand settings={settings} variant="light" size="sm" />
+                ) : (
+                    <span className="font-montserrat font-bold text-lg tracking-[0.1em] uppercase">Kismet</span>
+                )}
+                <span className="font-montserrat font-bold text-xs tracking-wider text-white/50 uppercase">CMS</span>
             </div>
 
             {/* Navigation */}

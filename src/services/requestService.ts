@@ -121,11 +121,6 @@ export const requestService = {
 
     createRequest: async (request: ContactRequest): Promise<{ success: boolean; error?: any }> => {
         const supabase = await createClient();
-        console.log('Creating request payload:', {
-            id: request.id,
-            subject: request.subject,
-            booking_id: request.bookingId
-        });
         const { error } = await supabase
             .from('contact_requests')
             .insert({

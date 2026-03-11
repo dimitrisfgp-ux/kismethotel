@@ -8,7 +8,8 @@ import { adminDeleteBookingAction, adminCancelBookingAction } from "@/app/action
 import { useToast } from "@/contexts/ToastContext";
 import { FilterableHeader } from "./FilterableHeader";
 import { RequestBadge } from "./RequestBadge";
-import { getStatusColor } from "@/lib/constants/statusStyles";
+import { getStatusColor, getStatusLabel } from "@/lib/constants/statusStyles";
+import { getRoomName } from "@/lib/filterHelpers";
 import { FilterKey, SortConfig } from "@/hooks/useBookingFilters";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/admin/Table";
 import { AdminActionButton } from "@/components/ui/admin/AdminActionButton";
@@ -42,10 +43,6 @@ export function BookingsDesktopTable({
 }: BookingsDesktopTableProps) {
     const { showToast } = useToast();
     const { can } = usePermission();
-
-    const getRoomName = (id: string) => {
-        return rooms.find(r => r.id === id)?.name || "Unknown Room";
-    };
 
     return (
         <div className="hidden md:block">
@@ -140,7 +137,7 @@ export function BookingsDesktopTable({
                                         <div className="text-xs text-[var(--color-charcoal)]/60">{booking.guestEmail}</div>
                                     </TableCell>
                                     <TableCell className="font-medium whitespace-nowrap">
-                                        {getRoomName(booking.roomId)}
+                                        {getRoomName(rooms, booking.roomId)}
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
                                         <div className="flex flex-col">
@@ -160,7 +157,7 @@ export function BookingsDesktopTable({
                                             variant="outline"
                                             className={getStatusColor(booking.status, 'booking')}
                                         >
-                                            {booking.status}
+                                            {getStatusLabel(booking.status)}
                                         </Badge>
                                     </TableCell>
                                     <TableCell className="whitespace-nowrap">
