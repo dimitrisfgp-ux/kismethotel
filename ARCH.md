@@ -1,8 +1,8 @@
 # Arch Context: `kismethotel`
 
-_Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
+_Generated 2026-03-22 13:45 UTC · 360 nodes · 730 edges · 115 diagnostics_
 
-> ⚠ **5 errors · 52 warnings** — review Diagnostics section
+> ⚠ **4 errors · 28 warnings** — review Diagnostics section
 
 ---
 
@@ -19,62 +19,84 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 | Layer | Count | Client | Diagnostics |
 |-------|-------|--------|-------------|
 | 📄 Pages | 23 | 4 client | 🔴 1 errors, 16 total |
-| 🧩 Components | 132 | 115 client | 🟡 33 warnings/info |
+| 🧩 Components | 132 | 116 client | 🟡 14 warnings/info |
 | 🪝 Hooks | 19 | 19 client | 🟡 1 warnings/info |
-| ⚡ Actions | 52 | — | 🔴 1 errors, 11 total |
+| ⚡ Actions | 52 | — | 🟡 10 warnings/info |
 | 🔌 API Routes | 5 | — | 🟡 4 warnings/info |
-| 🛠 Services | 53 | — | 🔴 1 errors, 4 total |
+| 🛠 Services | 53 | — | 🔴 1 errors, 3 total |
 | 🔐 Auth | 16 | — | 🔴 3 errors, 15 total |
-| 🗄 Database | 23 | — | 🔴 2 errors, 23 total |
-| ☁ Infrastructure | 41 | — | 🔴 2 errors, 33 total |
+| 🗄 Database | 19 | — | 🔴 1 errors, 19 total |
+| ☁ Infrastructure | 41 | — | 🔴 2 errors, 19 total |
 
 ---
 
 ## Route Inventory
 
-- `PAG` **admin/bookings** 🔒 ⚠[SEO-006,MI-012] → calls:roomService, calls:bookingService, calls:requestService, calls:getUserRole
-- `LAY` **admin (layout)** → calls:contentService
-- `PAG` **admin/media** 🔒 ⚠[MI-012]
-- `PAG` **admin/page-content** 🔒 ⚠[MI-012] → calls:contentService
-- `PAG` **admin** 🔒 ⚠[MI-012]
-- `PAG` **admin/profile** 🔒 ⚠[PV-003,MI-012,MI-013] → calls:createClient, reads:profiles, calls:updateProfileAction
-- `PAG` **admin/requests** 🔒 ⚠[MI-012] → calls:requestService, calls:bookingService
-- `PAG` **admin/rooms/new** 🔒 ⚠[MI-012]
-- `PAG` **admin/rooms** 🔒 ⚠[MI-012] → calls:roomService
-- `PAG` **admin/rooms/[slug]** 🔒 ⚠[MI-012] → calls:roomService
-- `PAG` **admin/settings** 🔒 ⚠[MI-012] → calls:createClient, calls:getUserRole, calls:contentService, calls:getUsersAction, calls:getRolesAction, calls:getPermissionsAction
-- `LAY` **/ (layout)**
-- `LAY` **/ (layout)**
-- `PAG` **login** ⚠[SEO-006,MI-012] → calls:contentService, calls:createClient
-- `PAG` **reset-password** ⚠[SEO-006,MI-012] → calls:updatePasswordAction
-- `PAG` **book** ⚠[SEO-006,MI-012]
-- `PAG` **book/success** ⚠[SEO-006,MI-012]
-- `LAY` **/ (layout)** → calls:contentService, calls:roomService
-- `PAG` **/** ⚠[SEO-001,MI-012] → calls:roomService, calls:contentService
-- `PAG` **rooms/[slug]** ⚠[SEO-001,MI-022,MI-012] → calls:roomService, calls:bookingService
-- `API` **GET /api/cron/cleanup-holds** ⚠[DC-004] → calls:createAdminClient, writes:booking_holds
-- `API` **GET /api/cron/pre-checkout** ⚠[DC-004] → calls:bookingService, calls:roomService, calls:preCheckoutEmail, calls:sendEmail, calls:getAdminEmail
-- `API` **POST /api/holds/release** → calls:holdService
-- `API` **GET /auth/callback** ⚠[DC-004] → calls:createClient
-- `MID` **middleware** ⚠[SEC-003,SEC-016,SG-008] → calls:updateSession
+- `PAGE` **admin/bookings** 🔒 ⚠[SEO-006,MI-012] → calls:roomService, calls:bookingService, calls:requestService, calls:getUserRole
+- `LAYOUT` **admin (layout)** → calls:contentService
+- `PAGE` **admin/media** 🔒 ⚠[MI-012]
+- `PAGE` **admin/page-content** 🔒 ⚠[MI-012] → calls:contentService
+- `PAGE` **admin** 🔒 ⚠[MI-012]
+- `PAGE` **admin/profile** 🔒 ⚠[PV-003,MI-012,MI-013] → calls:createClient, reads:profiles, calls:updateProfileAction
+- `PAGE` **admin/requests** 🔒 ⚠[MI-012] → calls:requestService, calls:bookingService
+- `PAGE` **admin/rooms/new** 🔒 ⚠[MI-012]
+- `PAGE` **admin/rooms** 🔒 ⚠[MI-012] → calls:roomService
+- `PAGE` **admin/rooms/[slug]** 🔒 ⚠[MI-012] → calls:roomService
+- `PAGE` **admin/settings** 🔒 ⚠[MI-012] → calls:createClient, calls:getUserRole, calls:contentService, calls:getUsersAction, calls:getRolesAction, calls:getPermissionsAction
+- `LAYOUT` **/ (layout)**
+- `LAYOUT` **/ (layout)**
+- `PAGE` **login** ⚠[SEO-006,MI-012] → calls:contentService, calls:createClient, calls:login
+- `PAGE` **reset-password** ⚠[SEO-006,MI-012] → calls:updatePasswordAction
+- `PAGE` **book** ⚠[SEO-006,MI-012] → calls:getRoomByIdAction
+- `PAGE` **book/success** ⚠[SEO-006,MI-012]
+- `LAYOUT` **/ (layout)** → calls:contentService, calls:roomService
+- `PAGE` **/** ⚠[SEO-001,MI-012] → calls:roomService, calls:contentService
+- `PAGE` **rooms/[slug]** ⚠[SEO-001,MI-022,MI-012] → calls:roomService, calls:bookingService
+- `API_ROUTE` **GET /api/cron/cleanup-holds** ⚠[DC-004] → calls:createAdminClient, writes:booking_holds, reads:booking_holds
+- `API_ROUTE` **GET /api/cron/pre-checkout** ⚠[DC-004] → calls:bookingService, calls:roomService, calls:preCheckoutEmail, calls:sendEmail, calls:getAdminEmail
+- `API_ROUTE` **POST /api/holds/release** → calls:holdService
+- `API_ROUTE` **GET /auth/callback** ⚠[DC-004] → calls:createClient
+- `MIDDLEWARE` **middleware** ⚠[SEC-016] → calls:updateSession
 
 ---
 
 ## Data Pipelines
 
-**`profiles`** ⚠ PV-003, SEC-005, SEC-004
+**`LogoutButton`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`MediaGallery`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`MediaUploader`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`useRealtimeHolds`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`requirePermission`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`createAdminClient`** ⚠ SEC-013, DR-010
+  - _(no graph edges detected — check direct SQL)_
+**`createClient`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`createAdminClient`** ⚠ SEC-013, DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`bookingService`** ⚠ SEC-013, DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`contentService`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`requestService`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`roomService`** ⚠ DR-002
+  - _(no graph edges detected — check direct SQL)_
+**`profiles`** ⚠ PV-003, SEC-004
   - reads: admin/profile, getUsersAction, updateProfileAction, getUserRole
   - writes: inviteUserAction, deleteUserAction, updateUserAction, updateProfileAction
-**`authUpdates`** ⚠ SEC-005, SEC-004
-  - writes: updateProfileAction
 **`bookings`** ⚠ SEC-004
-  - reads: bookingService, holdService
+  - reads: adminDeleteBookingAction, bookingService, holdService
   - writes: adminDeleteBookingAction, bookingService
 **`page_content`** ⚠ SEC-004
   - reads: checkMediaUsageAction, contentService
   - writes: contentService
 **`media_assets`** ⚠ SEC-004
-  - reads: checkMediaUsageAction, deleteMediaAction, MediaGallery
+  - reads: checkMediaUsageAction, deleteMediaAction, MediaGallery, MediaUploader
   - writes: deleteMediaAction, MediaUploader
 **`room_media`** ⚠ SEC-004
   - reads: checkMediaUsageAction, roomService
@@ -82,22 +104,16 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 **`attractions`** ⚠ SEC-004
   - reads: checkMediaUsageAction, contentService
 **`roles`** ⚠ SEC-004
-  - reads: getRolesAction, getRoleDetailsAction, deleteRoleAction
+  - reads: getRolesAction, getRoleDetailsAction, createRoleAction, updateRoleAction, deleteRoleAction
   - writes: createRoleAction, updateRoleAction, deleteRoleAction
 **`permissions`** ⚠ SEC-004
   - reads: getPermissionsAction
 **`role_permissions`** ⚠ SEC-004
-  - reads: getRoleDetailsAction, updateRoleAction, getUserRole, requirePermission
+  - reads: getRoleDetailsAction, createRoleAction, updateRoleAction, getUserRole, requirePermission
   - writes: createRoleAction, updateRoleAction
 **`booking_holds`** ⚠ SEC-004
-  - reads: holdService
+  - reads: GET /api/cron/cleanup-holds, holdService
   - writes: GET /api/cron/cleanup-holds, holdService
-**`storagePath`** ⚠ SEC-004
-  - reads: MediaUploader
-**`bucket`** ⚠ SEC-004
-  - reads: MediaUploader
-**`channel`** ⚠ SEC-004
-  - reads: useRealtimeHolds
 **`blocked_dates`** ⚠ SEC-004
   - reads: bookingService
   - writes: bookingService
@@ -131,7 +147,7 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 
 - Session provider: **SessionProvider**
 - Middleware: **middleware**
-  - ⚠ No outbound protection edges (check matcher config)
+  - Auth logic detected in source (no explicit route-level protection edges traced)
 
 **DB Client Tiers:**
 - `browser` **LogoutButton**
@@ -151,8 +167,8 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 - `user` **roomService**
 
 **Layout Auth Guards:**
-- **admin (layout)** protects: admin/bookings, admin/media, admin/page-content, admin, admin/profile, admin/requests, admin/rooms/new, admin/rooms +2 more
-- **/ (layout)** protects: admin/bookings, admin/media, admin/page-content, admin, admin/profile, admin/requests, admin/rooms/new, admin/rooms +2 more
+- **(admin)/admin (layout)** protects: admin/bookings, admin/media, admin/page-content, admin, admin/profile, admin/requests, admin/rooms/new, admin/rooms +2 more
+- **(admin) (layout)** protects: admin/bookings, admin/media, admin/page-content, admin, admin/profile, admin/requests, admin/rooms/new, admin/rooms +2 more
 
 **Unprotected pages** (6/16):
 - login
@@ -166,32 +182,28 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 
 ## Critical Nodes (High Fan-In)
 
-- **cn** `service` — 35 inbound edges
 - **requirePermission** `supabase_client` — 32 inbound edges
 - **usePermission** `hook` — 25 inbound edges
+- **createClient** `supabase_server` — 21 inbound edges
 - **useToast** `hook` — 20 inbound edges
-- **createClient** `supabase_server` — 20 inbound edges
+- **bookingService** `supabase_client` — 16 inbound edges
 - **roomService** `supabase_client` — 16 inbound edges
-- **bookingService** `supabase_client` — 15 inbound edges
 - **contentService** `supabase_client` — 13 inbound edges
 - **Modal** `modal` — 11 inbound edges
 - **ModalBody** `client_component` — 11 inbound edges
+- **ModalHeader** `client_component` — 10 inbound edges
 
 ---
 
 ## Diagnostics
 
-**Total:** 159 (5 errors · 52 warnings · 102 info)
+**Total:** 115 (4 errors · 28 warnings · 83 info)
 
 ### 🔴 Errors
 - `PV-003` **Client page accesses DB directly: admin/profile**
   A page marked 'use client' is accessing the database directly without a server intermediary.
   Affected: admin/profile, profiles
   Fix: Fetch data server-side in a server component parent or via an API route.
-- `SEC-005` **Action writes DB without auth: updateProfileAction**
-  This server action performs DB writes but no authentication edge or permission guard was detected.
-  Affected: updateProfileAction, profiles, authUpdates
-  Fix: Call requirePermission() or validateSession() before any DB mutation.
 - `SEC-013` **Admin DB client used in non-admin context: holdService**
   holdService uses the Supabase admin client (service role, bypasses RLS) but is not in an admin or cron path and does not use the Auth Admin API.
   Affected: holdService, createAdminClient
@@ -204,23 +216,16 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   The project has 2 cron job(s) but no CRON_SECRET environment variable was found. Without this secret, cron routes using conditional guards are publicly accessible.
   Affected: /api/cron/cleanup-holds (0 0 * * *), /api/cron/pre-checkout (0 7 * * *)
   Fix: Add CRON_SECRET=<random-secret> to .env.local and Vercel project environment variables.
+  Reference: https://vercel.com/docs/cron-jobs/manage-cron-jobs#securing-cron-jobs
 
 ### 🟡 Warnings
 - `DC-003` **Unused server action: inline_action**
   This server action has no inbound calls or trigger edges.
   Affected: inline_action
   Fix: Remove the action or wire it to a form or component.
-- `DC-003` **Unused server action: login**
-  This server action has no inbound calls or trigger edges.
-  Affected: login
-  Fix: Remove the action or wire it to a form or component.
 - `DC-003` **Unused server action: cancelBookingAction**
   This server action has no inbound calls or trigger edges.
   Affected: cancelBookingAction
-  Fix: Remove the action or wire it to a form or component.
-- `DC-003` **Unused server action: getRoomByIdAction**
-  This server action has no inbound calls or trigger edges.
-  Affected: getRoomByIdAction
   Fix: Remove the action or wire it to a form or component.
 - `DC-003` **Unused server action: releaseHoldAction**
   This server action has no inbound calls or trigger edges.
@@ -234,97 +239,21 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   This server action has no inbound calls or trigger edges.
   Affected: getRoomsAction
   Fix: Remove the action or wire it to a form or component.
-- `DC-001` **Unused component: BookingIdFilter**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: BookingIdFilter
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: CostFilter**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: CostFilter
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: DatesFilter**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: DatesFilter
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: DetailsFilter**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: DetailsFilter
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: GuestsFilter**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: GuestsFilter
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: RequestsFilter**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: RequestsFilter
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: RoomFilter**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: RoomFilter
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: StatusFilter**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: StatusFilter
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
 - `DC-001` **Unused component: DebugAuth**
   This component has no inbound render or wraps edges — it is never used in any page or layout.
   Affected: DebugAuth
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: LocationPicker**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: LocationPicker
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: BookingWizard**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: BookingWizard
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: FilterPanel**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: FilterPanel
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: AmenityGrid**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: AmenityGrid
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: BedConfigSelector**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: BedConfigSelector
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: FloorSelector**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: FloorSelector
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: PriceRangeSlider**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: PriceRangeSlider
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: SizeSlider**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: SizeSlider
   Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
 - `DC-001` **Unused component: PaginationControls**
   This component has no inbound render or wraps edges — it is never used in any page or layout.
   Affected: PaginationControls
   Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: InteractiveMap**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: InteractiveMap
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
 - `DC-001` **Unused component: Dropdown**
   This component has no inbound render or wraps edges — it is never used in any page or layout.
   Affected: Dropdown
   Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: Lightbox**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: Lightbox
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
 - `DC-001` **Unused component: OptimizedMedia**
   This component has no inbound render or wraps edges — it is never used in any page or layout.
   Affected: OptimizedMedia
-  Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
-- `DC-001` **Unused component: Skeleton**
-  This component has no inbound render or wraps edges — it is never used in any page or layout.
-  Affected: Skeleton
   Fix: Remove the component or add it to a page/layout. Check if it was meant to replace an existing component.
 - `DC-001` **Unused component: Can**
   This component has no inbound render or wraps edges — it is never used in any page or layout.
@@ -334,10 +263,6 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   This custom hook has no inbound 'uses' edges — nothing calls it.
   Affected: useDateParams
   Fix: Delete the hook or find missing usages. May indicate a refactor left it behind.
-- `DC-005` **Orphaned service: passwordResetEmail**
-  This service has no edges in either direction and is not in a shared lib/constants path. It may be completely unused.
-  Affected: passwordResetEmail
-  Fix: Remove the service or connect it to its consumers.
 - `DR-001` **Multiple email services (2 found)**
   sendEmail, getAdminEmail — multiple email service nodes suggest uncoordinated implementation.
   Affected: sendEmail, getAdminEmail
@@ -354,27 +279,23 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   3 Supabase clients of the same tier ('unknown') detected. Each tier should be instantiated once as a singleton. Having separate tiers (browser/server/admin) is expected.
   Affected: updateSession, createPublicClient, createAdminClient
   Fix: Instantiate each Supabase client tier once in lib/supabase/ and re-import it everywhere.
-- `SEC-003` **Middleware protects no routes: middleware**
-  Middleware is registered but has no outbound protection edges — it may be running with no effect.
-  Affected: middleware
-  Fix: Add auth check and matcher config, or remove the middleware if unused.
 - `SEC-016` `suspected` **Middleware missing HTTP security headers: middleware**
   Middleware is the ideal place to set Strict-Transport-Security, X-Frame-Options, X-Content-Type-Options and Content-Security-Policy. No such headers were detected. Vercel does not inject these automatically.
   Affected: middleware
   Fix: In middleware.ts, set response headers: X-Frame-Options: DENY, X-Content-Type-Options: nosniff, Referrer-Policy: strict-origin-when-cross-origin, and Strict-Transport-Security: max-age=31536000; includeSubDomains.
+  Reference: https://nextjs.org/docs/app/building-your-application/configuring/response-size-limit
 - `AR-002` **No root error boundary (app/error.tsx missing)**
   The App Router uses error.tsx to catch unhandled errors and show a recovery UI. Without a root-level error.tsx, any uncaught error will fall through to Next.js's generic 500 page with no user-friendly recovery or custom branding.
   Fix: Create src/app/error.tsx with a React error boundary component that renders a user-friendly error state and a "Try again" retry button.
+  Reference: https://nextjs.org/docs/app/building-your-application/routing/error-handling
 - `MI-001` **Supabase: missing migrations directory**
   Project uses Supabase but no supabase/migrations/ directory with SQL files was found.
   Fix: Run: supabase db diff --use-migra -f init
+  Reference: https://supabase.com/docs/guides/cli/managing-environments
 - `MI-002` **Supabase: missing generated TypeScript types**
   No database.types.ts file found. DB queries are untyped which reduces type safety.
   Fix: Run: supabase gen types typescript --linked > database.types.ts
-- `SG-008` **Middleware may be missing matcher config: middleware**
-  Middleware with minimal or no outbound connections may lack a config.matcher export, causing it to run on all routes including static assets.
-  Affected: middleware
-  Fix: Export a config.matcher array from middleware.ts to limit which routes it runs on.
+  Reference: https://supabase.com/docs/guides/api/rest/generating-types
 - `TC-001` **No test files found in project**
   No *.test.ts, *.spec.ts or similar test files were found. Zero tests is a significant production risk.
   Fix: Set up Vitest or Jest with Testing Library. Start with critical actions and API routes.
@@ -382,34 +303,42 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   No metadata export found in this page or any ancestor layout in the App Router tree.
   Affected: /
   Fix: Export a metadata object or generateMetadata function. The page will inherit metadata from the nearest ancestor layout if defined there.
+  Reference: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 - `SEO-001` **Public page missing metadata: rooms/[slug]**
   No metadata export found in this page or any ancestor layout in the App Router tree.
   Affected: rooms/[slug]
   Fix: Export a metadata object or generateMetadata function. The page will inherit metadata from the nearest ancestor layout if defined there.
+  Reference: https://nextjs.org/docs/app/building-your-application/optimizing/metadata
 - `SEO-006` **Auth/transactional page missing noindex: admin/bookings**
   Pages like login, checkout, and callback should be excluded from search engine indexing. Without noindex, they may appear in search results and consume crawl budget.
   Affected: admin/bookings
   Fix: Add export const metadata = { robots: { index: false, follow: false } } to this page or its layout.
+  Reference: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#robots
 - `SEO-006` **Auth/transactional page missing noindex: login**
   Pages like login, checkout, and callback should be excluded from search engine indexing. Without noindex, they may appear in search results and consume crawl budget.
   Affected: login
   Fix: Add export const metadata = { robots: { index: false, follow: false } } to this page or its layout.
+  Reference: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#robots
 - `SEO-006` **Auth/transactional page missing noindex: reset-password**
   Pages like login, checkout, and callback should be excluded from search engine indexing. Without noindex, they may appear in search results and consume crawl budget.
   Affected: reset-password
   Fix: Add export const metadata = { robots: { index: false, follow: false } } to this page or its layout.
+  Reference: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#robots
 - `SEO-006` **Auth/transactional page missing noindex: book**
   Pages like login, checkout, and callback should be excluded from search engine indexing. Without noindex, they may appear in search results and consume crawl budget.
   Affected: book
   Fix: Add export const metadata = { robots: { index: false, follow: false } } to this page or its layout.
+  Reference: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#robots
 - `SEO-006` **Auth/transactional page missing noindex: book/success**
   Pages like login, checkout, and callback should be excluded from search engine indexing. Without noindex, they may appear in search results and consume crawl budget.
   Affected: book/success
   Fix: Add export const metadata = { robots: { index: false, follow: false } } to this page or its layout.
+  Reference: https://nextjs.org/docs/app/api-reference/functions/generate-metadata#robots
 - `MI-022` **Dynamic route missing generateMetadata: rooms/[slug]**
   This dynamic route has no generateMetadata() export. Every instance of this page (e.g. every room, product) renders with identical title/description/OG image, which harms SEO and social sharing.
   Affected: rooms/[slug]
   Fix: Add export async function generateMetadata({ params }) to return entity-specific title, description, and openGraph metadata for each dynamic page.
+  Reference: https://nextjs.org/docs/app/api-reference/functions/generate-metadata
 
 ### 🔵 Info
 - `DC-009` **Unlinked config: vercel.json**
@@ -431,10 +360,6 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 - `DC-009` **Unlinked config: .env.local**
   This configuration node has no edges. Nothing in the graph references it.
   Affected: .env.local
-  Fix: Verify this config file is still needed, or remove it.
-- `DC-009` **Unlinked config: HOTEL_COORDINATES**
-  This configuration node has no edges. Nothing in the graph references it.
-  Affected: HOTEL_COORDINATES
   Fix: Verify this config file is still needed, or remove it.
 - `DC-009` **Unlinked config: config**
   This configuration node has no edges. Nothing in the graph references it.
@@ -484,14 +409,6 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   No graph node fetches from this route internally. It may be invoked externally (webhooks, cron jobs, OAuth callbacks, third-party services) — static analysis cannot trace these callers.
   Affected: GET /auth/callback
   Fix: If this route is called externally, no action needed. If purely internal, verify it is still used or remove it.
-- `DC-012` **Dead barrel: BookingIdFilter**
-  This barrel re-exports items but nothing imports from it.
-  Affected: BookingIdFilter
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: DetailsFilter**
-  This barrel re-exports items but nothing imports from it.
-  Affected: DetailsFilter
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
 - `DC-012` **Dead barrel: NumericFilterValue**
   This barrel re-exports items but nothing imports from it.
   Affected: NumericFilterValue
@@ -499,50 +416,6 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 - `DC-012` **Dead barrel: NumericOperator**
   This barrel re-exports items but nothing imports from it.
   Affected: NumericOperator
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: GuestsFilter**
-  This barrel re-exports items but nothing imports from it.
-  Affected: GuestsFilter
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: CostFilter**
-  This barrel re-exports items but nothing imports from it.
-  Affected: CostFilter
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: RoomFilter**
-  This barrel re-exports items but nothing imports from it.
-  Affected: RoomFilter
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: StatusFilter**
-  This barrel re-exports items but nothing imports from it.
-  Affected: StatusFilter
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: RequestsFilter**
-  This barrel re-exports items but nothing imports from it.
-  Affected: RequestsFilter
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: DatesFilter**
-  This barrel re-exports items but nothing imports from it.
-  Affected: DatesFilter
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: PriceRangeSlider**
-  This barrel re-exports items but nothing imports from it.
-  Affected: PriceRangeSlider
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: BedConfigSelector**
-  This barrel re-exports items but nothing imports from it.
-  Affected: BedConfigSelector
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: FloorSelector**
-  This barrel re-exports items but nothing imports from it.
-  Affected: FloorSelector
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: AmenityGrid**
-  This barrel re-exports items but nothing imports from it.
-  Affected: AmenityGrid
-  Fix: Clean up unused barrel exports to reduce bundle surface area.
-- `DC-012` **Dead barrel: SizeSlider**
-  This barrel re-exports items but nothing imports from it.
-  Affected: SizeSlider
   Fix: Clean up unused barrel exports to reduce bundle surface area.
 - `DC-012` **Dead barrel: FilterSectionHeader**
   This barrel re-exports items but nothing imports from it.
@@ -552,94 +425,97 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: profiles
   Fix: Check Supabase Dashboard → Table Editor → profiles → RLS → Policies. If RLS is off, enable it and add at least one policy.
-- `SEC-004` `unverifiable` **Verify RLS policy exists for table: authUpdates**
-  No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
-  Affected: authUpdates
-  Fix: Check Supabase Dashboard → Table Editor → authUpdates → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: bookings**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: bookings
   Fix: Check Supabase Dashboard → Table Editor → bookings → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: page_content**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: page_content
   Fix: Check Supabase Dashboard → Table Editor → page_content → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: media_assets**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: media_assets
   Fix: Check Supabase Dashboard → Table Editor → media_assets → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: room_media**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: room_media
   Fix: Check Supabase Dashboard → Table Editor → room_media → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: attractions**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: attractions
   Fix: Check Supabase Dashboard → Table Editor → attractions → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: roles**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: roles
   Fix: Check Supabase Dashboard → Table Editor → roles → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: permissions**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: permissions
   Fix: Check Supabase Dashboard → Table Editor → permissions → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: role_permissions**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: role_permissions
   Fix: Check Supabase Dashboard → Table Editor → role_permissions → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: booking_holds**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: booking_holds
   Fix: Check Supabase Dashboard → Table Editor → booking_holds → RLS → Policies. If RLS is off, enable it and add at least one policy.
-- `SEC-004` `unverifiable` **Verify RLS policy exists for table: storagePath**
-  No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
-  Affected: storagePath
-  Fix: Check Supabase Dashboard → Table Editor → storagePath → RLS → Policies. If RLS is off, enable it and add at least one policy.
-- `SEC-004` `unverifiable` **Verify RLS policy exists for table: bucket**
-  No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
-  Affected: bucket
-  Fix: Check Supabase Dashboard → Table Editor → bucket → RLS → Policies. If RLS is off, enable it and add at least one policy.
-- `SEC-004` `unverifiable` **Verify RLS policy exists for table: channel**
-  No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
-  Affected: channel
-  Fix: Check Supabase Dashboard → Table Editor → channel → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: blocked_dates**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: blocked_dates
   Fix: Check Supabase Dashboard → Table Editor → blocked_dates → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: hotel_settings**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: hotel_settings
   Fix: Check Supabase Dashboard → Table Editor → hotel_settings → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: amenities**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: amenities
   Fix: Check Supabase Dashboard → Table Editor → amenities → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: conveniences**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: conveniences
   Fix: Check Supabase Dashboard → Table Editor → conveniences → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: location_categories**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: location_categories
   Fix: Check Supabase Dashboard → Table Editor → location_categories → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: faqs**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: faqs
   Fix: Check Supabase Dashboard → Table Editor → faqs → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: contact_requests**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: contact_requests
   Fix: Check Supabase Dashboard → Table Editor → contact_requests → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: rooms**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: rooms
   Fix: Check Supabase Dashboard → Table Editor → rooms → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `SEC-004` `unverifiable` **Verify RLS policy exists for table: room_beds**
   No RLS policy edge was detected for this Supabase table in the static graph. Arch cannot verify RLS configuration from code — this requires checking Supabase Dashboard → Authentication → Policies.
   Affected: room_beds
   Fix: Check Supabase Dashboard → Table Editor → room_beds → RLS → Policies. If RLS is off, enable it and add at least one policy.
+  Reference: https://supabase.com/docs/guides/database/postgres/row-level-security
 - `DR-010` `suspected` **Intentional RLS bypass in guarded service: getUsersAction**
   getUsersAction uses the Supabase admin client (bypasses RLS) outside admin paths but is protected by a permission guard. This is intentional but should be documented — if the guard ever changes, RLS enforcement disappears.
   Affected: getUsersAction, createAdminClient
@@ -649,7 +525,7 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   Affected: inviteUserAction
   Fix: Extract the core logic into a dedicated service function. The action should validate, call the service, and return a result — nothing more.
 - `AR-001` `suspected` **Action with excessive orchestration: updateProfileAction**
-  updateProfileAction calls ~18 distinct functions and writes 2 DB table(s). Actions should orchestrate at a high level — detailed business logic belongs in a service layer.
+  updateProfileAction calls ~18 distinct functions and writes 1 DB table(s). Actions should orchestrate at a high level — detailed business logic belongs in a service layer.
   Affected: updateProfileAction
   Fix: Extract the core logic into a dedicated service function. The action should validate, call the service, and return a result — nothing more.
 - `AR-001` `suspected` **Action with excessive orchestration: updateRoleAction**
@@ -730,6 +606,7 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 - `SEO-005` **Missing root opengraph-image**
   No opengraph-image file found at the app root. Social link previews will show no image.
   Fix: Add app/opengraph-image.tsx or app/opengraph-image.png for social sharing previews.
+  Reference: https://nextjs.org/docs/app/api-reference/file-conventions/metadata/opengraph-image
 - `PR-001` **Possibly unnecessary 'use client': LocationPicker**
   No browser hooks, event handlers, or store consumption detected. Consider converting to a server component.
   Affected: LocationPicker
@@ -770,10 +647,6 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
   No browser hooks, event handlers, or store consumption detected. Consider converting to a server component.
   Affected: OptimizedMedia
   Fix: Remove 'use client' and render as a server component to reduce client bundle size.
-- `PR-002` **Static-only client component: LocationPicker**
-  No hooks, event handlers, or store usage detected. This component may not need 'use client'.
-  Affected: LocationPicker
-  Fix: Convert to a server component by removing the 'use client' directive.
 - `PR-002` **Static-only client component: BookingSummary**
   No hooks, event handlers, or store usage detected. This component may not need 'use client'.
   Affected: BookingSummary
@@ -823,6 +696,7 @@ _Generated 2026-03-11 18:24 UTC · 364 nodes · 702 edges · 159 diagnostics_
 
 ## Environment Variables
 
+- `.env.local`
 - `GMAIL_USER`
 - `GMAIL_APP_PASSWORD` `SECRET`
 - `ADMIN_EMAIL`

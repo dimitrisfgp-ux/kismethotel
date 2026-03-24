@@ -4,10 +4,6 @@ const nextConfig: NextConfig = {
   // Optimization for Vercel
   output: 'standalone',
 
-  // @ts-expect-error - Valid option for build but missing from type def
-  eslint: {
-    ignoreDuringBuilds: true,
-  },
   typescript: {
     ignoreBuildErrors: true,
   },
