@@ -64,7 +64,13 @@ ARCH.md
 .nx/cache
 .nx/workspace-data
 
-# Hotel-photo originals (3.4 GB DSLR shots).
-# Optimized variants under Kismet_Room_Photos/Optimized/ ARE committed and
-# used by the build; originals stay local and feed scripts/optimize-room-photos.mjs.
+# Hotel-photo source folders. Only the Optimized/ subfolder (resized
+# variants used by the build) should be committed. Originals stay local
+# and feed scripts/optimize-room-photos.mjs. Add new source folders here
+# as they're created.
 /public/images/Kismet_Room_Photos/Room Photos/
+/public/images/Kismet_Room_Photos/Balcony Outside & Building/
+/public/images/Kismet_Room_Photos/[0-9]/
+/public/images/Kismet_Room_Photos/[0-9][0-9]/
+/public/images/Kismet_Room_Photos/[0-9] - */
+/public/images/Kismet_Room_Photos/[0-9][0-9] - */
