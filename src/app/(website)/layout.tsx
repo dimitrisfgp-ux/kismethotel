@@ -54,26 +54,49 @@ import { ScrollToTop } from "@/components/layout/ScrollToTop";
 // ...
 import { contentService } from "@/services/contentService";
 import { roomService } from "@/services/roomService";
+import { getMode } from "@/lib/mode";
+import { GUESTY_SETTINGS } from "@/config/guestyMode";
+import type { HotelSettings } from "@/types";
+
+type RoomsForHeader = {
+  id: string;
+  slug: string;
+  name: string;
+  sizeSqm: number;
+  maxOccupancy: number;
+}[];
 
 export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const [settings, roomSummaries] = await Promise.all([
-    contentService.getSettings(),
-    roomService.getRoomsSummary()
-  ]);
+  // In Guesty mode the Supabase-backed CMS may be paused.
+  // Skip the request-time fetch and feed Header/Footer/FloatingWidget hardcoded values.
+  const mode = await getMode();
 
-  // getRoomsSummary already returns { id, name, slug, pricePerNight }
-  // Add sizeSqm and maxOccupancy as 0 since header only needs name/slug
-  const roomsForHeader = roomSummaries.map(r => ({
-    id: r.id,
-    slug: r.slug,
-    name: r.name,
-    sizeSqm: 0,
-    maxOccupancy: 0
-  }));
+  let settings: HotelSettings;
+  let roomsForHeader: RoomsForHeader;
+
+  if (mode === "guesty") {
+    settings = GUESTY_SETTINGS;
+    roomsForHeader = [];
+  } else {
+    const [s, roomSummaries] = await Promise.all([
+      contentService.getSettings(),
+      roomService.getRoomsSummary()
+    ]);
+    settings = s;
+    // getRoomsSummary already returns { id, name, slug, pricePerNight }.
+    // Header only needs name/slug — pad sizeSqm/maxOccupancy to satisfy its type.
+    roomsForHeader = roomSummaries.map(r => ({
+      id: r.id,
+      slug: r.slug,
+      name: r.name,
+      sizeSqm: 0,
+      maxOccupancy: 0
+    }));
+  }
 
   return (
     <html lang="en" className={`${montserrat.variable} ${inter.variable}`} data-scroll-behavior="smooth">

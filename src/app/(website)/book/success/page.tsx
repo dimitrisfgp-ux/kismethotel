@@ -2,10 +2,15 @@ import { Container } from "@/components/ui/Container";
 import { Button } from "@/components/ui/Button";
 import Link from "next/link";
 import { CheckCircle } from "lucide-react";
+import { redirect } from "next/navigation";
+import { getMode } from "@/lib/mode";
 
 
-
-export default function SuccessPage() {
+export default async function SuccessPage() {
+    // No internal booking flow in Guesty mode (Guesty hosts checkout).
+    if ((await getMode()) === "guesty") {
+        redirect("/");
+    }
     return (
         <div className="pt-[var(--header-height)] min-h-screen flex items-center bg-[var(--color-warm-white)]">
             <Container className="text-center">
