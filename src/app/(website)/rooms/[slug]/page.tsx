@@ -1,4 +1,4 @@
-import { notFound } from "next/navigation";
+import { notFound, redirect } from "next/navigation";
 import { roomService } from "@/services/roomService";
 import { bookingService } from "@/services/bookingService";
 import { Container } from "@/components/ui/Container";
@@ -6,6 +6,7 @@ import { ImageGallery } from "@/components/rooms/ImageGallery";
 import { RoomInfo } from "@/components/rooms/RoomInfo";
 import { BookingCard } from "@/components/rooms/BookingCard";
 import { ContactCTA } from "@/components/rooms/ContactCTA";
+import { getMode } from "@/lib/mode";
 
 interface RoomPageProps {
     params: Promise<{ slug: string }>;
@@ -13,6 +14,7 @@ interface RoomPageProps {
 
 // Generate static params for all existing rooms at build time
 export async function generateStaticParams() {
+    if ((await getMode()) === "guesty") return [];
     const rooms = await roomService.getRooms();
     return rooms.map((room) => ({
         slug: room.slug,
@@ -25,6 +27,12 @@ export const dynamicParams = true; // Allow new rooms (not in build) to be gener
 import { DateProvider } from "@/contexts/DateContext";
 
 export default async function RoomPage({ params }: RoomPageProps) {
+    // In Guesty mode, room detail pages don't exist on this site —
+    // users are redirected from the homepage cards directly to Guesty.
+    if ((await getMode()) === "guesty") {
+        redirect("/");
+    }
+
     const { slug } = await params;
     const room = await roomService.getRoomBySlug(slug);
 

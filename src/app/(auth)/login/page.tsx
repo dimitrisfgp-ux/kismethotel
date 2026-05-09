@@ -4,8 +4,14 @@ import AuthBranding from '@/components/admin/auth/AuthBranding';
 import LoginForm from '@/components/admin/auth/LoginForm';
 import { contentService } from '@/services/contentService';
 import { LogoBrand } from '@/components/ui/LogoBrand';
+import { getMode } from '@/lib/mode';
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
+    // No CMS login in Guesty mode — Supabase may be paused.
+    if ((await getMode()) === 'guesty') {
+        redirect('/');
+    }
+
     const [{ error: loginError, success }, settings] = await Promise.all([
         searchParams,
         contentService.getSettings()

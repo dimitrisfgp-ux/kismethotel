@@ -91,7 +91,7 @@ function MobileGestureHandler() {
             <div className="text-white font-bold text-center flex flex-col items-center justify-center">
                 <div className="mb-2 animate-bounce flex items-center justify-center">
                     <img
-                        src="/images/double-finger-svgrepo-com.svg"
+                        src="/images/Accessibility/double-finger-svgrepo-com.svg"
                         alt="Use two fingers"
                         className="w-16 h-16 invert"
                     />
@@ -133,7 +133,7 @@ export default function InteractiveMap({ conveniences, categories, activeCategor
 
         if (isHotelLocation) {
             return L.icon({
-                iconUrl: "/images/PIN.svg",
+                iconUrl: "/images/Accessibility/PIN.svg",
                 iconSize: [52, 65], // Slightly smaller
                 iconAnchor: [26, 65], // Bottom center
                 popupAnchor: [0, -65],

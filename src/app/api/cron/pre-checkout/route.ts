@@ -3,23 +3,29 @@ import { bookingService } from "@/services/bookingService";
 import { roomService } from "@/services/roomService";
 import { sendEmail, getAdminEmail } from "@/services/emailService";
 import { preCheckoutEmail } from "@/services/emailTemplates";
+import { getMode } from "@/lib/mode";
 
 /**
  * Pre-Checkout Cron Job
- * 
+ *
  * This API route finds bookings that are checking out soon
  * and sends goodbye emails to guests.
- * 
+ *
  * Can be triggered by:
  * - Vercel Cron Jobs (configure in vercel.json)
  * - Manual call from admin dashboard
  * - External scheduler
- * 
- * 
+ *
+ *
  * Query params:
  * - test: If "true", just returns bookings without sending emails
  */
 export async function GET(request: Request) {
+    // Skip in Guesty mode — booking system is dormant and Supabase may be paused.
+    if ((await getMode()) === "guesty") {
+        return NextResponse.json({ skipped: "guesty mode" });
+    }
+
     // Verify cron secret in production
     const authHeader = request.headers.get("authorization");
     if (

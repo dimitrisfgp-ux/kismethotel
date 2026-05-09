@@ -18,8 +18,8 @@ const getCachedSettings = unstable_cache(
                 description: 'Boutique Accommodations',
                 holdDurationMinutes: 5,
                 logoMode: 'image' as const,
-                logoIconUrl: '/images/kismet-logo-icon.svg',
-                logoTextUrl: '/images/kismet-logo-text.svg',
+                logoIconUrl: '/images/Brand%20Media/kismet-logo-icon.svg',
+                logoTextUrl: '/images/Brand%20Media/kismet-logo-text.svg',
                 contact: { address: '', phone: '', email: '' },
                 socials: { whatsapp: '', viber: '', googleReviews: '' }
             };
@@ -30,8 +30,8 @@ const getCachedSettings = unstable_cache(
             description: data.description,
             holdDurationMinutes: data.hold_duration_minutes || 5,
             logoMode: (data.logo_mode as 'text' | 'image') || 'image',
-            logoIconUrl: data.logo_icon_url || '/images/kismet-logo-icon.svg',
-            logoTextUrl: data.logo_text_url || '/images/kismet-logo-text.svg',
+            logoIconUrl: data.logo_icon_url || '/images/Brand%20Media/kismet-logo-icon.svg',
+            logoTextUrl: data.logo_text_url || '/images/Brand%20Media/kismet-logo-text.svg',
             contact: data.contact as HotelSettings['contact'],
             socials: data.socials as HotelSettings['socials']
         };

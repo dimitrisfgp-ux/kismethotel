@@ -15,16 +15,17 @@ interface HeroProps {
         android?: string;
         desktop?: string;
     };
+    scrollTargetId?: string;
 }
 
-export function Hero({ title, subtitle, ctaText, poster, videos }: HeroProps) {
+export function Hero({ title, subtitle, ctaText, poster, videos, scrollTargetId = "search-bar" }: HeroProps) {
     const handleScroll = (e: React.MouseEvent) => {
         e.preventDefault();
-        scrollToElement("search-bar"); // Or 'rooms' if preferred, preserving 'search-bar' targeting
+        scrollToElement(scrollTargetId);
     };
 
     return (
-        <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
+        <section className="relative h-screen w-full flex items-end justify-center overflow-hidden">
             {/* Background (Video) */}
             <div className="absolute inset-0 z-0 select-none pointer-events-none">
                 {/* Only render video if a source exists (or poster) */}
@@ -43,12 +44,16 @@ export function Hero({ title, subtitle, ctaText, poster, videos }: HeroProps) {
                 </video>
             </div>
 
-            {/* Overlay */}
+            {/* Overlay — brand tint + a touch of black to slightly darken video playback */}
             <div className="absolute inset-0 bg-[var(--color-aegean-blue)]/20 z-10" />
+            <div className="absolute inset-0 bg-black/20 z-10" />
+            {/* Bottom vignette — darker behind the heading/subtitle/CTA so text stays
+                readable across any video scene. Fades to transparent toward the middle. */}
+            <div className="absolute inset-x-0 bottom-0 h-2/3 bg-gradient-to-t from-black/55 via-black/25 to-transparent z-10" />
 
-            {/* Content */}
-            <div className="relative z-20 text-center text-white px-4 animate-fade-in">
-                <h1 className="font-montserrat font-light text-[clamp(2.5rem,6vw,5rem)] tracking-[0.2em] mb-4 drop-shadow-lg text-[var(--color-sand)]">
+            {/* Content — bottom-aligned with padding to clear the scroll-down chevron */}
+            <div className="relative z-20 text-center text-white px-4 pb-28 md:pb-32 animate-fade-in">
+                <h1 className="font-montserrat font-light text-[clamp(1.5rem,3.5vw,2.75rem)] tracking-[0.2em] mb-4 drop-shadow-lg text-[var(--color-sand)]">
                     {title}
                 </h1>
                 <div className="w-full max-w-lg h-[1px] bg-gradient-to-r from-transparent via-[var(--color-sand)] to-transparent mx-auto mb-6 shadow-sm" />
@@ -64,7 +69,7 @@ export function Hero({ title, subtitle, ctaText, poster, videos }: HeroProps) {
 
             {/* Scroll Indicator */}
             <button
-                onClick={() => scrollToElement("search-bar")}
+                onClick={() => scrollToElement(scrollTargetId)}
                 aria-label="Scroll to Content"
                 className="absolute bottom-10 z-20 animate-bounce text-white/80 hover:text-white transition-colors"
             >

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { holdService } from '@/services/holdService';
+import { getMode } from '@/lib/mode';
 
 /**
  * POST /api/holds/release
@@ -7,6 +8,11 @@ import { holdService } from '@/services/holdService';
  * Handles both application/json and text/plain (sendBeacon sends text/plain).
  */
 export async function POST(request: NextRequest) {
+    // Skip in Guesty mode — booking holds are dormant and Supabase may be paused.
+    if ((await getMode()) === 'guesty') {
+        return NextResponse.json({ skipped: 'guesty mode' });
+    }
+
     try {
         let holdId: string | undefined;
 

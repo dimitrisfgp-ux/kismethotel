@@ -39,8 +39,12 @@ export function DesktopNav({ dark = false, rooms }: DesktopNavProps) {
 
     return (
         <nav className="hidden lg:flex items-center space-x-16 h-full">
-            {NAV_LINKS.map(link => (
-                link.hasDropdown ? (
+            {NAV_LINKS.map(link => {
+                // Hide the rooms-dropdown nav item when there are no rooms
+                // to surface (e.g. Guesty mode passes an empty array).
+                if (link.hasDropdown && rooms.length === 0) return null;
+
+                return link.hasDropdown ? (
                     <div
                         key={link.label}
                         className="relative h-full flex items-center"
@@ -65,8 +69,8 @@ export function DesktopNav({ dark = false, rooms }: DesktopNavProps) {
                     >
                         {link.label}
                     </Link>
-                )
-            ))}
+                );
+            })}
         </nav>
     );
 }

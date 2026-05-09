@@ -1,23 +1,37 @@
 "use client";
 
 import Image from "next/image";
-
-import { Phone, X } from "lucide-react";
+import { Phone, Mail, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { HotelSettings } from "@/types";
-
-// ... imports
 import { useUIContext } from "@/contexts/UIContext";
 
 interface FloatingWidgetProps {
     settings: HotelSettings;
 }
 
+// Layout constants used to compute the expanded-bar width to match the visible
+// button count exactly. Keeps the open/close transition smooth without Tailwind
+// having to know dynamic class names.
+const BUTTON_SIZE = 40;
+const BUTTON_GAP = 12;
+const HORIZONTAL_PADDING = 24; // px-3 left + right
+
 export function FloatingWidget({ settings }: FloatingWidgetProps) {
     const { isFloatingWidgetVisible, isFloatingWidgetOpen, setFloatingWidgetOpen } = useUIContext();
 
-    // Close only if visibly hidden? 
-    // If hidden, isOpen state doesn't matter much but let's keep logic simple.
+    const hasWhatsApp = !!settings.socials.whatsapp;
+    const hasViber = !!settings.socials.viber;
+    const hasEmail = !!settings.contact.email;
+    const hasPhone = !!settings.contact.phone;
+
+    const buttonCount =
+        Number(hasWhatsApp) + Number(hasViber) + Number(hasEmail) + Number(hasPhone);
+
+    // Nothing to show — don't render the FAB at all.
+    if (buttonCount === 0) return null;
+
+    const expandedWidthPx = buttonCount * BUTTON_SIZE + (buttonCount - 1) * BUTTON_GAP + HORIZONTAL_PADDING;
 
     return (
         <div className={cn(
@@ -37,56 +51,74 @@ export function FloatingWidget({ settings }: FloatingWidgetProps) {
             </button>
 
             {/* Expanded Options Bar */}
-            <div className={cn(
-                "flex items-center gap-3 bg-[var(--color-deep-med)] border border-[var(--color-accent-gold)] rounded-full transition-all duration-500 ease-premium overflow-hidden shadow-lg h-14",
-                isFloatingWidgetOpen ? "w-[170px] px-3 opacity-100 translate-x-0" : "w-0 px-0 opacity-0 translate-x-8 pointer-events-none"
-            )}>
-                {/* WhatsApp */}
-                <a href={settings.socials.whatsapp} target="_blank" rel="noopener noreferrer"
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 transition-colors flex-shrink-0 shadow-sm"
-                    title="WhatsApp"
-                >
-                    <Image
-                        src="/images/whatsapp-logo-4454.svg"
-                        alt="WhatsApp"
-                        width={24}
-                        height={24}
-                        className="object-contain"
-                    />
-                </a>
+            <div
+                style={{
+                    width: isFloatingWidgetOpen ? `${expandedWidthPx}px` : '0px',
+                    paddingLeft: isFloatingWidgetOpen ? '12px' : '0px',
+                    paddingRight: isFloatingWidgetOpen ? '12px' : '0px',
+                }}
+                className={cn(
+                    "flex items-center gap-3 bg-[var(--color-deep-med)] border border-[var(--color-accent-gold)] rounded-full transition-all duration-500 ease-premium overflow-hidden shadow-lg h-14",
+                    isFloatingWidgetOpen ? "opacity-100 translate-x-0" : "opacity-0 translate-x-8 pointer-events-none"
+                )}>
+                {hasWhatsApp && (
+                    <a href={settings.socials.whatsapp} target="_blank" rel="noopener noreferrer"
+                        className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 transition-colors flex-shrink-0 shadow-sm"
+                        title="WhatsApp"
+                    >
+                        <Image
+                            src="/images/Platforms/whatsapp-logo-4454.svg"
+                            alt="WhatsApp"
+                            width={24}
+                            height={24}
+                            className="object-contain"
+                        />
+                    </a>
+                )}
 
-                {/* Viber */}
-                <a href={settings.socials.viber}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 transition-colors flex-shrink-0 shadow-sm"
-                    title="Viber"
-                >
-                    <Image
-                        src="/images/viber-logo-14126.svg"
-                        alt="Viber"
-                        width={24}
-                        height={24}
-                        className="object-contain"
-                    />
-                </a>
+                {hasViber && (
+                    <a href={settings.socials.viber}
+                        className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 transition-colors flex-shrink-0 shadow-sm"
+                        title="Viber"
+                    >
+                        <Image
+                            src="/images/Platforms/viber-logo-14126.svg"
+                            alt="Viber"
+                            width={24}
+                            height={24}
+                            className="object-contain"
+                        />
+                    </a>
+                )}
 
-                {/* Phone */}
-                <a href={`tel:${settings.contact.phone.replace(/\s/g, '')}`}
-                    onClick={(e) => {
-                        // On desktop, scroll to footer contact section
-                        if (window.innerWidth >= 1024) {
-                            e.preventDefault();
-                            const contactSection = document.getElementById('contact');
-                            if (contactSection) {
-                                contactSection.scrollIntoView({ behavior: 'smooth' });
-                                setFloatingWidgetOpen(false);
+                {hasEmail && (
+                    <a href={`mailto:${settings.contact.email}`}
+                        className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 text-[var(--color-aegean-blue)] transition-colors flex-shrink-0 shadow-sm"
+                        title="Email Us"
+                    >
+                        <Mail className="h-5 w-5" />
+                    </a>
+                )}
+
+                {hasPhone && (
+                    <a href={`tel:${settings.contact.phone.replace(/\s/g, '')}`}
+                        onClick={(e) => {
+                            // On desktop, scroll to footer contact section
+                            if (window.innerWidth >= 1024) {
+                                e.preventDefault();
+                                const contactSection = document.getElementById('contact');
+                                if (contactSection) {
+                                    contactSection.scrollIntoView({ behavior: 'smooth' });
+                                    setFloatingWidgetOpen(false);
+                                }
                             }
-                        }
-                    }}
-                    className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 text-[var(--color-aegean-blue)] transition-colors flex-shrink-0 shadow-sm"
-                    title="Call Us"
-                >
-                    <Phone className="h-5 w-5" />
-                </a>
+                        }}
+                        className="flex items-center justify-center w-10 h-10 rounded-full bg-white hover:bg-gray-100 text-[var(--color-aegean-blue)] transition-colors flex-shrink-0 shadow-sm"
+                        title="Call Us"
+                    >
+                        <Phone className="h-5 w-5" />
+                    </a>
+                )}
             </div>
         </div>
     );

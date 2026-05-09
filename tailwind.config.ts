@@ -55,6 +55,23 @@ const config: Config = {
         "shimmer": {
           "0%": { transform: "translateX(-100%)" },
           "100%": { transform: "translateX(100%)" },
+        },
+        // Carousel directional fade transitions (Guesty room gallery).
+        "slide-fade-in-right": {
+          "0%": { opacity: "0", transform: "translateX(2rem)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-fade-in-left": {
+          "0%": { opacity: "0", transform: "translateX(-2rem)" },
+          "100%": { opacity: "1", transform: "translateX(0)" },
+        },
+        "slide-fade-out-left": {
+          "0%": { opacity: "1", transform: "translateX(0)" },
+          "100%": { opacity: "0", transform: "translateX(-2rem)" },
+        },
+        "slide-fade-out-right": {
+          "0%": { opacity: "1", transform: "translateX(0)" },
+          "100%": { opacity: "0", transform: "translateX(2rem)" },
         }
       },
       animation: {
@@ -62,6 +79,10 @@ const config: Config = {
         "slide-up": "slide-up 0.5s var(--ease-premium) forwards",
         "zoom-in": "zoom-in 0.5s var(--ease-premium) forwards",
         "shimmer": "shimmer 3s ease-in-out infinite",
+        "slide-fade-in-right": "slide-fade-in-right 0.5s var(--ease-premium) forwards",
+        "slide-fade-in-left": "slide-fade-in-left 0.5s var(--ease-premium) forwards",
+        "slide-fade-out-left": "slide-fade-out-left 0.5s var(--ease-premium) forwards",
+        "slide-fade-out-right": "slide-fade-out-right 0.5s var(--ease-premium) forwards",
       }
     },
   },

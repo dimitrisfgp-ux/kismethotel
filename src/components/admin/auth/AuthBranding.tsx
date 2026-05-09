@@ -9,8 +9,8 @@ const DEFAULT_SETTINGS: AuthBrandingProps['settings'] = {
     name: 'Kismet',
     description: '',
     logoMode: 'image',
-    logoIconUrl: '/images/kismet-logo-icon.svg',
-    logoTextUrl: '/images/kismet-logo-text.svg'
+    logoIconUrl: '/images/Brand%20Media/kismet-logo-icon.svg',
+    logoTextUrl: '/images/Brand%20Media/kismet-logo-text.svg'
 };
 
 /**

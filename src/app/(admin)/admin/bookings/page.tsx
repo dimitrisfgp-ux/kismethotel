@@ -10,8 +10,6 @@ export default async function BookingsPage({ searchParams }: { searchParams: Pro
     const page = Number(params.page) || 1;
     const limit = 10;
 
-    console.log('BookingsPage params:', { page, limit });
-
     // Run sequentially to debug potential race conditions with cookies/supabase client
     const rooms = await roomService.getRoomsSummary();
     const bookingsData = await bookingService.getBookings(page, limit);

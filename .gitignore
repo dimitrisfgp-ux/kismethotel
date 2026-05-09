@@ -50,7 +50,27 @@ next-env.d.ts
 # logs
 *.log
 
+# Toolkit
+.arch
+.claude
+.kilocode
+.qodo
+ARCH.md
+
+#Docs
 
 
+.docs
 .nx/cache
 .nx/workspace-data
+
+# Hotel-photo source folders. Only the Optimized/ subfolder (resized
+# variants used by the build) should be committed. Originals stay local
+# and feed scripts/optimize-room-photos.mjs. Add new source folders here
+# as they're created.
+/public/images/Kismet_Room_Photos/Room Photos/
+/public/images/Kismet_Room_Photos/Balcony Outside & Building/
+/public/images/Kismet_Room_Photos/[0-9]/
+/public/images/Kismet_Room_Photos/[0-9][0-9]/
+/public/images/Kismet_Room_Photos/[0-9] - */
+/public/images/Kismet_Room_Photos/[0-9][0-9] - */

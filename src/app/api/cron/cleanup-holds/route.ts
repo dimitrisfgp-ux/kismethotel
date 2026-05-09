@@ -1,16 +1,22 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
+import { getMode } from "@/lib/mode";
 
 /**
  * Expired Hold Cleanup Cron Job
- * 
+ *
  * Deletes booking_holds rows where expires_at is in the past.
  * Should be scheduled to run every 15 minutes via Vercel Cron.
- * 
+ *
  * Configure in vercel.json with a "crons" entry pointing to
  * "/api/cron/cleanup-holds" on a 15-minute schedule.
  */
 export async function GET(request: Request) {
+    // Skip in Guesty mode — booking system is dormant and Supabase may be paused.
+    if ((await getMode()) === "guesty") {
+        return NextResponse.json({ skipped: "guesty mode" });
+    }
+
     // Verify cron secret in production
     const authHeader = request.headers.get("authorization");
     if (

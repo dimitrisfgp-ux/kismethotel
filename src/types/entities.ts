@@ -153,6 +153,10 @@ export interface Attraction {
     description: string;
     image: string;
     distance: string; // "1.2 km"
+    // Optional list of additional images for a fullscreen lightbox.
+    // When provided and non-empty, the AttractionsGrid card becomes
+    // clickable and opens a lightbox starting at index 0.
+    gallery?: string[];
 }
 
 export interface FAQ {

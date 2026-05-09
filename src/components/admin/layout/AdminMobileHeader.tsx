@@ -19,8 +19,8 @@ const DEFAULT_SETTINGS: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' 
     name: 'Kismet',
     description: '',
     logoMode: 'image',
-    logoIconUrl: '/images/kismet-logo-icon.svg',
-    logoTextUrl: '/images/kismet-logo-text.svg'
+    logoIconUrl: '/images/Brand%20Media/kismet-logo-icon.svg',
+    logoTextUrl: '/images/Brand%20Media/kismet-logo-text.svg'
 };
 
 export function AdminMobileHeader({ user, role, fullName, settings }: AdminMobileHeaderProps) {
