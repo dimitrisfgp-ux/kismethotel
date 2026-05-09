@@ -15,20 +15,28 @@ export interface GuestyRoomCategory {
     images: {
         main: string;
         secondary: [string, string, string];
+        // Additional photos that don't render as visible thumbnails but
+        // appear in the carousel arrows/bullets and the fullscreen lightbox.
+        extras?: string[];
     };
     layout: 'image-left' | 'image-right';
 }
-
-export const HOTEL_COORDINATES = {
-    lat: 35.33693409632511,
-    lng: 25.13071886492972,
-};
 
 export const GUESTY_HERO = {
     title: 'Urban Accommodation in the Heart of Crete',
     subtitle: 'Built on Comfort & Accessibility',
     ctaText: 'Explore Rooms',
     scrollTargetId: 'category-suite',
+    // Shown immediately while the video loads (matches the video's first frame).
+    poster: '/hero_videos/pre_load_frame.png',
+    videos: {
+        // ios + android sources both have media="(max-width: 768px)" inside Hero,
+        // so on mobile the browser tries ios first and falls back to android.
+        // desktop is the catch-all for everything > 768px.
+        ios: '/hero_videos/ios/hero_4k_ios.mp4',
+        android: '/hero_videos/android/hero_video_android.mp4',
+        desktop: '/hero_videos/android/hero_video_android.mp4',
+    },
 };
 
 export const GUESTY_SETTINGS: HotelSettings = {
@@ -36,8 +44,8 @@ export const GUESTY_SETTINGS: HotelSettings = {
     description: 'Urban Boutique Rooms',
     holdDurationMinutes: 0,
     logoMode: 'image',
-    logoIconUrl: '/images/kismet-logo-icon.svg',
-    logoTextUrl: '/images/kismet-logo-text.svg',
+    logoIconUrl: '/images/Brand%20Media/kismet-logo-icon.svg',
+    logoTextUrl: '/images/Brand%20Media/kismet-logo-text.svg',
     contact: {
         address: 'Pl. Riga Feraiou, Heraklion 712 01',
         phone: '+30 2821200522',
@@ -56,11 +64,24 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
         guestyUrl:
             'https://kismeturbanboutique.hotelyzer.gr/en/properties/69faf52384a25c001c8e3fa7',
         images: {
-            main: '/images/rooms/suite/main.jpg',
+            // Pulled from rooms 9 and 10 (the two folders flagged "Suite").
+            main: '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953449.jpg',
             secondary: [
-                '/images/rooms/suite/01.jpg',
-                '/images/rooms/suite/02.jpg',
-                '/images/rooms/suite/03.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953209.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953474.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953679.jpg',
+            ],
+            extras: [
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953505.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953604.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953700.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953708.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953689.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953233.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953368.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953412.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953681.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953663.jpg',
             ],
         },
         layout: 'image-left',
@@ -74,11 +95,26 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
         guestyUrl:
             'https://kismeturbanboutique.hotelyzer.gr/en/properties/69faf38789895900135fe738',
         images: {
-            main: '/images/rooms/deluxe/main.jpg',
+            // Pulled from rooms 3, 4, and 8 (the three folders flagged "Deluxe").
+            main: '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942404.jpg',
             secondary: [
-                '/images/rooms/deluxe/01.jpg',
-                '/images/rooms/deluxe/02.jpg',
-                '/images/rooms/deluxe/03.jpg',
+                '/images/Kismet_Room_Photos/Optimized/4%20-%20Deluxe/P1942568.jpg',
+                '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953038.jpg',
+                '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942424.jpg',
+            ],
+            extras: [
+                '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942447.jpg',
+                '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942502.jpg',
+                '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942535.jpg',
+                '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942552.jpg',
+                '/images/Kismet_Room_Photos/Optimized/4%20-%20Deluxe/P1942596.jpg',
+                '/images/Kismet_Room_Photos/Optimized/4%20-%20Deluxe/P1942621.jpg',
+                '/images/Kismet_Room_Photos/Optimized/4%20-%20Deluxe/P1942659.jpg',
+                '/images/Kismet_Room_Photos/Optimized/4%20-%20Deluxe/P1942690.jpg',
+                '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953056.jpg',
+                '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953079.jpg',
+                '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953120.jpg',
+                '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953962.jpg',
             ],
         },
         layout: 'image-right',
@@ -92,11 +128,24 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
         guestyUrl:
             'https://kismeturbanboutique.hotelyzer.gr/en/properties/69faf0b284a25c001c8e20a4',
         images: {
-            main: '/images/rooms/standard/main.jpg',
+            // Pulled from room 5 (the only folder flagged "Standard").
+            main: '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1942696.jpg',
             secondary: [
-                '/images/rooms/standard/01.jpg',
-                '/images/rooms/standard/02.jpg',
-                '/images/rooms/standard/03.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1942718.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1953870.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1942741.jpg',
+            ],
+            extras: [
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1942724.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1942743.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1942749.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1942767.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1942776.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1953873.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1953876.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1953881.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1953877.jpg',
+                '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1953879.jpg',
             ],
         },
         layout: 'image-left',
@@ -197,6 +246,91 @@ export const GUESTY_CONVENIENCES: Convenience[] = [
         rating: 4.5,
         distanceLabel: '~3 min walk',
     },
+    {
+        id: 'heraklion-old-port',
+        name: 'Heraklion Old Port',
+        description: 'Ferries to Santorini and the Cyclades depart from the modern port nearby.',
+        lat: 35.3411,
+        lng: 25.1364,
+        categoryId: 'transport',
+        type: 'Port',
+        distanceLabel: '~7 min walk',
+    },
+    {
+        id: 'kritamon',
+        name: 'Kritamon',
+        description: 'Modern take on traditional Cretan dishes in the old town.',
+        lat: 35.3395,
+        lng: 25.1328,
+        categoryId: 'restaurants',
+        type: 'Restaurant',
+        rating: 4.7,
+        distanceLabel: '~4 min walk',
+    },
+    {
+        id: 'erganos',
+        name: 'Erganos',
+        description: 'Cretan tavern in a restored 19th-century stone house.',
+        lat: 35.3396,
+        lng: 25.1318,
+        categoryId: 'restaurants',
+        type: 'Restaurant',
+        rating: 4.5,
+        distanceLabel: '~4 min walk',
+    },
+    {
+        id: 'avli-devkaliona',
+        name: 'Avli tou Devkaliona',
+        description: 'Garden-courtyard taverna serving classic Cretan plates.',
+        lat: 35.3378,
+        lng: 25.1329,
+        categoryId: 'restaurants',
+        type: 'Restaurant',
+        rating: 4.4,
+        distanceLabel: '~3 min walk',
+    },
+    {
+        id: 'crop-coffee',
+        name: 'Crop Coffee Roasters',
+        description: 'Specialty coffee bar with single-origin beans.',
+        lat: 35.3380,
+        lng: 25.1331,
+        categoryId: 'cafes',
+        type: 'Café',
+        rating: 4.6,
+        distanceLabel: '~3 min walk',
+    },
+    {
+        id: 'floral-bistrot',
+        name: 'Floral Café Bistrot',
+        description: 'Lively café-bistro for brunch, lunch and evening cocktails.',
+        lat: 35.3383,
+        lng: 25.1342,
+        categoryId: 'cafes',
+        type: 'Café',
+        rating: 4.5,
+        distanceLabel: '~4 min walk',
+    },
+    {
+        id: 'alpha-bank-daedalou',
+        name: 'Alpha Bank — Daedalou',
+        description: 'Branch and ATM in the central pedestrian zone.',
+        lat: 35.3386,
+        lng: 25.1338,
+        categoryId: 'banks',
+        type: 'Bank / ATM',
+        distanceLabel: '~4 min walk',
+    },
+    {
+        id: 'pharmacy-venizelou',
+        name: 'Pharmacy Plateia Venizelou',
+        description: 'Pharmacy just steps from Lions Square.',
+        lat: 35.3390,
+        lng: 25.1335,
+        categoryId: 'pharmacies',
+        type: 'Pharmacy',
+        distanceLabel: '~4 min walk',
+    },
 ];
 
 export const GUESTY_ATTRACTIONS: Attraction[] = [
@@ -205,48 +339,82 @@ export const GUESTY_ATTRACTIONS: Attraction[] = [
         name: 'Knossos Palace',
         description:
             "Europe's oldest city — explore the labyrinthine ruins of the Minoan civilisation.",
-        image: '/images/attractions/knossos.jpg',
+        image: '/images/Attractions/Knossos/jametlene-reskp-Nre--Rexegs-unsplash.jpg',
         distance: '5 km',
+        gallery: [
+            '/images/Attractions/Knossos/jametlene-reskp-Nre--Rexegs-unsplash.jpg',
+            '/images/Attractions/Knossos/andy-goldsby-ZxCHqEuvvhg-unsplash.jpg',
+            '/images/Attractions/Knossos/bigfoot-ruins-111492.jpg',
+            '/images/Attractions/Knossos/davestem-knossos-165561.jpg',
+            '/images/Attractions/Knossos/egor-myznik-EZBfg-MjfQ0-unsplash.jpg',
+            '/images/Attractions/Knossos/jacek-urbanski-6-W_t8Zc8zo-unsplash.jpg',
+            '/images/Attractions/Knossos/martijn-vonk-D08XwX5u-d0-unsplash.jpg',
+            '/images/Attractions/Knossos/martijn-vonk-su5rTuLlQG0-unsplash.jpg',
+            '/images/Attractions/Knossos/martijn-vonk-ub3QsXzVR_0-unsplash.jpg',
+        ],
     },
     {
         id: 2,
         name: 'Heraklion Archaeological Museum',
         description:
             "One of the world's great museums; home to the bull-leaping fresco and the Phaistos Disc.",
-        image: '/images/attractions/archaeological-museum.jpg',
+        image: '/images/Attractions/Heraklion%20Archaeological%20Museum/%CE%91%CE%9C%CE%97-1024x607.jpg',
         distance: '0.5 km',
+        gallery: [
+            '/images/Attractions/Heraklion%20Archaeological%20Museum/%CE%91%CE%9C%CE%97-1024x607.jpg',
+        ],
     },
     {
         id: 3,
         name: 'Koules Fortress',
         description:
             "The 16th-century Venetian sea fortress guarding Heraklion's old harbour.",
-        image: '/images/attractions/koules.jpg',
+        image: '/images/Attractions/Koules%20Fortress/printsi-crete-6507213_1920.jpg',
         distance: '0.7 km',
+        gallery: [
+            '/images/Attractions/Koules%20Fortress/printsi-crete-6507213_1920.jpg',
+        ],
     },
     {
         id: 4,
         name: 'Spinalonga Island',
         description:
             "The fortified island leper colony immortalised by Victoria Hislop's The Island.",
-        image: '/images/attractions/spinalonga.jpg',
+        image: '/images/Attractions/Spinaloga/herbert2512-crete-1676057.jpg',
         distance: '70 km',
+        gallery: [
+            '/images/Attractions/Spinaloga/herbert2512-crete-1676057.jpg',
+            '/images/Attractions/Spinaloga/evangelos-mpikakis-MSqxB-SX5VQ-unsplash.jpg',
+            '/images/Attractions/Spinaloga/joshua-kettle-6duUhb9WwQ8-unsplash.jpg',
+        ],
     },
     {
         id: 5,
         name: 'Samaria Gorge',
         description:
             "A 16-km hike through Europe's longest gorge, ending on a remote Libyan-sea beach.",
-        image: '/images/attractions/samaria.jpg',
+        image: '/images/Attractions/Samaria/eloneo-the-samaria-gorge-3852381.jpg',
         distance: '150 km',
+        gallery: [
+            '/images/Attractions/Samaria/eloneo-the-samaria-gorge-3852381.jpg',
+            '/images/Attractions/Samaria/alain95440-crete-2772296_1920.jpg',
+            '/images/Attractions/Samaria/gunel-o7REjmP52rA-unsplash.jpg',
+            '/images/Attractions/Samaria/tadeusz-zachwieja-2Plavx_5YBQ-unsplash.jpg',
+            '/images/Attractions/Samaria/tinabierhoff-crete-1137843_1920.jpg',
+        ],
     },
     {
         id: 6,
         name: 'Elafonisi Beach',
         description:
             "Pink sand and shallow turquoise lagoons on Crete's south-west tip.",
-        image: '/images/attractions/elafonisi.jpg',
+        image: '/images/Attractions/Elafonisi/jarekgrafik-greece-997651.jpg',
         distance: '210 km',
+        gallery: [
+            '/images/Attractions/Elafonisi/jarekgrafik-greece-997651.jpg',
+            '/images/Attractions/Elafonisi/jarekgrafik-greece-997621_1920.jpg',
+            '/images/Attractions/Elafonisi/reiseuhu-cOEnr81WHgo-unsplash.jpg',
+        ],
     },
 ];
 
@@ -295,12 +463,17 @@ export const GUESTY_FAQS: FAQ[] = [
     },
 ];
 
+// Off-site contact page hosted by Guesty / Hotelyzer.
+// Used by the footer CTA in place of the internal contact form.
+export const GUESTY_CONTACT_URL = 'https://kismeturbanboutique.hotelyzer.gr/en/contact';
+
 // Embed snippet provided by Guesty / Hotelyzer (kept verbatim for fidelity).
 // Mounted client-side via next/script in HomeGuesty.
+// `color` drives Guesty's `--guesty-brand-primary` (button + active-state accent).
 export const GUESTY_WIDGET = {
     containerId: 'search-widget_IO312PWQ',
     cssUrl: 'https://s3.amazonaws.com/guesty-frontend-production/search-bar-production.css',
     jsUrl: 'https://s3.amazonaws.com/guesty-frontend-production/search-bar-production.js',
     siteUrl: 'kismeturbanboutique.hotelyzer.gr',
-    color: '#206CFF',
+    color: '#2C5F8D', // matches --color-deep-med (the primary Button background)
 };

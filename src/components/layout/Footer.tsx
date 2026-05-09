@@ -1,22 +1,32 @@
 import { Container } from "../ui/Container";
-import { ContactForm } from "./ContactForm";
+import dynamic from "next/dynamic";
 import Link from "next/link";
 import { MapPin, Phone, Mail } from "lucide-react";
 import { HotelSettings } from "@/types";
 import { LogoBrand } from "../ui/LogoBrand";
+import type { ReactNode } from "react";
+
+// Lazy-loaded so Guesty-mode visitors don't pay the JS cost for a form
+// that is replaced by the GuestyContactCTA. SSR stays on so the form
+// still appears in the initial HTML for self-contained mode.
+const ContactForm = dynamic(() => import("./ContactForm").then(m => m.ContactForm));
 
 interface FooterProps {
     settings: HotelSettings;
+    // Optional override for the right-side panel of the footer. When provided,
+    // it replaces the default ContactForm + heading. Used by Guesty mode to
+    // surface a CTA pointing at the off-site contact page.
+    rightPanel?: ReactNode;
 }
 
-export function Footer({ settings }: FooterProps) {
+export function Footer({ settings, rightPanel }: FooterProps) {
     return (
         <footer id="contact" className="bg-[var(--color-aegean-blue)] text-[var(--color-sand)] pt-24 pb-12">
             <Container>
                 <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 mb-16">
                     {/* Column 1: Info */}
                     <div className="space-y-8 text-center lg:text-left">
-                        <div>
+                        <div className="flex flex-col items-center lg:items-start">
                             <LogoBrand
                                 settings={settings}
                                 variant="light"
@@ -44,10 +54,15 @@ export function Footer({ settings }: FooterProps) {
                         </div>
                     </div>
 
-                    {/* Column 2: Form */}
+                    {/* Column 2: Right panel — defaults to the internal contact form,
+                        overridable via the `rightPanel` prop (e.g. Guesty mode CTA). */}
                     <div className="bg-white/5 p-8 rounded-[var(--radius-subtle)] border border-white/5">
-                        <h3 className="font-montserrat text-white uppercase tracking-widest text-sm mb-6 text-center lg:text-left">Get in Touch</h3>
-                        <ContactForm />
+                        {rightPanel ?? (
+                            <>
+                                <h3 className="font-montserrat text-white uppercase tracking-widest text-sm mb-6 text-center lg:text-left">Get in Touch</h3>
+                                <ContactForm />
+                            </>
+                        )}
                     </div>
                 </div>
 
@@ -59,8 +74,8 @@ export function Footer({ settings }: FooterProps) {
                         <Link href="#" className="hover:text-white transition-colors">Cookie Policy</Link>
                     </div>
                 </div>
-            </Container >
-        </footer >
+            </Container>
+        </footer>
     );
 }
 

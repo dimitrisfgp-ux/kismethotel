@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="-6 409 1108 414">
+  <defs>
+    <style>
+      .cls-2 {
+        font-size: 121.232px;
+        font-family: "El Messiri";
+        fill: #4e4e4e;
+      }
+
+      .cls-3 {
+        font-size: 50px;
+        font-family: "Bricolage Grotesque";
+        font-weight: 200;
+        fill: #4e4e4e;
+      }
+    </style>
+  </defs>
+  <text class="cls-2" transform="matrix(2.445, 0, 0, 2.445, -4.126, 675.303)">KISMET</text>
+  <text class="cls-3" transform="matrix(1.985, 0, 0, 1.985, 17.091, 797.946)">Urban Boutique Rooms</text>
+</svg>

@@ -67,7 +67,7 @@ export function FloatingWidget({ settings }: FloatingWidgetProps) {
                         title="WhatsApp"
                     >
                         <Image
-                            src="/images/whatsapp-logo-4454.svg"
+                            src="/images/Platforms/whatsapp-logo-4454.svg"
                             alt="WhatsApp"
                             width={24}
                             height={24}
@@ -82,7 +82,7 @@ export function FloatingWidget({ settings }: FloatingWidgetProps) {
                         title="Viber"
                     >
                         <Image
-                            src="/images/viber-logo-14126.svg"
+                            src="/images/Platforms/viber-logo-14126.svg"
                             alt="Viber"
                             width={24}
                             height={24}

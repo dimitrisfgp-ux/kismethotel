@@ -44,8 +44,12 @@ export function MobileMenu({ isOpen, onClose, rooms }: MobileMenuProps) {
         >
             <div className="flex flex-col h-full pt-28 pb-10 px-8 space-y-8 overflow-y-auto text-center md:text-left">
                 <nav className="flex flex-col space-y-6">
-                    {NAV_LINKS.map((link, index) => (
-                        link.hasDropdown ? (
+                    {NAV_LINKS.map((link, index) => {
+                        // Hide the rooms-dropdown nav item when there are no rooms
+                        // to surface (e.g. Guesty mode passes an empty array).
+                        if (link.hasDropdown && rooms.length === 0) return null;
+
+                        return link.hasDropdown ? (
                             /* Rooms Dropdown Logic */
                             <div key={link.label} className="flex flex-col space-y-4 animate-slide-up" style={{ animationDelay: `${index * 50}ms`, animationFillMode: 'forwards' }}>
                                 <button
@@ -93,8 +97,8 @@ export function MobileMenu({ isOpen, onClose, rooms }: MobileMenuProps) {
                             >
                                 {link.label}
                             </Link>
-                        )
-                    ))}
+                        );
+                    })}
                 </nav>
 
                 <div className="w-12 h-[1px] bg-white/20 opacity-0 animate-fade-in mx-auto md:mx-0" style={{ animationDelay: '200ms', animationFillMode: 'forwards' }} />

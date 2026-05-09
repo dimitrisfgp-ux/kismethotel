@@ -56,6 +56,7 @@ import { contentService } from "@/services/contentService";
 import { roomService } from "@/services/roomService";
 import { getMode } from "@/lib/mode";
 import { GUESTY_SETTINGS } from "@/config/guestyMode";
+import { GuestyContactCTA } from "@/components/layout/GuestyContactCTA";
 import type { HotelSettings } from "@/types";
 
 type RoomsForHeader = {
@@ -111,7 +112,10 @@ export default async function RootLayout({
                   <main className="min-h-screen">
                     {children}
                   </main>
-                  <Footer settings={settings} />
+                  <Footer
+                    settings={settings}
+                    rightPanel={mode === "guesty" ? <GuestyContactCTA /> : undefined}
+                  />
                   <FloatingHoldTimer />
                   <FloatingWidget settings={settings} />
                   <HoldBlockedModal />

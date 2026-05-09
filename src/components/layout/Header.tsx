@@ -48,7 +48,11 @@ export function Header({ settings, rooms }: HeaderProps) {
         <header
             className={cn(
                 "fixed top-0 w-full z-50 transition-all duration-300 ease-premium h-16 md:h-[var(--header-height)]",
-                (isScrolled && !isMobileOpen) ? "bg-white/95 backdrop-blur-sm shadow-[var(--shadow-sm)]" : "bg-transparent"
+                (isScrolled && !isMobileOpen)
+                    ? "bg-white/95 backdrop-blur-sm shadow-[var(--shadow-sm)]"
+                    // Soft darken behind the header so white nav text stays readable
+                    // over bright video frames. Fades to transparent at bottom edge.
+                    : "bg-gradient-to-b from-black/40 to-transparent"
             )}
         >
             <Container className="h-full flex items-center justify-between relative">
