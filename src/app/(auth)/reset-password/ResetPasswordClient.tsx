@@ -55,7 +55,7 @@ export default function ResetPasswordClient() {
                     <div className="text-center lg:text-left">
                         <div className="lg:hidden mb-8">
                             <LogoBrand
-                                settings={{ name: 'Kismet', description: '', logoMode: 'image', logoIconUrl: '/images/kismet-logo-icon.svg', logoTextUrl: '/images/kismet-logo-text.svg' }}
+                                settings={{ name: 'Kismet', description: '', logoMode: 'image', logoIconUrl: '/images/Brand%20Media/kismet-logo-icon.svg', logoTextUrl: '/images/Brand%20Media/kismet-logo-text.svg' }}
                                 variant="dark"
                                 size="md"
                             />

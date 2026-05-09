@@ -28,8 +28,8 @@ const DEFAULT_LOGO_SETTINGS: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIcon
     name: 'Kismet',
     description: '',
     logoMode: 'image',
-    logoIconUrl: '/images/kismet-logo-icon.svg',
-    logoTextUrl: '/images/kismet-logo-text.svg'
+    logoIconUrl: '/images/Brand%20Media/kismet-logo-icon.svg',
+    logoTextUrl: '/images/Brand%20Media/kismet-logo-text.svg'
 };
 
 export function Header({ settings, rooms }: HeaderProps) {
