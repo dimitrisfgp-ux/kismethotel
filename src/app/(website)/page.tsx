@@ -5,10 +5,18 @@ import { AttractionsGrid } from "@/components/home/AttractionsGrid";
 import { FAQAccordion } from "@/components/home/FAQAccordion";
 import { roomService } from "@/services/roomService";
 import { contentService } from "@/services/contentService";
+import { getMode } from "@/lib/mode";
+import { HomeGuesty } from "@/components/home/guesty/HomeGuesty";
 
 
 
 export default async function Home() {
+  // Guesty mode renders a different homepage entirely:
+  // hardcoded categories that link directly to Guesty, no Supabase fetch.
+  if ((await getMode()) === "guesty") {
+    return <HomeGuesty />;
+  }
+
   // Fetch data in parallel
   const [rooms, conveniences, attractions, faqs, pageContent, categories] = await Promise.all([
     roomService.getRooms(),

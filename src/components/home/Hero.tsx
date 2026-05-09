@@ -15,12 +15,13 @@ interface HeroProps {
         android?: string;
         desktop?: string;
     };
+    scrollTargetId?: string;
 }
 
-export function Hero({ title, subtitle, ctaText, poster, videos }: HeroProps) {
+export function Hero({ title, subtitle, ctaText, poster, videos, scrollTargetId = "search-bar" }: HeroProps) {
     const handleScroll = (e: React.MouseEvent) => {
         e.preventDefault();
-        scrollToElement("search-bar"); // Or 'rooms' if preferred, preserving 'search-bar' targeting
+        scrollToElement(scrollTargetId);
     };
 
     return (
@@ -64,7 +65,7 @@ export function Hero({ title, subtitle, ctaText, poster, videos }: HeroProps) {
 
             {/* Scroll Indicator */}
             <button
-                onClick={() => scrollToElement("search-bar")}
+                onClick={() => scrollToElement(scrollTargetId)}
                 aria-label="Scroll to Content"
                 className="absolute bottom-10 z-20 animate-bounce text-white/80 hover:text-white transition-colors"
             >
