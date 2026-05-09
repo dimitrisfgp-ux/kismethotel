@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from "react-leaflet";
 import L from "leaflet";
 import "leaflet/dist/leaflet.css";
-import { HOTEL_COORDINATES } from "@/config/constants";
+import { HOTEL_COORDINATES } from "@/lib/constants";
 import { MapPin } from "lucide-react";
 import { renderToStaticMarkup } from "react-dom/server";
 
