@@ -1,7 +1,40 @@
 {
   "permissions": {
     "allow": [
-      "Bash(xargs grep -l \"useRoomAvailability\\\\|useBookingForm\\\\|useRealtimeHolds\")"
+      "Bash(xargs grep -l \"useRoomAvailability\\\\|useBookingForm\\\\|useRealtimeHolds\")",
+      "Bash(psql --version)",
+      "Bash(node scripts/introspect-supabase.mjs)",
+      "Bash(supabase --version)",
+      "Bash(ping -n 1 -4 bdnjwmystkxngrsppknd.supabase.co)",
+      "Bash(node -e \"console.log\\(require\\('dns'\\).lookup\\('bdnjwmystkxngrsppknd.supabase.co', {family:0, all:true}, \\(e,a\\)=>console.log\\(e||a\\)\\)\\)\")",
+      "Bash(node -e \"fetch\\('https://bdnjwmystkxngrsppknd.supabase.co/rest/v1/'\\).then\\(r=>r.text\\(\\)\\).then\\(t=>console.log\\('REST OK:', t.slice\\(0,200\\)\\)\\).catch\\(e=>console.log\\('ERR:',e.message\\)\\)\")",
+      "Bash(node -e \"require\\('dns'\\).resolve4\\('supabase.com', \\(e,a\\)=>console.log\\('supabase.com:', e||a\\)\\)\")",
+      "Bash(node -e \"require\\('dns'\\).resolve4\\('google.com', \\(e,a\\)=>console.log\\('google.com:', e||a\\)\\)\")",
+      "Bash(nslookup bdnjwmystkxngrsppknd.supabase.co 8.8.8.8)",
+      "Bash(node -e \"['supabase.co','status.supabase.com','api.supabase.com'].forEach\\(h=>require\\('dns'\\).resolve4\\(h,\\(e,a\\)=>console.log\\(h+':',e?.code||a\\)\\)\\)\")",
+      "Bash(git checkout *)",
+      "WebFetch(domain:kismeturbanboutique.hotelyzer.gr)",
+      "Bash(git add *)",
+      "Bash(git reset *)",
+      "Bash(git commit -m ' *)",
+      "Bash(grep -q \"Ready in\\\\|error\\\\|Error\\\\|EADDRINUSE\\\\|Failed to compile\" \"C:\\\\\\\\Users\\\\\\\\dimitris\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-dimitris-Documents-GitHub-kismethotel\\\\\\\\64166a95-32fd-4c6f-ade5-30700e13ba19\\\\\\\\tasks\\\\\\\\bwuxt6lhp.output\")",
+      "Bash(tail -30 \"C:\\\\\\\\Users\\\\\\\\dimitris\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-dimitris-Documents-GitHub-kismethotel\\\\\\\\64166a95-32fd-4c6f-ade5-30700e13ba19\\\\\\\\tasks\\\\\\\\bwuxt6lhp.output\")",
+      "Bash(curl -s -o /tmp/guesty-home.html -w \"HTTP %{http_code} | Size: %{size_download}B | Time: %{time_total}s\\\\n\" http://localhost:3000/)",
+      "Bash(curl -s \"https://s3.amazonaws.com/guesty-frontend-production/search-bar-production.css\")",
+      "WebSearch",
+      "Bash(node -e ' *)",
+      "Bash(grep -qE \"Ready in|error|Error|EADDRINUSE|Failed to compile|Unable to acquire\" \"C:\\\\\\\\Users\\\\\\\\dimitris\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-dimitris-Documents-GitHub-kismethotel\\\\\\\\8f549461-940b-4101-96e1-4212b67e152f\\\\\\\\tasks\\\\\\\\b3rioma7k.output\")",
+      "Bash(cat \"C:\\\\\\\\Users\\\\\\\\dimitris\\\\\\\\AppData\\\\\\\\Local\\\\\\\\Temp\\\\\\\\claude\\\\\\\\c--Users-dimitris-Documents-GitHub-kismethotel\\\\\\\\8f549461-940b-4101-96e1-4212b67e152f\\\\\\\\tasks\\\\\\\\b3rioma7k.output\")",
+      "Bash(node scripts/optimize-room-photos.mjs)",
+      "Bash(grep -r \"console\\\\\\\\.log\\\\|console\\\\\\\\.warn\\\\|console\\\\\\\\.error\" /c/Users/dimitris/Documents/GitHub/kismethotel/src --include=\"*.ts\" --include=\"*.tsx\")",
+      "Bash(git rm *)",
+      "Bash(git mv *)",
+      "Bash(node scripts/check-asset-paths.mjs)",
+      "Bash(curl -sI \"https://kismethotel-p2p4dvl9l-dstrt-projects.vercel.app/images/Attractions/Knossos/jametlene-reskp-Nre--Rexegs-unsplash.jpg\")",
+      "Bash(curl -s \"https://kismethotel-p2p4dvl9l-dstrt-projects.vercel.app/_next/image?url=%2Fimages%2FAttractions%2FKnossos%2Fjametlene-reskp-Nre--Rexegs-unsplash.jpg&w=1920&q=75\")",
+      "Bash(curl -sI \"https://kismethotel-p2p4dvl9l-dstrt-projects.vercel.app/_next/image?url=%2Fimages%2FAttractions%2FKnossos%2Fjametlene-reskp-Nre--Rexegs-unsplash.jpg&w=1920&q=75\")",
+      "Bash(curl -sI \"https://kismethotel-p2p4dvl9l-dstrt-projects.vercel.app/_next/image?url=%2Fimages%2FKismet_Room_Photos%2FOptimized%2F10%2520-%2520Suite%2FP1953449.jpg&w=1920&q=75\")",
+      "Bash(git ls-tree *)"
     ],
     "additionalDirectories": [
       "c:\\Users\\dimitris\\Documents\\GitHub\\kismethotel\\src\\lib"
