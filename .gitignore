@@ -50,7 +50,21 @@ next-env.d.ts
 # logs
 *.log
 
+# Toolkit
+.arch
+.claude
+.kilocode
+.qodo
+ARCH.md
+
+#Docs
 
 
+.docs
 .nx/cache
 .nx/workspace-data
+
+# Hotel-photo originals (3.4 GB DSLR shots).
+# Optimized variants under Kismet_Room_Photos/Optimized/ ARE committed and
+# used by the build; originals stay local and feed scripts/optimize-room-photos.mjs.
+/public/images/Kismet_Room_Photos/Room Photos/
