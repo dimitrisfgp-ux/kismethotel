@@ -222,7 +222,15 @@ export default function InteractiveMap({ conveniences, categories, activeCategor
                         opacity={isDimmed ? 0.5 : 1}
                     >
                         <Popup className="font-inter">
-                            <div className="p-1 min-w-[150px]">
+                            <div className={cn("p-1", isHotel ? "min-w-[200px]" : "min-w-[150px]")}>
+                                {isHotel && (
+                                    // eslint-disable-next-line @next/next/no-img-element
+                                    <img
+                                        src="/images/Kismet_Room_Photos/Optimized/Outside/hotel-exterior.jpg"
+                                        alt="Kismet Urban Boutique exterior"
+                                        className="w-full h-32 object-cover rounded mb-2"
+                                    />
+                                )}
                                 <h3 className="font-bold text-[var(--color-charcoal)] text-sm mb-1">{location.name}</h3>
                                 {location.distanceLabel && (
                                     <p className="text-xs text-gray-500">{location.distanceLabel}</p>
