@@ -26,7 +26,7 @@ export const GUESTY_HERO = {
     title: 'Urban Accommodation in the Heart of Crete',
     subtitle: 'Built on Comfort & Accessibility',
     ctaText: 'Explore Rooms',
-    scrollTargetId: 'category-suite',
+    scrollTargetId: 'category-suite-301',
     // Shown immediately while the video loads (matches the video's first frame).
     poster: '/hero_videos/pre_load_frame.png',
     videos: {
@@ -56,35 +56,70 @@ export const GUESTY_SETTINGS: HotelSettings = {
 
 export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
     {
-        slug: 'suite',
-        title: 'Suite',
-        subtitle: 'Our flagship space',
+        slug: 'suite-301',
+        title: 'Suite 301',
+        subtitle: 'A flagship retreat',
         description:
-            'Our largest accommodation, built around a generous lounge area and an extended balcony. It feels like a small urban apartment — every detail considered for comfort, accessibility, and the kind of long, lazy mornings you came to Crete for.',
+            'A generous lounge area opening onto a private balcony, with a separate sleeping space designed for absolute calm. Built like a small urban apartment in the heart of Iraklio — every detail considered for comfort, accessibility, and the kind of long, lazy mornings you came to Crete for.',
         guestyUrl:
-            'https://kismeturbanboutique.hotelyzer.gr/en/properties/69faf52384a25c001c8e3fa7',
+            'https://kismeturbanboutique.hotelyzer.gr/en/properties/69fb41a36755f300135e7b18',
         images: {
-            // Pulled from rooms 9 and 10 (the two folders flagged "Suite").
-            main: '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953449.jpg',
+            // All photos from room 9 (folder "9 - Suite").
+            main: '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953209.jpg',
             secondary: [
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953209.jpg',
-                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953474.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953679.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953233.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953261.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953299.jpg',
             ],
             extras: [
-                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953505.jpg',
-                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953604.jpg',
-                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953700.jpg',
-                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953708.jpg',
-                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953689.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953233.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953301.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953307.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953345.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953368.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953395.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953412.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953679.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953681.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953682.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953683.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953663.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953674.jpg',
             ],
         },
         layout: 'image-left',
+    },
+    {
+        slug: 'suite-302',
+        title: 'Suite 302',
+        subtitle: 'Our largest layout',
+        description:
+            'The most spacious accommodation we offer — extended living space, oversized windows, and a private balcony with views over the old town. Built for travellers who want room to breathe across a longer stay, with the same step-free accessibility as the rest of the building.',
+        guestyUrl:
+            'https://kismeturbanboutique.hotelyzer.gr/en/properties/69faf52384a25c001c8e4190',
+        images: {
+            // All photos from room 10 (folder "10 - Suite").
+            main: '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953449.jpg',
+            secondary: [
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953458.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953474.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953481.jpg',
+            ],
+            extras: [
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953505.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953508.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953604.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953611.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953640.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953700.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953708.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953725.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953735.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953744.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953689.jpg',
+                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953694.jpg',
+            ],
+        },
+        layout: 'image-right',
     },
     {
         slug: 'deluxe',
@@ -117,7 +152,7 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
                 '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953962.jpg',
             ],
         },
-        layout: 'image-right',
+        layout: 'image-left',
     },
     {
         slug: 'standard',
@@ -148,7 +183,7 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
                 '/images/Kismet_Room_Photos/Optimized/5%20-%20Standard/P1953879.jpg',
             ],
         },
-        layout: 'image-left',
+        layout: 'image-right',
     },
 ];
 
