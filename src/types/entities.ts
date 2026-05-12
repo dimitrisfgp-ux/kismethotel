@@ -159,6 +159,10 @@ export interface Attraction {
     // When provided and non-empty, the AttractionsGrid card becomes
     // clickable and opens a lightbox starting at index 0.
     gallery?: string[];
+    // Optional off-site URL surfaced as a "Visit Site" CTA in the
+    // bottom-right of the card. Click bubbles independently of the
+    // lightbox click target.
+    externalUrl?: string;
 }
 
 export interface FAQ {

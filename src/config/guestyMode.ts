@@ -354,6 +354,7 @@ export const GUESTY_ATTRACTIONS: Attraction[] = [
             "A small, lovingly curated museum just steps from the hotel — traditional Cretan and Greek instruments, with regular live demonstrations.",
         image: '/images/Attractions/Thirathen/kainourio3.jpg',
         distance: '10 m',
+        externalUrl: 'https://www.thirathen.com/',
         gallery: [
             '/images/Attractions/Thirathen/kainourio3.jpg',
             '/images/Attractions/Thirathen/piano%20kazantzaki.jpg',

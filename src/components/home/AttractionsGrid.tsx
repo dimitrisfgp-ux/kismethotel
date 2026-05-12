@@ -4,6 +4,7 @@ import { useState, useCallback } from "react";
 import { Attraction } from "@/types";
 import Image from "next/image";
 import dynamic from "next/dynamic";
+import { ArrowUpRight } from "lucide-react";
 import { SectionHeading } from "../ui/SectionHeading";
 import { Container } from "../ui/Container";
 
@@ -95,19 +96,34 @@ export function AttractionsGrid({ attractions }: AttractionsGridProps) {
                         </>
                     );
 
-                    return hasGallery ? (
-                        <button
-                            key={attraction.id}
-                            type="button"
-                            onClick={() => openLightbox(attraction)}
-                            aria-label={`Open ${attraction.name} photos fullscreen`}
-                            className={cellClass}
-                        >
-                            {cellInner}
-                        </button>
-                    ) : (
+                    // Card uses a layered structure so an optional external-link
+                    // CTA can coexist with the (HTML-invalid-inside-button) lightbox
+                    // click target. Click target is an invisible button at z-1;
+                    // the external link sits at z-3 and stops propagation.
+                    return (
                         <div key={attraction.id} className={cellClass}>
                             {cellInner}
+                            {hasGallery && (
+                                <button
+                                    type="button"
+                                    onClick={() => openLightbox(attraction)}
+                                    aria-label={`Open ${attraction.name} photos fullscreen`}
+                                    className="absolute inset-0 z-[1] cursor-zoom-in"
+                                />
+                            )}
+                            {attraction.externalUrl && (
+                                <a
+                                    href={attraction.externalUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    onClick={(e) => e.stopPropagation()}
+                                    aria-label={`Visit ${attraction.name} website`}
+                                    className="absolute bottom-6 right-6 z-[3] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/30 text-white hover:bg-white hover:text-[var(--color-charcoal)] hover:border-white transition-all shadow-sm"
+                                >
+                                    <span>Visit Site</span>
+                                    <ArrowUpRight className="h-3 w-3" />
+                                </a>
+                            )}
                         </div>
                     );
                 })}
