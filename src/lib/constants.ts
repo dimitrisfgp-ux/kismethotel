@@ -6,7 +6,8 @@ import { RoomFilters } from "@/types";
 export const HOTEL_LOCATION_ID = "999";
 // Single source of truth for the hotel's lat/lng — used by InteractiveMap,
 // LocationPickerMap, and the Guesty-mode convenience cluster.
-export const HOTEL_COORDINATES: [number, number] = [35.33693409632511, 25.13071886492972];
+// Source: 35°20'13.0"N 25°07'48.9"E (DMS), converted to decimal degrees.
+export const HOTEL_COORDINATES: [number, number] = [35.336944, 25.130250];
 export const DEFAULT_HOTEL_COLOR = "var(--color-deep-med)";
 export const DEFAULT_CATEGORY_COLOR = "var(--color-charcoal)";
 export const FALLBACK_ICON_COLOR = "#000000"; // For color picker default
