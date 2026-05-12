@@ -173,6 +173,7 @@ export const GUESTY_CONVENIENCES: Convenience[] = [
         categoryId: 'attractions',
         type: 'Church / Landmark',
         distanceLabel: '~1 min walk',
+        popupImage: '/images/Attractions/snt_minas.jpg',
     },
     {
         id: 'thirathen-musical-instruments',
