@@ -379,6 +379,58 @@ export const GUESTY_CONVENIENCES: Convenience[] = [
         type: 'Market street',
         distanceLabel: '~5 min walk',
     },
+    // West-side pins — added for visual balance on the map.
+    // Coordinates are approximate placements along the streets west of the hotel.
+    {
+        id: 'chania-gate',
+        name: 'Chania Gate (Pantokratoras)',
+        description: 'Venetian-era fortified gate at the western edge of the old town.',
+        lat: 35.3372,
+        lng: 25.1239,
+        categoryId: 'attractions',
+        type: 'Historic gate',
+        distanceLabel: '~8 min walk',
+    },
+    {
+        id: 'plateia-talou',
+        name: 'Plateia Talou',
+        description: 'Small leafy square in the south-western corner of the old town.',
+        lat: 35.3365,
+        lng: 25.1255,
+        categoryId: 'markets',
+        type: 'Public square',
+        distanceLabel: '~5 min walk',
+    },
+    {
+        id: 'pagopoieion',
+        name: 'Pagopoieion',
+        description: 'Bistro-style restaurant set inside a converted ice-factory building.',
+        lat: 35.3370,
+        lng: 25.1275,
+        categoryId: 'restaurants',
+        type: 'Restaurant',
+        distanceLabel: '~3 min walk',
+    },
+    {
+        id: 'old-town-cafe',
+        name: 'Old Town Café',
+        description: 'Quiet courtyard café tucked into a side-street of the old quarter.',
+        lat: 35.3362,
+        lng: 25.1280,
+        categoryId: 'cafes',
+        type: 'Café',
+        distanceLabel: '~3 min walk',
+    },
+    {
+        id: 'atm-kalokairinou',
+        name: 'ATM — Kalokairinou Street',
+        description: 'Standalone bank ATM on the main pedestrian shopping street.',
+        lat: 35.3378,
+        lng: 25.1265,
+        categoryId: 'banks',
+        type: 'ATM',
+        distanceLabel: '~5 min walk',
+    },
 ];
 
 export const GUESTY_ATTRACTIONS: Attraction[] = [
