@@ -65,11 +65,11 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
             'https://kismeturbanboutique.hotelyzer.gr/en/properties/69fb41a36755f300135e7b18',
         images: {
             // All photos from room 9 (folder "9 - Suite").
-            main: '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953209.jpg',
+            main: '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953299.jpg',
             secondary: [
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953233.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953261.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953299.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953209.jpg',
             ],
             extras: [
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953301.jpg',
