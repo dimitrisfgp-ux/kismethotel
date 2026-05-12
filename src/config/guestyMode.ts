@@ -485,6 +485,19 @@ export const GUESTY_ATTRACTIONS: Attraction[] = [
             '/images/Attractions/Elafonisi/reiseuhu-cOEnr81WHgo-unsplash.jpg',
         ],
     },
+    {
+        id: 7,
+        name: 'Matala Beach',
+        description:
+            "Iconic south-coast beach backed by sandstone cliffs honeycombed with rock-cut caves — Joni Mitchell's hippie hideaway in the early '70s, still magnetic today.",
+        image: '/images/Attractions/Matala/pexels-andre-124356440-16274490.jpg',
+        distance: '75 km',
+        gallery: [
+            '/images/Attractions/Matala/pexels-andre-124356440-16274490.jpg',
+            '/images/Attractions/Matala/pexels-francesco-ungaro-10522894.jpg',
+            '/images/Attractions/Matala/pexels-giannis-tsoumetis-329100347-13830000.jpg',
+        ],
+    },
 ];
 
 export const GUESTY_FAQS: FAQ[] = [
