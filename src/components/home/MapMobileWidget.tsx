@@ -18,7 +18,7 @@ export function MapMobileWidget({ isVisible, categories, activeCategoryIndex, on
     return (
         <div
             className={cn(
-                "fixed bottom-6 left-4 right-4 md:hidden z-[1000] transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
+                "fixed bottom-6 left-2 right-2 md:hidden z-[1000] transition-all duration-500 cubic-bezier(0.4, 0, 0.2, 1)",
                 isVisible ? "translate-y-0 opacity-100" : "translate-y-20 opacity-0 pointer-events-none"
             )}
         >

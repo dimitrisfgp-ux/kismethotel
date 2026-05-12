@@ -185,7 +185,15 @@ export default function InteractiveMap({ conveniences, categories, activeCategor
 
     // Add Hotel Location
     const allLocations = [
-        { id: HOTEL_LOCATION_ID, name: "Kismet", lat: HOTEL_COORDINATES[0], lng: HOTEL_COORDINATES[1], categoryId: "hotel", type: "Hotel" } as unknown as Convenience,
+        {
+            id: HOTEL_LOCATION_ID,
+            name: "Kismet",
+            lat: HOTEL_COORDINATES[0],
+            lng: HOTEL_COORDINATES[1],
+            categoryId: "hotel",
+            type: "Hotel",
+            popupImage: "/images/Kismet_Room_Photos/Optimized/Outside/hotel-exterior.jpg",
+        } as unknown as Convenience,
         ...conveniences
     ];
 
@@ -222,13 +230,13 @@ export default function InteractiveMap({ conveniences, categories, activeCategor
                         opacity={isDimmed ? 0.5 : 1}
                     >
                         <Popup className="font-inter">
-                            <div className={cn("p-1", isHotel ? "min-w-[200px]" : "min-w-[150px]")}>
-                                {isHotel && (
+                            <div className={cn("p-1", location.popupImage ? "min-w-[200px]" : "min-w-[150px]")}>
+                                {location.popupImage && (
                                     // eslint-disable-next-line @next/next/no-img-element
                                     <img
-                                        src="/images/Kismet_Room_Photos/Optimized/Outside/hotel-exterior.jpg"
-                                        alt="Kismet Urban Boutique exterior"
-                                        className="w-full h-32 object-cover rounded mb-2"
+                                        src={location.popupImage}
+                                        alt={location.name}
+                                        className="w-full h-auto rounded mb-2"
                                     />
                                 )}
                                 <h3 className="font-bold text-[var(--color-charcoal)] text-sm mb-1">{location.name}</h3>

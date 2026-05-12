@@ -145,6 +145,8 @@ export interface Convenience {
     rating?: number;
     placeId?: string; // Google Place ID
     distanceLabel?: string; // e.g. "5 min walk"
+    // Optional thumbnail shown above the name in the map popup.
+    popupImage?: string;
 }
 
 export interface Attraction {

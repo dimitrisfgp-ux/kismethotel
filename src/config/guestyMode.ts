@@ -185,6 +185,7 @@ export const GUESTY_CONVENIENCES: Convenience[] = [
         categoryId: 'museums',
         type: 'Museum',
         distanceLabel: '~1 min walk',
+        popupImage: '/images/Attractions/Thirathen/Optimized/thirathen-popup.jpg',
     },
     {
         id: 'heraklion-archaeological-museum',
