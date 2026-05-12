@@ -131,7 +131,7 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
             'https://kismeturbanboutique.hotelyzer.gr/en/properties/69faf38789895900135fe738',
         images: {
             // Pulled from rooms 3, 6, and 8 (the three folders flagged "Deluxe").
-            main: '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942404.jpg',
+            main: '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942436.jpg',
             secondary: [
                 '/images/Kismet_Room_Photos/Optimized/6%20-%20Deluxe/P1942846.jpg',
                 '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953038.jpg',
