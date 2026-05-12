@@ -456,6 +456,7 @@ export const GUESTY_ATTRACTIONS: Attraction[] = [
         distance: '10 m',
         externalUrl: 'https://www.thirathen.com/',
         gallery: [
+            'https://www.youtube.com/watch?v=Sg0SyJZSR3w',
             '/images/Attractions/Thirathen/kainourio3.jpg',
             '/images/Attractions/Thirathen/piano%20kazantzaki.jpg',
             '/images/Attractions/Thirathen/DSCF7528.jpg',

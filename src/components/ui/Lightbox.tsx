@@ -15,6 +15,13 @@ interface LightboxProps {
     onPrev?: () => void;
 }
 
+// Detect YouTube URLs (watch, share, embed). Returns the video ID
+// or null if the URL isn't recognisable as YouTube.
+function getYouTubeId(url: string): string | null {
+    const m = url.match(/(?:youtube\.com\/(?:watch\?v=|embed\/)|youtu\.be\/)([A-Za-z0-9_-]+)/);
+    return m ? m[1] : null;
+}
+
 export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev }: LightboxProps) {
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -57,6 +64,7 @@ export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev
     if (!isOpen || !mounted) return null;
 
     const currentImage = images[currentIndex];
+    const currentYouTubeId = getYouTubeId(currentImage);
 
     // Navigation handlers to stop propagation
     const handlePrev = (e: React.MouseEvent) => {
@@ -107,38 +115,55 @@ export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev
                 onClick={(e) => e.stopPropagation()}
             >
                 <div className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center">
-                    {/* Main Image */}
-                    <div className={cn("relative w-full h-full transition-opacity duration-300", isLoading ? "opacity-0" : "opacity-100")}>
-                        <Image
-                            src={currentImage}
-                            alt={`Gallery Image ${currentIndex + 1}`}
-                            fill
-                            className="object-contain" // object-contain ensures full image is seen.
-                            quality={90}
-                            priority
-                            onLoad={() => setIsLoading(false)}
-                            onLoadStart={() => setIsLoading(true)}
-                        />
-                    </div>
-
-                    {/* Loading Spinner (Centered behind image or on top) */}
-                    {isLoading && (
-                        <div className="absolute inset-0 flex items-center justify-center z-[-1]">
-                            <div className="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                    {currentYouTubeId ? (
+                        // YouTube embed — autoplay with sound (subject to browser policy).
+                        <div className="relative w-full aspect-video max-h-full">
+                            <iframe
+                                key={currentYouTubeId}
+                                src={`https://www.youtube.com/embed/${currentYouTubeId}?autoplay=1&rel=0&modestbranding=1`}
+                                title="Video"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
+                                allowFullScreen
+                                className="absolute inset-0 w-full h-full"
+                            />
                         </div>
+                    ) : (
+                        <>
+                            <div className={cn("relative w-full h-full transition-opacity duration-300", isLoading ? "opacity-0" : "opacity-100")}>
+                                <Image
+                                    src={currentImage}
+                                    alt={`Gallery Image ${currentIndex + 1}`}
+                                    fill
+                                    className="object-contain" // object-contain ensures full image is seen.
+                                    quality={90}
+                                    priority
+                                    onLoad={() => setIsLoading(false)}
+                                    onLoadStart={() => setIsLoading(true)}
+                                />
+                            </div>
+
+                            {/* Loading Spinner (Centered behind image or on top) */}
+                            {isLoading && (
+                                <div className="absolute inset-0 flex items-center justify-center z-[-1]">
+                                    <div className="w-10 h-10 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                </div>
+                            )}
+                        </>
                     )}
                 </div>
             </div>
 
-            {/* Preload Next/Prev Images (Hidden) */}
+            {/* Preload Next/Prev Images (Hidden) — skip YouTube URLs which would error in next/image */}
             <div className="hidden">
                 {(() => {
                     const nextIndex = (currentIndex + 1) % images.length;
                     const prevIndex = (currentIndex - 1 + images.length) % images.length;
+                    const nextSrc = images[nextIndex];
+                    const prevSrc = images[prevIndex];
                     return (
                         <>
-                            <Image src={images[nextIndex]} alt="" width={1} height={1} priority />
-                            <Image src={images[prevIndex]} alt="" width={1} height={1} priority />
+                            {!getYouTubeId(nextSrc) && <Image src={nextSrc} alt="" width={1} height={1} priority />}
+                            {!getYouTubeId(prevSrc) && <Image src={prevSrc} alt="" width={1} height={1} priority />}
                         </>
                     );
                 })()}
