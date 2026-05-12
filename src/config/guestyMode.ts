@@ -178,8 +178,10 @@ export const GUESTY_CONVENIENCES: Convenience[] = [
         id: 'thirathen-musical-instruments',
         name: 'Museum of Musical Instruments "Thirathen"',
         description: 'Small museum of traditional Cretan and Greek musical instruments.',
+        // Real location is essentially on top of the hotel (35.337020, 25.130191);
+        // nudged east for map readability so the pin doesn't sit underneath Kismet's marker.
         lat: 35.337020,
-        lng: 25.130191,
+        lng: 25.131000,
         categoryId: 'museums',
         type: 'Museum',
         distanceLabel: '~1 min walk',
@@ -343,6 +345,26 @@ export const GUESTY_CONVENIENCES: Convenience[] = [
 ];
 
 export const GUESTY_ATTRACTIONS: Attraction[] = [
+    {
+        id: 0,
+        name: 'Museum of Musical Instruments "Thirathen"',
+        description:
+            "A small, lovingly curated museum just steps from the hotel — traditional Cretan and Greek instruments, with regular live demonstrations.",
+        image: '/images/Attractions/Thirathen/kainourio3.jpg',
+        distance: '10 m',
+        gallery: [
+            '/images/Attractions/Thirathen/kainourio3.jpg',
+            '/images/Attractions/Thirathen/piano%20kazantzaki.jpg',
+            '/images/Attractions/Thirathen/DSCF7528.jpg',
+            '/images/Attractions/Thirathen/DSCF7529.jpg',
+            '/images/Attractions/Thirathen/11-_DSC9033.jpg',
+            '/images/Attractions/Thirathen/13-_DSC9025.jpg',
+            '/images/Attractions/Thirathen/15-_DSC9010.jpg',
+            '/images/Attractions/Thirathen/17-_DSC8967.jpg',
+            '/images/Attractions/Thirathen/18-_DSC8950.jpg',
+            '/images/Attractions/Thirathen/20-_DSC8933.jpg',
+        ],
+    },
     {
         id: 1,
         name: 'Knossos Palace',
