@@ -118,7 +118,7 @@ export function AttractionsGrid({ attractions }: AttractionsGridProps) {
                                     rel="noopener noreferrer"
                                     onClick={(e) => e.stopPropagation()}
                                     aria-label={`Visit ${attraction.name} website`}
-                                    className="absolute bottom-6 right-6 z-[3] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/30 text-white hover:bg-white hover:text-[var(--color-charcoal)] hover:border-white transition-all shadow-sm"
+                                    className="absolute top-6 right-6 z-[3] inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-[10px] font-bold uppercase tracking-widest bg-white/10 backdrop-blur-md border border-white/30 text-white hover:bg-white hover:text-[var(--color-charcoal)] hover:border-white transition-all shadow-sm"
                                 >
                                     <span>Visit Site</span>
                                     <ArrowUpRight className="h-3 w-3" />
