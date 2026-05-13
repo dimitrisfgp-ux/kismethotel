@@ -22,6 +22,16 @@ function getYouTubeId(url: string): string | null {
     return m ? m[1] : null;
 }
 
+// iOS / iPadOS detection. These platforms block autoplay-with-sound
+// universally (Apple policy); muted autoplay is allowed. Everywhere
+// else (Windows / Android / desktop Mac) gets autoplay with sound.
+// The second clause catches iPadOS 13+ which now reports as MacIntel.
+function isAppleMobile(): boolean {
+    if (typeof navigator === "undefined") return false;
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) ||
+        (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+}
+
 export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev }: LightboxProps) {
     const [mounted, setMounted] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
@@ -116,11 +126,12 @@ export function Lightbox({ isOpen, onClose, images, currentIndex, onNext, onPrev
             >
                 <div className="relative w-full h-full max-w-7xl max-h-[90vh] flex items-center justify-center">
                     {currentYouTubeId ? (
-                        // YouTube embed — autoplay with sound (subject to browser policy).
+                        // YouTube embed — autoplay with sound on most devices,
+                        // muted on iOS/iPadOS where sound-autoplay is blocked.
                         <div className="relative w-full aspect-video max-h-full">
                             <iframe
                                 key={currentYouTubeId}
-                                src={`https://www.youtube.com/embed/${currentYouTubeId}?autoplay=1&rel=0&modestbranding=1`}
+                                src={`https://www.youtube.com/embed/${currentYouTubeId}?autoplay=1${isAppleMobile() ? "&mute=1" : ""}&rel=0&modestbranding=1`}
                                 title="Video"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share; fullscreen"
                                 allowFullScreen
