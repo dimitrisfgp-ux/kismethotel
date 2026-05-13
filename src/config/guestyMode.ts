@@ -64,25 +64,18 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
         guestyUrl:
             'https://kismeturbanboutique.hotelyzer.gr/en/properties/69fb41a36755f300135e7b18',
         images: {
-            // All photos from room 9 (folder "9 - Suite").
+            // All photos from room 9 (folder "9 - Suite"). Removed by user: 2,4,6,11,12,14,15.
             main: '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953299.jpg',
             secondary: [
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953233.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953261.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953209.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953301.jpg',
+                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953345.jpg',
             ],
             extras: [
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953301.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953307.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953345.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953368.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953395.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953412.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953679.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953681.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953682.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953683.jpg',
-                '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953663.jpg',
                 '/images/Kismet_Room_Photos/Optimized/9%20-%20Suite/P1953674.jpg',
             ],
         },
@@ -110,10 +103,8 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
                 '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953604.jpg',
                 '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953611.jpg',
                 '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953640.jpg',
-                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953700.jpg',
                 '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953708.jpg',
                 '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953725.jpg',
-                '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953735.jpg',
                 '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953744.jpg',
                 '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953689.jpg',
                 '/images/Kismet_Room_Photos/Optimized/10%20-%20Suite/P1953694.jpg',
@@ -131,24 +122,19 @@ export const GUESTY_ROOM_CATEGORIES: GuestyRoomCategory[] = [
             'https://kismeturbanboutique.hotelyzer.gr/en/properties/69faf38789895900135fe738',
         images: {
             // Pulled from rooms 3, 6, and 8 (the three folders flagged "Deluxe").
+            // Removed by user: 2,4,9,10,12,15.
             main: '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942436.jpg',
             secondary: [
-                '/images/Kismet_Room_Photos/Optimized/6%20-%20Deluxe/P1942846.jpg',
                 '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953038.jpg',
-                '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942424.jpg',
-            ],
-            extras: [
                 '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942447.jpg',
                 '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942502.jpg',
+            ],
+            extras: [
                 '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942535.jpg',
                 '/images/Kismet_Room_Photos/Optimized/3%20-%20Deluxe/P1942552.jpg',
-                '/images/Kismet_Room_Photos/Optimized/6%20-%20Deluxe/P1942848.jpg',
-                '/images/Kismet_Room_Photos/Optimized/6%20-%20Deluxe/P1942866.jpg',
                 '/images/Kismet_Room_Photos/Optimized/6%20-%20Deluxe/P1942887.jpg',
-                '/images/Kismet_Room_Photos/Optimized/6%20-%20Deluxe/P1942898.jpg',
                 '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953056.jpg',
                 '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953079.jpg',
-                '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953120.jpg',
                 '/images/Kismet_Room_Photos/Optimized/8%20-%20Deluxe/P1953962.jpg',
                 // Balcony shots — apply to every Deluxe (per user instruction).
                 '/images/Kismet_Room_Photos/Optimized/Balcony/P1965742.jpg',
