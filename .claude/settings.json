@@ -35,7 +35,9 @@
       "Bash(curl -sI \"https://kismethotel-p2p4dvl9l-dstrt-projects.vercel.app/_next/image?url=%2Fimages%2FAttractions%2FKnossos%2Fjametlene-reskp-Nre--Rexegs-unsplash.jpg&w=1920&q=75\")",
       "Bash(curl -sI \"https://kismethotel-p2p4dvl9l-dstrt-projects.vercel.app/_next/image?url=%2Fimages%2FKismet_Room_Photos%2FOptimized%2F10%2520-%2520Suite%2FP1953449.jpg&w=1920&q=75\")",
       "Bash(git ls-tree *)",
-      "Bash(git commit *)"
+      "Bash(git commit *)",
+      "Bash(grep -v \"\\\\.png$\\\\|\\\\.jpg$\")",
+      "Bash(node -e \"const sharp=require\\('sharp'\\); sharp\\('public/hero_videos/pre_load_frame.jpg'\\).metadata\\(\\).then\\(m=>console.log\\(m.width+'x'+m.height\\)\\);\")"
     ],
     "additionalDirectories": [
       "c:\\Users\\dimitris\\Documents\\GitHub\\kismethotel\\src\\lib"

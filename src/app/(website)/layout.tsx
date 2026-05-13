@@ -15,6 +15,7 @@ import { FloatingHoldTimer } from "@/components/booking/FloatingHoldTimer";
 
 
 export const metadata: Metadata = {
+  metadataBase: new URL("https://kismethotel.com"),
   title: {
     default: "Kismet - Boutique Accommodation in Crete",
     template: "%s | Kismet"
@@ -23,15 +24,15 @@ export const metadata: Metadata = {
   keywords: ["hotel", "crete", "luxury", "accommodation", "boutique", "greece", "vacation"],
   openGraph: {
     type: "website",
-    locale: "en_IE",
-    url: "https://kismethotel.com",
+    locale: "en_GB",
+    url: "/",
     siteName: "Kismet",
     images: [
       {
-        url: "https://placehold.co/1200x630/E8DCC4/2F3437?text=Kismet",
+        url: "/og-image.jpg",
         width: 1200,
         height: 630,
-        alt: "Kismet Hero",
+        alt: "Kismet - Boutique Accommodation in Crete",
       }
     ]
   },
@@ -39,7 +40,7 @@ export const metadata: Metadata = {
     card: "summary_large_image",
     title: "Kismet - Crete",
     description: "Curated luxury accommodations.",
-    images: ["https://placehold.co/1200x630/E8DCC4/2F3437?text=Kismet"],
+    images: ["/og-image.jpg"],
   }
 };
 
@@ -57,6 +58,7 @@ import { roomService } from "@/services/roomService";
 import { getMode } from "@/lib/mode";
 import { GUESTY_SETTINGS } from "@/config/guestyMode";
 import { GuestyContactCTA } from "@/components/layout/GuestyContactCTA";
+import { HOTEL_COORDINATES } from "@/lib/constants";
 import type { HotelSettings } from "@/types";
 
 type RoomsForHeader = {
@@ -99,9 +101,41 @@ export default async function RootLayout({
     }));
   }
 
+  // Schema.org Hotel structured data — helps Google render rich results
+  // (knowledge panel, location, contact). Address parsed from
+  // settings.contact.address: "<street>, <locality> <postal>".
+  const addrMatch = settings.contact.address.match(/^(.+?),\s*(.+?)\s+(\d{3}\s?\d{2})$/);
+  const hotelJsonLd = {
+    "@context": "https://schema.org",
+    "@type": "Hotel",
+    name: settings.name,
+    description: settings.description,
+    url: "https://kismethotel.com",
+    image: "https://kismethotel.com/og-image.jpg",
+    telephone: settings.contact.phone,
+    email: settings.contact.email,
+    address: {
+      "@type": "PostalAddress",
+      streetAddress: addrMatch?.[1] ?? settings.contact.address,
+      addressLocality: addrMatch?.[2] ?? "Heraklion",
+      postalCode: addrMatch?.[3] ?? "",
+      addressCountry: "GR",
+    },
+    geo: {
+      "@type": "GeoCoordinates",
+      latitude: HOTEL_COORDINATES[0],
+      longitude: HOTEL_COORDINATES[1],
+    },
+    priceRange: "€€",
+  };
+
   return (
     <html lang="en" className={`${montserrat.variable} ${inter.variable}`} data-scroll-behavior="smooth">
       <body className="antialiased bg-[var(--color-warm-white)] text-[var(--color-charcoal)]">
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{ __html: JSON.stringify(hotelJsonLd) }}
+        />
         <UIProvider>
           <SessionProvider>
             <DateProvider>
