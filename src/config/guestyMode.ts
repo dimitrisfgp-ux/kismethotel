@@ -28,7 +28,7 @@ export const GUESTY_HERO = {
     ctaText: 'Explore Rooms',
     scrollTargetId: 'category-suite-301',
     // Shown immediately while the video loads (matches the video's first frame).
-    poster: '/hero_videos/pre_load_frame.png',
+    poster: '/hero_videos/pre_load_frame.jpg',
     videos: {
         // ios + android sources both have media="(max-width: 768px)" inside Hero,
         // so on mobile the browser tries ios first and falls back to android.
