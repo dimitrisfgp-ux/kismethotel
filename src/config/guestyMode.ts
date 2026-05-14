@@ -30,12 +30,11 @@ export const GUESTY_HERO = {
     // Shown immediately while the video loads (matches the video's first frame).
     poster: '/hero_videos/pre_load_frame.jpg',
     videos: {
-        // ios + android sources both have media="(max-width: 768px)" inside Hero,
-        // so on mobile the browser tries ios first and falls back to android.
-        // desktop is the catch-all for everything > 768px.
-        ios: '/hero_videos/ios/hero_4k_ios.mp4',
-        android: '/hero_videos/android/hero_video_android.mp4',
-        desktop: '/hero_videos/android/hero_video_android.mp4',
+        // Two H.264 variants — 720p for mobile (~4 MB), 1080p for desktop (~8 MB).
+        // The Hero component skips the <video> entirely on slow connections
+        // and falls back to the poster image.
+        mobile: '/hero_videos/hero_720p.mp4',
+        desktop: '/hero_videos/hero_1080p.mp4',
     },
 };
 

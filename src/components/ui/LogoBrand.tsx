@@ -91,6 +91,7 @@ export function LogoBrand({ settings, variant, size = 'sm', showSubtext = false,
             <img
                 src={settings.logoIconUrl}
                 alt=""
+                fetchPriority="high"
                 className={cn(config.icon, 'transition-[filter] duration-300')}
                 onError={() => setImgError(true)}
             />
@@ -98,6 +99,7 @@ export function LogoBrand({ settings, variant, size = 'sm', showSubtext = false,
             <img
                 src={settings.logoTextUrl}
                 alt={settings.name}
+                fetchPriority="high"
                 className={cn(config.text, 'transition-[filter] duration-300')}
                 style={filterStyle}
                 onError={() => setImgError(true)}

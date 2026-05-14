@@ -37,10 +37,32 @@
       "Bash(git ls-tree *)",
       "Bash(git commit *)",
       "Bash(grep -v \"\\\\.png$\\\\|\\\\.jpg$\")",
-      "Bash(node -e \"const sharp=require\\('sharp'\\); sharp\\('public/hero_videos/pre_load_frame.jpg'\\).metadata\\(\\).then\\(m=>console.log\\(m.width+'x'+m.height\\)\\);\")"
+      "Bash(node -e \"const sharp=require\\('sharp'\\); sharp\\('public/hero_videos/pre_load_frame.jpg'\\).metadata\\(\\).then\\(m=>console.log\\(m.width+'x'+m.height\\)\\);\")",
+      "Bash(npx --yes lighthouse --version)",
+      "Bash(npm cache *)",
+      "Bash(npx --yes lighthouse@latest --version)",
+      "Bash(PORT=3100 npm run start)",
+      "Bash(curl -fsS http://localhost:3100 -o /dev/null --max-time 3)",
+      "Bash(ffmpeg -version)",
+      "PowerShell(Get-Command ffmpeg -ErrorAction SilentlyContinue)",
+      "PowerShell(choco -v 2>$null)",
+      "PowerShell(if \\(-not $?\\) { \"no ffmpeg in powershell PATH\" })",
+      "PowerShell(if \\($?\\) { \"choco present\" } else { \"no choco\" })",
+      "Bash(node -e \"console.log\\(require\\('ffmpeg-static'\\)\\)\")",
+      "Bash(node_modules/ffmpeg-static/ffmpeg.exe -y -hide_banner -loglevel error -stats -i public/hero_videos/android/hero_video_android.mp4 -vf scale=-2:1080,format=yuv420p -c:v libx264 -profile:v high -level:v 4.0 -preset slow -crf 25 -maxrate 2200k -bufsize 4400k -movflags +faststart -an public/hero_videos/hero_1080p.mp4)",
+      "Bash(node_modules/ffmpeg-static/ffmpeg.exe -y -hide_banner -loglevel error -stats -i public/hero_videos/android/hero_video_android.mp4 -vf scale=-2:720,format=yuv420p -c:v libx264 -profile:v high -level:v 3.1 -preset slow -crf 26 -maxrate 1300k -bufsize 2600k -movflags +faststart -an public/hero_videos/hero_720p.mp4)",
+      "Bash(curl -sS -o /dev/null -w \"HTTP %{http_code} | bytes %{size_download}\\\\n\" http://localhost:3100/)",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3100 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue; \"Killed PID $_\" })",
+      "Bash(PORT=3101 npm run start)",
+      "Bash(curl -fsS http://localhost:3101 -o /dev/null --max-time 3)",
+      "Bash(curl -sS -o /dev/null -w \"size %{size_download}\\\\n\" \"http://localhost:3101/hero_videos/hero_720p.mp4\")",
+      "PowerShell(Get-NetTCPConnection -LocalPort 3101 -ErrorAction SilentlyContinue | Select-Object -ExpandProperty OwningProcess | Sort-Object -Unique | ForEach-Object { Stop-Process -Id $_ -Force -ErrorAction SilentlyContinue; \"Killed PID $_\" })",
+      "Bash(PORT=3102 npm run start)",
+      "Bash(curl -fsS http://localhost:3102 -o /dev/null --max-time 3)"
     ],
     "additionalDirectories": [
-      "c:\\Users\\dimitris\\Documents\\GitHub\\kismethotel\\src\\lib"
+      "c:\\Users\\dimitris\\Documents\\GitHub\\kismethotel\\src\\lib",
+      "C:\\Users\\dimitris\\Documents\\GitHub\\kismethotel"
     ]
   }
 }

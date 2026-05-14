@@ -77,62 +77,78 @@ export function GuestyFilterMount() {
     useEffect(() => {
         if (typeof window === "undefined") return;
 
-        // Inject our overrides into <head> (idempotent by id) so they stay
-        // active across remounts and HMR.
-        if (!document.getElementById("kismet-guesty-overrides")) {
-            const styleEl = document.createElement("style");
-            styleEl.id = "kismet-guesty-overrides";
-            styleEl.textContent = widgetOverrides;
-            document.head.appendChild(styleEl);
-        }
+        // The Guesty widget is ~214 KB and not above the fold on most viewports.
+        // Defer injection until the browser is idle so it doesn't contribute to
+        // LCP / TBT. Falls back to setTimeout where requestIdleCallback isn't
+        // available (Safari).
+        const inject = () => {
+            // Inject our overrides into <head> (idempotent by id) so they stay
+            // active across remounts and HMR.
+            if (!document.getElementById("kismet-guesty-overrides")) {
+                const styleEl = document.createElement("style");
+                styleEl.id = "kismet-guesty-overrides";
+                styleEl.textContent = widgetOverrides;
+                document.head.appendChild(styleEl);
+            }
 
-        // Inject Guesty's stylesheet into <head> (idempotent by href).
-        if (!document.querySelector(`link[href="${GUESTY_WIDGET.cssUrl}"]`)) {
-            const link = document.createElement("link");
-            link.rel = "stylesheet";
-            link.type = "text/css";
-            link.href = GUESTY_WIDGET.cssUrl;
-            link.media = "all";
-            document.head.appendChild(link);
-        }
+            // Inject Guesty's stylesheet into <head> (idempotent by href).
+            if (!document.querySelector(`link[href="${GUESTY_WIDGET.cssUrl}"]`)) {
+                const link = document.createElement("link");
+                link.rel = "stylesheet";
+                link.type = "text/css";
+                link.href = GUESTY_WIDGET.cssUrl;
+                link.media = "all";
+                document.head.appendChild(link);
+            }
 
-        // DOM-based idempotency: only call create() if the container is
-        // present and doesn't already have the widget rendered inside.
-        const create = () => {
-            if (!window.GuestySearchBarWidget) return;
-            const container = document.getElementById(GUESTY_WIDGET.containerId);
-            if (!container) return;
-            if (container.querySelector(".guesty-root-element")) return;
-            window.GuestySearchBarWidget.create({
-                siteUrl: GUESTY_WIDGET.siteUrl,
-                color: GUESTY_WIDGET.color,
-            }).catch((e: Error) => {
-                console.warn("[Guesty Widget]:", e.message);
-            });
+            // DOM-based idempotency: only call create() if the container is
+            // present and doesn't already have the widget rendered inside.
+            const create = () => {
+                if (!window.GuestySearchBarWidget) return;
+                const container = document.getElementById(GUESTY_WIDGET.containerId);
+                if (!container) return;
+                if (container.querySelector(".guesty-root-element")) return;
+                window.GuestySearchBarWidget.create({
+                    siteUrl: GUESTY_WIDGET.siteUrl,
+                    color: GUESTY_WIDGET.color,
+                }).catch((e: Error) => {
+                    console.warn("[Guesty Widget]:", e.message);
+                });
+            };
+
+            // Script already loaded → call create() directly.
+            if (window.GuestySearchBarWidget) {
+                create();
+                return;
+            }
+
+            // Script tag present but still loading → attach to its load event.
+            const existing = document.querySelector(
+                `script[src="${GUESTY_WIDGET.jsUrl}"]`
+            ) as HTMLScriptElement | null;
+            if (existing) {
+                existing.addEventListener("load", create);
+                return;
+            }
+
+            // First time → inject + bind.
+            const script = document.createElement("script");
+            script.type = "text/javascript";
+            script.src = GUESTY_WIDGET.jsUrl;
+            script.async = true;
+            script.onload = create;
+            document.head.appendChild(script);
         };
 
-        // Script already loaded → call create() directly.
-        if (window.GuestySearchBarWidget) {
-            create();
-            return;
-        }
-
-        // Script tag present but still loading → attach to its load event.
-        const existing = document.querySelector(
-            `script[src="${GUESTY_WIDGET.jsUrl}"]`
-        ) as HTMLScriptElement | null;
-        if (existing) {
-            existing.addEventListener("load", create);
-            return;
-        }
-
-        // First time → inject + bind.
-        const script = document.createElement("script");
-        script.type = "text/javascript";
-        script.src = GUESTY_WIDGET.jsUrl;
-        script.async = true;
-        script.onload = create;
-        document.head.appendChild(script);
+        const idle = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback;
+        const handle = idle
+            ? idle(inject, { timeout: 2500 })
+            : (window.setTimeout(inject, 600) as unknown as number);
+        return () => {
+            const cancel = (window as Window & { cancelIdleCallback?: (h: number) => void }).cancelIdleCallback;
+            if (cancel) cancel(handle);
+            else window.clearTimeout(handle);
+        };
     }, []);
 
     return (

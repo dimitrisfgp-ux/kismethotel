@@ -1,5 +1,7 @@
 "use client";
 
+import { useState, useEffect } from "react";
+import Image from "next/image";
 import { PLACEHOLDER_HERO } from "@/lib/placeholders";
 import { Button } from "../ui/Button";
 import { ChevronDown } from "lucide-react";
@@ -11,37 +13,78 @@ interface HeroProps {
     ctaText: string;
     poster?: string;
     videos?: {
-        ios?: string;
-        android?: string;
+        mobile?: string;
         desktop?: string;
     };
     scrollTargetId?: string;
 }
 
+// `navigator.connection` is non-standard but supported in Chrome/Edge/Android.
+// On slow networks or data-saver mode we skip the video entirely so the poster
+// stays as the only hero asset (~570 KB instead of 4–8 MB).
+interface NetworkInformation {
+    effectiveType?: string;
+    saveData?: boolean;
+}
+
 export function Hero({ title, subtitle, ctaText, poster, videos, scrollTargetId = "search-bar" }: HeroProps) {
+    const [mountVideo, setMountVideo] = useState(false);
+
+    useEffect(() => {
+        const conn = (navigator as Navigator & { connection?: NetworkInformation }).connection;
+        const slow = conn?.effectiveType && ["slow-2g", "2g", "3g"].includes(conn.effectiveType);
+        const dataSaver = conn?.saveData === true;
+        const reducedData = window.matchMedia("(prefers-reduced-data: reduce)").matches;
+        if (slow || dataSaver || reducedData) return;
+
+        // Defer slightly so the poster image paints first (better LCP).
+        const idle = (window as Window & { requestIdleCallback?: (cb: () => void, opts?: { timeout: number }) => number }).requestIdleCallback;
+        const id = idle
+            ? idle(() => setMountVideo(true), { timeout: 1500 })
+            : (window.setTimeout(() => setMountVideo(true), 200) as unknown as number);
+        return () => {
+            const cancel = (window as Window & { cancelIdleCallback?: (id: number) => void }).cancelIdleCallback;
+            if (cancel) cancel(id);
+            else window.clearTimeout(id);
+        };
+    }, []);
+
     const handleScroll = (e: React.MouseEvent) => {
         e.preventDefault();
         scrollToElement(scrollTargetId);
     };
 
+    const posterSrc = poster || PLACEHOLDER_HERO;
+
     return (
         <section className="relative h-screen w-full flex items-end justify-center overflow-hidden">
-            {/* Background (Video) */}
+            {/* Background — poster is the LCP element, served as AVIF/WebP via
+                next/image. The video mounts on top after client gating so slow
+                networks never see it. */}
             <div className="absolute inset-0 z-0 select-none pointer-events-none">
-                {/* Only render video if a source exists (or poster) */}
-                <video
-                    autoPlay
-                    loop
-                    muted
-                    playsInline
-                    className="absolute inset-0 w-full h-full object-cover"
-                    poster={poster || PLACEHOLDER_HERO}
-                >
-                    {videos?.ios && <source src={videos.ios} media="(max-width: 768px)" />}
-                    {videos?.android && <source src={videos.android} media="(max-width: 768px)" />}
-                    {videos?.desktop && <source src={videos.desktop} />}
-                    Your browser does not support the video tag.
-                </video>
+                <Image
+                    src={posterSrc}
+                    alt=""
+                    fill
+                    priority
+                    sizes="100vw"
+                    quality={70}
+                    className="object-cover"
+                />
+                {mountVideo && (
+                    <video
+                        autoPlay
+                        loop
+                        muted
+                        playsInline
+                        preload="metadata"
+                        poster={posterSrc}
+                        className="absolute inset-0 w-full h-full object-cover"
+                    >
+                        {videos?.mobile && <source src={videos.mobile} media="(max-width: 768px)" type="video/mp4" />}
+                        {videos?.desktop && <source src={videos.desktop} type="video/mp4" />}
+                    </video>
+                )}
             </div>
 
             {/* Overlay — brand tint + a touch of black to slightly darken video playback */}
