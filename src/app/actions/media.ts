@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/auth/guards';
 import { revalidatePath } from 'next/cache';
 import { MediaAsset } from '@/types';
-import { r2Put, r2Delete, r2PublicPath } from '@/lib/r2';
+import { r2Put, r2Delete, r2PublicPath, r2PresignPut } from '@/lib/r2';
 
 export interface MediaUsage {
     id: string; // The ID of the entity using the media
@@ -17,7 +17,7 @@ export interface MediaUsage {
  * Returns a list of places where it is used.
  */
 export async function checkMediaUsageAction(mediaId: string): Promise<MediaUsage[]> {
-    await requirePermission('media.delete'); // Ensure user has permission to even ask
+    await requirePermission('content.pages'); // Ensure user has permission to even ask
     const supabase = await createClient();
     const usages: MediaUsage[] = [];
 
@@ -115,7 +115,7 @@ export async function checkMediaUsageAction(mediaId: string): Promise<MediaUsage
  * Should be called after confirming with the user.
  */
 export async function deleteMediaAction(mediaId: string) {
-    await requirePermission('media.delete');
+    await requirePermission('content.pages');
     const supabase = await createClient();
 
     // 1. Get Asset Details (to delete from storage)
@@ -194,7 +194,7 @@ const MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2 MB
 export async function uploadGuestyMediaAction(
     formData: FormData
 ): Promise<{ success: true; asset: MediaAsset } | { success: false; error: string }> {
-    await requirePermission('media.upload');
+    await requirePermission('content.pages');
 
     const file = formData.get('file');
     if (!(file instanceof File)) return { success: false, error: 'No file provided.' };
@@ -242,6 +242,63 @@ export async function uploadGuestyMediaAction(
 
     if (error || !data) {
         await r2Delete(key).catch(() => { }); // avoid an orphaned object
+        return { success: false, error: error?.message ?? 'Failed to save the media record.' };
+    }
+
+    revalidatePath('/admin/homepage');
+    revalidatePath('/admin/media');
+    return { success: true, asset: toMediaAsset(data) };
+}
+
+/**
+ * Step 1 of a video upload: return a presigned R2 PUT URL so the browser can
+ * upload the (large) file directly to R2, bypassing the server body limit.
+ */
+export async function createVideoUploadUrlAction(
+    contentType: string
+): Promise<{ success: true; key: string; uploadUrl: string } | { success: false; error: string }> {
+    await requirePermission('content.pages');
+    if (!contentType.startsWith('video/')) return { success: false, error: 'Only video files are allowed.' };
+
+    const ext = contentType.includes('webm') ? 'webm' : 'mp4';
+    const key = `guesty/videos/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.${ext}`;
+    try {
+        const uploadUrl = await r2PresignPut(key, contentType);
+        return { success: true, key, uploadUrl };
+    } catch (e) {
+        return { success: false, error: e instanceof Error ? e.message : 'Could not create an upload URL.' };
+    }
+}
+
+/** Step 2 of a video upload: register the uploaded R2 object as a media asset. */
+export async function registerR2VideoAction(input: {
+    key: string;
+    originalFilename: string;
+    sizeBytes: number;
+    mimeType: string;
+}): Promise<{ success: true; asset: MediaAsset } | { success: false; error: string }> {
+    await requirePermission('content.pages');
+
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('media_assets')
+        .insert({
+            filename: input.key.split('/').pop(),
+            original_filename: input.originalFilename,
+            storage_path: input.key,
+            url: r2PublicPath(input.key),
+            bucket: process.env.R2_BUCKET,
+            folder: 'guesty/videos',
+            media_type: 'video',
+            mime_type: input.mimeType,
+            size_bytes: input.sizeBytes,
+            provider: 'r2',
+        })
+        .select()
+        .single();
+
+    if (error || !data) {
+        await r2Delete(input.key).catch(() => { });
         return { success: false, error: error?.message ?? 'Failed to save the media record.' };
     }
 

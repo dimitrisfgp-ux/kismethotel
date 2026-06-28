@@ -64,3 +64,17 @@ export async function updateCategoryAction(
     revalidatePath('/admin/homepage');
     return { success: true };
 }
+
+/** Replace the guesty hero document (title/subtitle/CTA + poster + videos) on page_content.id=1. */
+export async function updateGuestyHeroAction(hero: Record<string, unknown>) {
+    await requirePermission('content.pages');
+    const supabase = await createClient();
+
+    const { error } = await supabase.from('page_content').upsert({ id: 1, hero });
+    if (error) throw new Error(error.message);
+
+    revalidateTag('guesty-home', 'default');
+    revalidateTag('page_content', 'default');
+    revalidatePath('/admin/homepage');
+    return { success: true };
+}

@@ -15,6 +15,7 @@
  * media_assets touched only for provider='public' rows (the /public images).
  */
 import {
+    GUESTY_HERO,
     GUESTY_ROOM_CATEGORIES,
     GUESTY_LOCATION_CATEGORIES,
     GUESTY_CONVENIENCES,
@@ -116,6 +117,27 @@ out.push(
         .map((a) => `  (${sStr(a.name)}, ${sStr(a.description)}, ${sStr(a.image)}, ${sStr(a.distance)}, ${sStr(a.externalUrl)}, ${sJson(a.gallery)})`)
         .join(",\n") + ";"
 );
+out.push("");
+
+// ─── Hero (media assets + document) ──────────────────────────────────────────
+const heroMedia = [
+    { url: GUESTY_HERO.poster, type: "image", mime: "image/jpeg" },
+    { url: GUESTY_HERO.videos.mobile, type: "video", mime: "video/mp4" },
+    { url: GUESTY_HERO.videos.desktop, type: "video", mime: "video/mp4" },
+].filter((m) => !!m.url);
+if (heroMedia.length) {
+    out.push("-- Hero media (poster + videos) so they appear in the pickers; referenced from /public.");
+    out.push("insert into public.media_assets (filename, original_filename, storage_path, url, bucket, folder, media_type, mime_type, provider) values");
+    out.push(
+        heroMedia
+            .map((m) => `  (${sStr(basename(m.url))}, ${sStr(basename(m.url))}, ${sStr(m.url)}, ${sStr(m.url)}, 'public', ${sStr(dirname(m.url))}, ${sStr(m.type)}, ${sStr(m.mime)}, 'public')`)
+            .join(",\n") + ";"
+    );
+    out.push("");
+}
+out.push("-- Hero document (page_content singleton).");
+out.push(`insert into public.page_content (id, hero) values (1, ${sJson(GUESTY_HERO)})`);
+out.push("on conflict (id) do update set hero = excluded.hero;");
 out.push("");
 out.push("commit;");
 

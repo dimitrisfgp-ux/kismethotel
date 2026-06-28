@@ -123,14 +123,15 @@ const getHomeCached = unstable_cache(
             // been seeded → serve the whole homepage from the DB. Otherwise fall
             // back to the bundled config (keeps prod identical until seeded).
             if (catData && catData.length > 0) {
-                const [conv, locCat, faq, attr] = await Promise.all([
+                const [conv, locCat, faq, attr, pc] = await Promise.all([
                     supabase.from("conveniences").select("*").order("id"),
                     supabase.from("location_categories").select("*").order("sort_order"),
                     supabase.from("faqs").select("*").order("sort_order"),
                     supabase.from("attractions").select("*").order("id"),
+                    supabase.from("page_content").select("hero").eq("id", 1).single(),
                 ]);
                 return {
-                    hero: GUESTY_HERO,
+                    hero: { ...GUESTY_HERO, ...((pc.data?.hero as object) ?? {}) } as typeof GUESTY_HERO,
                     categories: (catData as unknown as CategoryRow[]).map(mapCategory),
                     conveniences: (conv.data ?? []).map(mapConvenienceRow),
                     locationCategories: (locCat.data ?? []).map(mapLocationCategoryRow),

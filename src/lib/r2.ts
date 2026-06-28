@@ -44,8 +44,8 @@ export async function r2Put(key: string, body: Uint8Array, contentType: string):
     }
 }
 
-export async function r2Get(key: string): Promise<Response> {
-    return client().fetch(objectUrl(key), { method: "GET" });
+export async function r2Get(key: string, init?: { headers?: HeadersInit }): Promise<Response> {
+    return client().fetch(objectUrl(key), { method: "GET", headers: init?.headers });
 }
 
 export async function r2Delete(key: string): Promise<void> {
@@ -54,6 +54,22 @@ export async function r2Delete(key: string): Promise<void> {
     if (!res.ok && res.status !== 404) {
         throw new Error(`R2 DELETE failed (${res.status})`);
     }
+}
+
+/**
+ * Presigned PUT URL so the browser can upload large files (videos) straight to
+ * R2 without going through the server. The Content-Type is part of the
+ * signature, so the client must PUT with the same Content-Type.
+ */
+export async function r2PresignPut(key: string, contentType: string, expiresSeconds = 600): Promise<string> {
+    const url = new URL(objectUrl(key));
+    url.searchParams.set("X-Amz-Expires", String(expiresSeconds));
+    const signed = await client().sign(url.toString(), {
+        method: "PUT",
+        headers: { "Content-Type": contentType },
+        aws: { signQuery: true },
+    });
+    return signed.url;
 }
 
 /** The same-origin path the browser uses to fetch an R2 object (via the proxy route). */

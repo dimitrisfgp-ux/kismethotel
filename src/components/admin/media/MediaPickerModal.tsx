@@ -4,6 +4,7 @@ import { useState } from 'react';
 import { MediaGallery } from './MediaGallery';
 import { MediaUploader } from './MediaUploader';
 import { GuestyMediaUploader } from './GuestyMediaUploader';
+import { GuestyVideoUploader } from './GuestyVideoUploader';
 import { Image as ImageIcon, Upload } from 'lucide-react';
 import { MediaAsset } from '@/types';
 import { Modal, ModalHeader, ModalBody } from '@/components/ui/Modal';
@@ -16,7 +17,7 @@ interface MediaPickerModalProps {
     filterType?: 'all' | 'image' | 'video';
     providerScope?: string[]; // restrict the library to these media_assets.provider values
     allowUpload?: boolean; // show the "Upload New" tab (default true)
-    uploadVariant?: 'supabase' | 'guesty-r2'; // which uploader the Upload tab renders
+    uploadVariant?: 'supabase' | 'guesty-r2' | 'guesty-r2-video'; // which uploader the Upload tab renders
 }
 
 export function MediaPickerModal({
@@ -82,7 +83,14 @@ export function MediaPickerModal({
                         />
                     ) : (
                         <div className="max-w-xl mx-auto py-8">
-                            {uploadVariant === 'guesty-r2' ? (
+                            {uploadVariant === 'guesty-r2-video' ? (
+                                <GuestyVideoUploader
+                                    onUploadComplete={(media) => {
+                                        onSelect(media);
+                                        onClose();
+                                    }}
+                                />
+                            ) : uploadVariant === 'guesty-r2' ? (
                                 <GuestyMediaUploader
                                     onUploadComplete={(media) => {
                                         onSelect(media);

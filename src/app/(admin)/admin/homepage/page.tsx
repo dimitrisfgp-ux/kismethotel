@@ -6,6 +6,7 @@ import { HomepageEditor } from "@/components/admin/guesty/HomepageEditor";
 import { LocationsManager } from "@/components/admin/forms/LocationsManager";
 import { FAQManager } from "@/components/admin/forms/FAQManager";
 import { AttractionsManager } from "@/components/admin/guesty/AttractionsManager";
+import { HeroEditor } from "@/components/admin/guesty/HeroEditor";
 
 function Section({
     title,
@@ -57,7 +58,11 @@ export default async function AdminHomepagePage() {
                 </p>
             </div>
 
-            <Section title="Room Categories" subtitle="Photos per category — drag to reorder, first is the cover." defaultOpen>
+            <Section title="Hero" subtitle="The video banner at the top of the homepage." defaultOpen>
+                <HeroEditor initialHero={pageContent.hero} />
+            </Section>
+
+            <Section title="Room Categories" subtitle="Each category — manage its images and details in tabs.">
                 {categories.length === 0 ? (
                     <div className="bg-white border border-[var(--color-sand)] rounded-lg p-8 text-center text-[var(--color-charcoal)]/50">
                         No room categories found yet.
