@@ -1,7 +1,10 @@
 import { roomService } from "@/services/roomService";
 import { RoomDataTable } from "@/components/admin/rooms/RoomDataTable";
+import { requireSelfContainedAdmin } from "@/lib/auth/modeGuards";
 
 export default async function RoomsPage() {
+    await requireSelfContainedAdmin();
+
     const rooms = await roomService.getRoomsSummary();
 
     return (

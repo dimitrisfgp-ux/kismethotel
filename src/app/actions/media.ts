@@ -3,7 +3,8 @@
 import { createClient } from '@/lib/supabase/server';
 import { requirePermission } from '@/lib/auth/guards';
 import { revalidatePath } from 'next/cache';
-import { PageContent } from '@/types';
+import { MediaAsset } from '@/types';
+import { r2Put, r2Delete, r2PublicPath } from '@/lib/r2';
 
 export interface MediaUsage {
     id: string; // The ID of the entity using the media
@@ -128,16 +129,22 @@ export async function deleteMediaAction(mediaId: string) {
         throw new Error('Asset not found');
     }
 
-    // 2. Delete from Storage
-    const { error: storageError } = await supabase.storage
-        .from(asset.bucket)
-        .remove([asset.storage_path]);
-
-    if (storageError) {
-        console.error('Failed to delete file from storage:', storageError);
-        // We continue to delete row to avoid "ghost" records, 
-        // or we could throw. Ideally we want DB to stay clean even if storage fails.
+    // 2. Delete the underlying object from its storage backend.
+    if (asset.provider === 'r2') {
+        try {
+            await r2Delete(asset.storage_path);
+        } catch (e) {
+            console.error('Failed to delete object from R2:', e);
+        }
+    } else if (asset.provider === 'supabase') {
+        const { error: storageError } = await supabase.storage
+            .from(asset.bucket)
+            .remove([asset.storage_path]);
+        if (storageError) {
+            console.error('Failed to delete file from Supabase storage:', storageError);
+        }
     }
+    // provider 'public' → file lives in /public (git); nothing to remove from a bucket.
 
     // 3. Delete from Database
     const { error: dbError } = await supabase
@@ -153,4 +160,92 @@ export async function deleteMediaAction(mediaId: string) {
     revalidatePath('/admin/media');
 
     return { success: true };
+}
+
+function toMediaAsset(row: Record<string, unknown>): MediaAsset {
+    return {
+        id: row.id as string,
+        filename: row.filename as string,
+        originalFilename: row.original_filename as string,
+        storagePath: row.storage_path as string,
+        url: row.url as string,
+        bucket: row.bucket as string,
+        folder: row.folder as string,
+        mediaType: (row.media_type as 'image' | 'video') ?? 'image',
+        mimeType: (row.mime_type as string) ?? 'image/webp',
+        sizeBytes: (row.size_bytes as number) ?? 0,
+        width: (row.width as number) ?? undefined,
+        height: (row.height as number) ?? undefined,
+        altText: (row.alt_text as string) ?? undefined,
+        caption: (row.caption as string) ?? undefined,
+        createdBy: (row.created_by as string) ?? undefined,
+        createdAt: (row.created_at as string) ?? '',
+        updatedAt: (row.updated_at as string) ?? '',
+    };
+}
+
+const MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2 MB
+
+/**
+ * Upload a WebP image to R2 for the guesty homepage. WebP-only is enforced by
+ * magic-byte check (not just the extension). Stored privately in R2 with
+ * provider='r2'; the public URL is the /api/media proxy path.
+ */
+export async function uploadGuestyMediaAction(
+    formData: FormData
+): Promise<{ success: true; asset: MediaAsset } | { success: false; error: string }> {
+    await requirePermission('media.upload');
+
+    const file = formData.get('file');
+    if (!(file instanceof File)) return { success: false, error: 'No file provided.' };
+
+    const bytes = new Uint8Array(await file.arrayBuffer());
+
+    // WebP magic bytes: "RIFF" (0..4) .... "WEBP" (8..12)
+    const isWebp =
+        bytes.length > 12 &&
+        bytes[0] === 0x52 && bytes[1] === 0x49 && bytes[2] === 0x46 && bytes[3] === 0x46 &&
+        bytes[8] === 0x57 && bytes[9] === 0x45 && bytes[10] === 0x42 && bytes[11] === 0x50;
+    if (!isWebp) return { success: false, error: 'Only WebP images are allowed.' };
+    if (bytes.length > MAX_UPLOAD_BYTES) return { success: false, error: 'Image is too large (max 2 MB).' };
+
+    const width = Number(formData.get('width')) || null;
+    const height = Number(formData.get('height')) || null;
+
+    const key = `guesty/${Date.now()}-${Math.random().toString(36).slice(2, 10)}.webp`;
+
+    try {
+        await r2Put(key, bytes, 'image/webp');
+    } catch (e) {
+        return { success: false, error: e instanceof Error ? e.message : 'Upload to storage failed.' };
+    }
+
+    const supabase = await createClient();
+    const { data, error } = await supabase
+        .from('media_assets')
+        .insert({
+            filename: key.split('/').pop(),
+            original_filename: file.name,
+            storage_path: key,
+            url: r2PublicPath(key),
+            bucket: process.env.R2_BUCKET,
+            folder: 'guesty',
+            media_type: 'image',
+            mime_type: 'image/webp',
+            size_bytes: bytes.length,
+            width,
+            height,
+            provider: 'r2',
+        })
+        .select()
+        .single();
+
+    if (error || !data) {
+        await r2Delete(key).catch(() => { }); // avoid an orphaned object
+        return { success: false, error: error?.message ?? 'Failed to save the media record.' };
+    }
+
+    revalidatePath('/admin/homepage');
+    revalidatePath('/admin/media');
+    return { success: true, asset: toMediaAsset(data) };
 }

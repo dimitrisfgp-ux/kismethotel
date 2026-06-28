@@ -105,7 +105,10 @@ export const contentService = {
             type: c.type,
             lat: parseFloat(c.lat),
             lng: parseFloat(c.lng),
-            distanceLabel: c.distance_label
+            distanceLabel: c.distance_label,
+            description: c.description ?? undefined,
+            popupImage: c.popup_image ?? undefined,
+            rating: c.rating != null ? Number(c.rating) : undefined
         }));
     },
 
@@ -155,7 +158,10 @@ export const contentService = {
                     type: c.type || 'Attraction', // Default if missing
                     lat: c.lat,
                     lng: c.lng,
-                    distance_label: c.distanceLabel
+                    distance_label: c.distanceLabel,
+                    description: c.description ?? null,
+                    popup_image: c.popupImage ?? null,
+                    rating: c.rating ?? null
                 };
                 upsertPayload.push(newItem);
             }
@@ -257,7 +263,9 @@ export const contentService = {
             name: a.name,
             description: a.description,
             image: a.image,
-            distance: a.distance
+            distance: a.distance,
+            gallery: Array.isArray(a.gallery) ? a.gallery : [],
+            externalUrl: a.external_url ?? undefined
         }));
     },
 
@@ -364,6 +372,39 @@ export const contentService = {
                 }))
             );
             return !error;
+        }
+        return true;
+    },
+
+    updateAttractions: async (attractions: Attraction[]): Promise<boolean> => {
+        const supabase = await createClient();
+
+        // Delete attractions that are no longer present (compare DB ids vs incoming > 0).
+        const { data: existing } = await supabase.from('attractions').select('id');
+        const existingIds = (existing || []).map(r => r.id);
+        const incomingIds = attractions.map(a => a.id).filter(id => id > 0);
+        const toDelete = existingIds.filter(id => !incomingIds.includes(id));
+
+        if (toDelete.length > 0) {
+            await supabase.from('attractions').delete().in('id', toDelete);
+        }
+
+        if (attractions.length > 0) {
+            const { error } = await supabase.from('attractions').upsert(
+                attractions.map(a => ({
+                    ...(a.id > 0 ? { id: a.id } : {}),
+                    name: a.name,
+                    description: a.description,
+                    image: a.image,
+                    distance: a.distance,
+                    external_url: a.externalUrl ?? null,
+                    gallery: a.gallery ?? []
+                }))
+            );
+            if (error) {
+                console.error('Service: Attractions Update Failed:', error);
+                return false;
+            }
         }
         return true;
     },

@@ -2,52 +2,74 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, BedDouble, Settings, ExternalLink, CalendarCheck, MessageSquare, User, Image } from "lucide-react";
+import { LayoutDashboard, BedDouble, Settings, ExternalLink, CalendarCheck, MessageSquare, User, Image, Home } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { LogoutButton } from "@/components/admin/auth/LogoutButton";
 import type { User as AuthUser } from "@supabase/supabase-js";
 import { LogoBrand } from "@/components/ui/LogoBrand";
 import { HotelSettings } from "@/types";
+import type { SiteMode } from "@/lib/mode";
 
 import { usePermission } from "@/contexts/PermissionContext";
 
-// Define Nav Items with required permissions
-const NAV_ITEMS = [
+// Define Nav Items with required permissions and the mode(s) they apply to.
+// In Guesty mode only the homepage/media/settings surfaces are relevant;
+// the booking-engine tabs are hidden entirely.
+const NAV_ITEMS: {
+    label: string;
+    href: string;
+    icon: typeof LayoutDashboard;
+    permission: string | null;
+    modes: SiteMode[];
+}[] = [
+    {
+        label: "Homepage",
+        href: "/admin/homepage",
+        icon: Home,
+        permission: 'content.view',
+        modes: ['guesty']
+    },
     {
         label: "Bookings",
         href: "/admin/bookings",
         icon: CalendarCheck,
-        permission: 'bookings.view'
+        permission: 'bookings.view',
+        modes: ['self_contained']
     },
     {
         label: "Requests",
         href: "/admin/requests",
         icon: MessageSquare,
-        permission: 'requests.view'
+        permission: 'requests.view',
+        modes: ['self_contained']
     },
     {
         label: "Rooms",
         href: "/admin/rooms",
         icon: BedDouble,
-        permission: 'rooms.view'
+        permission: 'rooms.view',
+        modes: ['self_contained']
     },
     {
         label: "Page Content",
         href: "/admin/page-content",
         icon: LayoutDashboard,
-        permission: 'content.view'
+        permission: 'content.view',
+        modes: ['self_contained']
     },
     {
         label: "Media Library",
         href: "/admin/media",
         icon: Image,
-        permission: 'media.view'
+        permission: 'media.view',
+        modes: ['guesty', 'self_contained']
     },
     {
         label: "Settings",
         href: "/admin/settings",
         icon: Settings,
-        permission: null // Public to all admin/staff (or check 'settings.view' if exists)
+        permission: null, // Public to all admin/staff (or check 'settings.view' if exists)
+        modes: ['guesty', 'self_contained']
     }
 ];
 
@@ -56,11 +78,12 @@ interface AdminSidebarProps {
     role: string;
     fullName: string | null;
     settings?: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' | 'logoTextUrl' | 'description'>;
+    mode: SiteMode;
     className?: string;
     onNavigate?: () => void;
 }
 
-export function AdminSidebar({ user, role, fullName, settings, className, onNavigate }: AdminSidebarProps) {
+export function AdminSidebar({ user, role, fullName, settings, mode, className, onNavigate }: AdminSidebarProps) {
     const pathname = usePathname();
     const { can } = usePermission();
 
@@ -89,26 +112,28 @@ export function AdminSidebar({ user, role, fullName, settings, className, onNavi
 
             {/* Navigation */}
             <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
-                {NAV_ITEMS.filter(item => !item.permission || can(item.permission)).map((item) => {
-                    const isActive = pathname.startsWith(item.href);
-                    const Icon = item.icon;
-                    return (
-                        <Link
-                            key={item.href}
-                            href={item.href}
-                            onClick={onNavigate}
-                            className={cn(
-                                "flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium transition-colors",
-                                isActive
-                                    ? "bg-white/10 text-white shadow-sm"
-                                    : "text-white/60 hover:bg-white/5 hover:text-white"
-                            )}
-                        >
-                            <Icon className="h-5 w-5" />
-                            {item.label}
-                        </Link>
-                    );
-                })}
+                {NAV_ITEMS
+                    .filter(item => item.modes.includes(mode) && (!item.permission || can(item.permission)))
+                    .map((item) => {
+                        const isActive = pathname.startsWith(item.href);
+                        const Icon = item.icon;
+                        return (
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                onClick={onNavigate}
+                                className={cn(
+                                    "flex items-center gap-3 px-3 py-3 rounded-md text-sm font-medium transition-colors",
+                                    isActive
+                                        ? "bg-white/10 text-white shadow-sm"
+                                        : "text-white/60 hover:bg-white/5 hover:text-white"
+                                )}
+                            >
+                                <Icon className="h-5 w-5" />
+                                {item.label}
+                            </Link>
+                        );
+                    })}
             </nav>
 
             {/* User Profile Footer */}

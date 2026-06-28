@@ -4,15 +4,17 @@ import { getCachedUserWithRole } from "@/lib/auth/guards";
 import { redirect } from "next/navigation";
 import { PermissionProvider } from "@/contexts/PermissionContext";
 import { contentService } from "@/services/contentService";
+import { getMode } from "@/lib/mode";
 
 export default async function AdminDashboardLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    const [result, settings] = await Promise.all([
+    const [result, settings, mode] = await Promise.all([
         getCachedUserWithRole(),
-        contentService.getSettings()
+        contentService.getSettings(),
+        getMode()
     ]);
 
     if (!result) {
@@ -25,7 +27,7 @@ export default async function AdminDashboardLayout({
         <PermissionProvider permissions={permissions} role={roleName}>
             <div className="flex flex-col md:flex-row min-h-screen bg-[var(--color-warm-white)]">
                 {/* Mobile Header */}
-                <AdminMobileHeader user={user} role={roleName} fullName={fullName} settings={settings} />
+                <AdminMobileHeader user={user} role={roleName} fullName={fullName} settings={settings} mode={mode} />
 
                 {/* Desktop Sidebar */}
                 <AdminSidebar
@@ -33,6 +35,7 @@ export default async function AdminDashboardLayout({
                     role={roleName}
                     fullName={fullName}
                     settings={settings}
+                    mode={mode}
                     className="hidden md:flex"
                 />
 
@@ -44,4 +47,3 @@ export default async function AdminDashboardLayout({
         </PermissionProvider>
     );
 }
-

@@ -5,34 +5,27 @@ import { FAQAccordion } from "@/components/home/FAQAccordion";
 import { GuestyCategorySection } from "./GuestyCategorySection";
 import { GuestyFilterMount } from "./GuestyFilterMount";
 import { RevealOnScroll } from "@/components/ui/RevealOnScroll";
-import {
-    GUESTY_HERO,
-    GUESTY_ROOM_CATEGORIES,
-    GUESTY_LOCATION_CATEGORIES,
-    GUESTY_CONVENIENCES,
-    GUESTY_ATTRACTIONS,
-    GUESTY_FAQS,
-} from "@/config/guestyMode";
+import type { GuestyHomeContent } from "@/services/guestyContentService";
 
-export function HomeGuesty() {
+export function HomeGuesty({ content }: { content: GuestyHomeContent }) {
+    const { hero, categories, conveniences, locationCategories, attractions, faqs } = content;
+
     return (
         <div>
             {/* Hero already has its own animate-fade-in; left untouched. */}
             <Hero
-                title={GUESTY_HERO.title}
-                subtitle={GUESTY_HERO.subtitle}
-                ctaText={GUESTY_HERO.ctaText}
-                scrollTargetId={GUESTY_HERO.scrollTargetId}
-                poster={GUESTY_HERO.poster}
-                videos={GUESTY_HERO.videos}
+                title={hero.title}
+                subtitle={hero.subtitle}
+                ctaText={hero.ctaText}
+                scrollTargetId={hero.scrollTargetId}
+                poster={hero.poster}
+                videos={hero.videos}
             />
             {/* Sticky scope: the filter bar sticks below the header for as long
-                as any room category is visible, then scrolls away with this wrapper.
-                The filter bar itself is NOT wrapped in RevealOnScroll because it's
-                position:sticky — animating its opacity/transform breaks sticky. */}
+                as any room category is visible, then scrolls away with this wrapper. */}
             <div>
                 <GuestyFilterMount />
-                {GUESTY_ROOM_CATEGORIES.map((cat) => (
+                {categories.map((cat) => (
                     <RevealOnScroll key={cat.slug}>
                         <GuestyCategorySection category={cat} />
                     </RevealOnScroll>
@@ -40,15 +33,15 @@ export function HomeGuesty() {
             </div>
             <RevealOnScroll>
                 <LocationSection
-                    conveniences={GUESTY_CONVENIENCES}
-                    categories={GUESTY_LOCATION_CATEGORIES}
+                    conveniences={conveniences}
+                    categories={locationCategories}
                 />
             </RevealOnScroll>
             <RevealOnScroll>
-                <AttractionsGrid attractions={GUESTY_ATTRACTIONS} />
+                <AttractionsGrid attractions={attractions} />
             </RevealOnScroll>
             <RevealOnScroll>
-                <FAQAccordion faqs={GUESTY_FAQS} />
+                <FAQAccordion faqs={faqs} />
             </RevealOnScroll>
         </div>
     );

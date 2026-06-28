@@ -2,8 +2,11 @@ import { contentService } from "@/services/contentService";
 import { PageContentForm } from "@/components/admin/forms/PageContentForm";
 import { LocationsManager } from "@/components/admin/forms/LocationsManager";
 import { FAQManager } from "@/components/admin/forms/FAQManager";
+import { requireSelfContainedAdmin } from "@/lib/auth/modeGuards";
 
 export default async function PageContentPage() {
+    await requireSelfContainedAdmin();
+
     const [pageContent, conveniences, categories, faqs] = await Promise.all([
         contentService.getPageContent(),
         contentService.getConveniences(),

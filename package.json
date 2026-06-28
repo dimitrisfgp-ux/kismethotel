@@ -22,6 +22,7 @@
     "@types/mime-types": "^3.0.1",
     "@types/qrcode.react": "^1.0.5",
     "@vercel/edge-config": "^1.4.3",
+    "aws4fetch": "^1.0.20",
     "clsx": "^2.1.1",
     "date-fns": "^4.1.0",
     "leaflet": "^1.9.4",

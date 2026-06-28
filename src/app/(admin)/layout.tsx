@@ -5,19 +5,14 @@ import { ToastProvider } from "@/contexts/ToastContext";
 import { getCachedUserWithRole } from "@/lib/auth/guards";
 import { PermissionProvider } from "@/contexts/PermissionContext";
 import { redirect } from "next/navigation";
-import { getMode } from "@/lib/mode";
 
 export default async function AdminRootLayout({
     children,
 }: {
     children: React.ReactNode;
 }) {
-    // In Guesty mode the CMS is dormant — Supabase may be paused.
-    // Bail out before getCachedUserWithRole would hit it.
-    if ((await getMode()) === "guesty") {
-        redirect("/");
-    }
-
+    // The CMS is available in both modes (Guesty edits homepage content;
+    // self_contained edits the full booking engine). Auth is required either way.
     const user = await getCachedUserWithRole();
 
     if (!user) {

@@ -7,6 +7,7 @@ import { roomService } from "@/services/roomService";
 import { contentService } from "@/services/contentService";
 import { getMode } from "@/lib/mode";
 import { HomeGuesty } from "@/components/home/guesty/HomeGuesty";
+import { guestyContentService } from "@/services/guestyContentService";
 
 
 
@@ -14,7 +15,8 @@ export default async function Home() {
   // Guesty mode renders a different homepage entirely:
   // hardcoded categories that link directly to Guesty, no Supabase fetch.
   if ((await getMode()) === "guesty") {
-    return <HomeGuesty />;
+    const content = await guestyContentService.getHome();
+    return <HomeGuesty content={content} />;
   }
 
   // Fetch data in parallel

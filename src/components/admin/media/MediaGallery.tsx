@@ -17,13 +17,15 @@ interface MediaGalleryProps {
     selectable?: boolean;
     filterType?: 'all' | 'image' | 'video';
     initialSelection?: string[]; // IDs of selected items
+    providerScope?: string[]; // restrict to these media_assets.provider values (e.g. ['public','r2'])
 }
 
 export function MediaGallery({
     onSelect,
     selectable = false,
     filterType = 'all',
-    initialSelection = []
+    initialSelection = [],
+    providerScope
 }: MediaGalleryProps) {
     const { can } = usePermission();
     const [media, setMedia] = useState<MediaAsset[]>([]);
@@ -64,6 +66,10 @@ export function MediaGallery({
 
             if (filter !== 'all') {
                 query = query.eq('media_type', filter);
+            }
+
+            if (providerScope && providerScope.length > 0) {
+                query = query.in('provider', providerScope);
             }
 
             const { data, error, count } = await query;

@@ -7,11 +7,6 @@ import { LogoBrand } from '@/components/ui/LogoBrand';
 import { getMode } from '@/lib/mode';
 
 export default async function LoginPage({ searchParams }: { searchParams: Promise<{ error?: string; success?: string }> }) {
-    // No CMS login in Guesty mode — Supabase may be paused.
-    if ((await getMode()) === 'guesty') {
-        redirect('/');
-    }
-
     const [{ error: loginError, success }, settings] = await Promise.all([
         searchParams,
         contentService.getSettings()
@@ -37,7 +32,9 @@ export default async function LoginPage({ searchParams }: { searchParams: Promis
             return redirect('/login?error=Invalid email or password');
         }
 
-        return redirect('/admin/bookings');
+        // Land on the surface that exists for the current mode.
+        const mode = await getMode();
+        return redirect(mode === 'guesty' ? '/admin/homepage' : '/admin/bookings');
     }
 
     return (

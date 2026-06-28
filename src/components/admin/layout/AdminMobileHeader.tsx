@@ -7,12 +7,14 @@ import { AdminSidebar } from "./AdminSidebar";
 import type { User as AuthUser } from "@supabase/supabase-js";
 import { LogoBrand } from "@/components/ui/LogoBrand";
 import { HotelSettings } from "@/types";
+import type { SiteMode } from "@/lib/mode";
 
 interface AdminMobileHeaderProps {
     user: AuthUser | null;
     role: string;
     fullName: string | null;
     settings?: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' | 'logoTextUrl' | 'description'>;
+    mode: SiteMode;
 }
 
 const DEFAULT_SETTINGS: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' | 'logoTextUrl' | 'description'> = {
@@ -23,7 +25,7 @@ const DEFAULT_SETTINGS: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIconUrl' 
     logoTextUrl: '/images/Brand%20Media/kismet-logo-text.svg'
 };
 
-export function AdminMobileHeader({ user, role, fullName, settings }: AdminMobileHeaderProps) {
+export function AdminMobileHeader({ user, role, fullName, settings, mode }: AdminMobileHeaderProps) {
     const [isOpen, setIsOpen] = useState(false);
 
     return (
@@ -50,6 +52,7 @@ export function AdminMobileHeader({ user, role, fullName, settings }: AdminMobil
                     role={role}
                     fullName={fullName}
                     settings={settings}
+                    mode={mode}
                     className="relative w-full h-full shadow-none"
                     onNavigate={() => setIsOpen(false)}
                 />

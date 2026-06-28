@@ -1,6 +1,7 @@
 import { notFound } from "next/navigation";
 import { roomService } from "@/services/roomService";
 import { RoomForm } from "@/components/admin/rooms/RoomForm";
+import { requireSelfContainedAdmin } from "@/lib/auth/modeGuards";
 
 interface RoomEditPageProps {
     params: Promise<{
@@ -9,6 +10,8 @@ interface RoomEditPageProps {
 }
 
 export default async function RoomEditPage({ params }: RoomEditPageProps) {
+    await requireSelfContainedAdmin();
+
     const { slug } = await params;
     const room = await roomService.getRoomBySlug(slug);
 

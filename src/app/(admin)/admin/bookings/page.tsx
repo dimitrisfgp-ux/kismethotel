@@ -4,8 +4,11 @@ import { requestService } from "@/services/requestService";
 import { approveRequestAction, discardRequestAction } from "@/app/actions/request";
 import { BookingsPageClient } from "@/components/admin/bookings/BookingsPageClient";
 import { getUserRole } from "@/lib/auth/guards";
+import { requireSelfContainedAdmin } from "@/lib/auth/modeGuards";
 
 export default async function BookingsPage({ searchParams }: { searchParams: Promise<{ page?: string }> }) {
+    await requireSelfContainedAdmin();
+
     const params = await searchParams;
     const page = Number(params.page) || 1;
     const limit = 10;

@@ -1,8 +1,11 @@
 import { requestService } from "@/services/requestService";
 import { bookingService } from "@/services/bookingService";
 import { RequestsTable } from "@/components/admin/requests/RequestsTable";
+import { requireSelfContainedAdmin } from "@/lib/auth/modeGuards";
 
 export default async function RequestsPage() {
+    await requireSelfContainedAdmin();
+
     const [requests, bookings] = await Promise.all([
         requestService.getRequests(1, 100).then(res => res.data), // Temporary: fetch 100 to avoid breaking linked booking logic immediately
         bookingService.getBookings(1, 100).then(res => res.data) // Temporary: same reason

@@ -36,6 +36,9 @@ yarn-error.log*
 # vercel
 .vercel
 
+# database dumps / backups (contain live data + are large) — never commit
+/database-backup/
+
 # typescript
 *.tsbuildinfo
 next-env.d.ts
