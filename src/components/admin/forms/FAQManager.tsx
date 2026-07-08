@@ -8,8 +8,9 @@ import { Input } from "@/components/ui/Input";
 import { TextArea } from "@/components/ui/admin/TextArea";
 import { Select } from "@/components/ui/admin/Select";
 import { useToast } from "@/contexts/ToastContext";
-import { Save, Plus, Trash2, ChevronDown, ChevronUp, HelpCircle } from "lucide-react";
+import { Save, Plus, Trash2, ChevronDown, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Collapse } from "@/components/ui/Collapse";
 
 interface FAQManagerProps {
     initialFAQs: FAQ[];
@@ -127,17 +128,13 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                                             <Trash2 className="h-4 w-4" />
                                         </button>
                                     )}
-                                    {expandedIds.includes(faq.id) ? (
-                                        <ChevronUp className="h-4 w-4 text-[var(--color-charcoal)]/40" />
-                                    ) : (
-                                        <ChevronDown className="h-4 w-4 text-[var(--color-charcoal)]/40" />
-                                    )}
+                                    <ChevronDown className={cn("h-4 w-4 text-[var(--color-charcoal)]/40 transition-transform", expandedIds.includes(faq.id) && "rotate-180")} />
                                 </div>
                             </div>
 
                             {/* Edit Form */}
-                            {expandedIds.includes(faq.id) && (
-                                <div className="p-4 border-t border-[var(--color-sand)] space-y-4 bg-white animate-slide-down">
+                            <Collapse open={expandedIds.includes(faq.id)}>
+                                <div className="p-4 border-t border-[var(--color-sand)] space-y-4 bg-white">
                                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                                         <div className="md:col-span-2">
                                             <Input
@@ -167,7 +164,7 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
                                         disabled={!can('content.faqs')}
                                     />
                                 </div>
-                            )}
+                            </Collapse>
                         </div>
                     ))
                 )}

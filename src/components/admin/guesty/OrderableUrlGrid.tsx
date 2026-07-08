@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { X, Play } from 'lucide-react';
+import { X, Play, ImagePlus, Youtube } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 function youtubeId(url: string): string | null {
@@ -14,13 +14,17 @@ interface OrderableUrlGridProps {
     urls: string[];
     onChange: (urls: string[]) => void;
     disabled?: boolean;
+    /** When provided, renders a dashed "add image" tile at the end of the grid. */
+    onAdd?: () => void;
+    /** When provided, renders a dashed "add YouTube" tile at the end of the grid. */
+    onAddYoutube?: () => void;
 }
 
 /**
  * Reorderable grid of gallery URLs (images or YouTube links). Native HTML5
  * drag-and-drop; YouTube links show their thumbnail with a play badge.
  */
-export function OrderableUrlGrid({ urls, onChange, disabled }: OrderableUrlGridProps) {
+export function OrderableUrlGrid({ urls, onChange, disabled, onAdd, onAddYoutube }: OrderableUrlGridProps) {
     const [dragIndex, setDragIndex] = useState<number | null>(null);
     const [overIndex, setOverIndex] = useState<number | null>(null);
 
@@ -33,7 +37,10 @@ export function OrderableUrlGrid({ urls, onChange, disabled }: OrderableUrlGridP
     };
     const remove = (i: number) => onChange(urls.filter((_, idx) => idx !== i));
 
-    if (urls.length === 0) {
+    const showAddTiles = !disabled && (onAdd || onAddYoutube);
+
+    // Nothing to show and no way to add → the plain empty hint.
+    if (urls.length === 0 && !showAddTiles) {
         return <p className="text-xs text-[var(--color-charcoal)]/40 italic">No gallery images yet.</p>;
     }
 
@@ -91,6 +98,30 @@ export function OrderableUrlGrid({ urls, onChange, disabled }: OrderableUrlGridP
                     </div>
                 );
             })}
+
+            {onAdd && !disabled && (
+                <button
+                    type="button"
+                    onClick={onAdd}
+                    title="Add image"
+                    className="aspect-square rounded-md border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-[var(--color-aegean-blue)] hover:text-[var(--color-aegean-blue)] transition-colors"
+                >
+                    <ImagePlus className="w-5 h-5" />
+                    <span className="text-[10px] mt-1 font-medium">Image</span>
+                </button>
+            )}
+
+            {onAddYoutube && !disabled && (
+                <button
+                    type="button"
+                    onClick={onAddYoutube}
+                    title="Add YouTube video"
+                    className="aspect-square rounded-md border-2 border-dashed border-gray-300 flex flex-col items-center justify-center text-gray-400 hover:border-red-500 hover:text-red-500 transition-colors"
+                >
+                    <Youtube className="w-5 h-5" />
+                    <span className="text-[10px] mt-1 font-medium">YouTube</span>
+                </button>
+            )}
         </div>
     );
 }

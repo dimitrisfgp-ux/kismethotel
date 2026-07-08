@@ -51,7 +51,17 @@ function VideoField({
                 {editable && (
                     <div className="absolute inset-0 bg-black/0 group-hover:bg-black/40 transition-colors flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100">
                         <Button type="button" size="sm" onClick={onPick}>{url ? 'Change' : 'Select'} video</Button>
-                        {url && <Button type="button" size="sm" variant="outline" onClick={onClear}>Clear</Button>}
+                        {url && (
+                            <Button
+                                type="button"
+                                size="sm"
+                                variant="outline"
+                                onClick={onClear}
+                                className="border-white text-white hover:bg-white hover:text-[var(--color-charcoal)]"
+                            >
+                                Clear
+                            </Button>
+                        )}
                     </div>
                 )}
             </div>

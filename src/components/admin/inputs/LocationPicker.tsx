@@ -8,7 +8,8 @@ const LocationPickerMap = dynamic(
     () => import("./LocationPickerMap").then((mod) => mod.LocationPicker),
     {
         ssr: false,
-        loading: () => <Skeleton className="h-[300px] w-full rounded-md" />
+        // Height accounts for the address search bar (~40px + gap) above the map.
+        loading: () => <Skeleton className="h-[348px] w-full rounded-md" />
     }
 );
 

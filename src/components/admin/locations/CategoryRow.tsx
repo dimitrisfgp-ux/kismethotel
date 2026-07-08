@@ -2,11 +2,12 @@ import { LocationCategory, Convenience } from "@/types";
 import { Button } from "@/components/ui/Button";
 import { Input } from "@/components/ui/Input";
 import { IconPicker } from "@/components/ui/admin/IconPicker";
-import { Pencil, Trash2, ChevronUp, ChevronDown, Plus, MapPin } from "lucide-react";
+import { Pencil, Trash2, ChevronDown, Plus, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { iconMap } from "@/components/ui/icons/iconMap";
 import { useState } from "react";
 import { LocationItem } from "./LocationItem";
+import { Collapse } from "@/components/ui/Collapse";
 import { usePermission } from "@/contexts/PermissionContext";
 
 interface CategoryRowProps {
@@ -101,20 +102,20 @@ export function CategoryRow({
                             <Trash2 className="h-4 w-4" />
                         </button>
                     )}
-                    {isExpanded ? <ChevronUp className="h-4 w-4 text-gray-400" /> : <ChevronDown className="h-4 w-4 text-gray-400" />}
+                    <ChevronDown className={cn("h-4 w-4 text-gray-400 transition-transform", isExpanded && "rotate-180")} />
                 </div>
             </div>
 
             {/* Expanded Content: Locations List */}
-            {isExpanded && (
-                <div className="bg-[var(--color-warm-white)]/30 border-t border-[var(--color-sand)] p-4 space-y-3 animate-slide-down">
+            <Collapse open={isExpanded}>
+                <div className="bg-[var(--color-warm-white)]/30 border-t border-[var(--color-sand)] p-4 space-y-3">
 
                     {locations.length === 0 && (
                         <p className="text-sm text-center text-gray-400 italic py-2">No locations in this category.</p>
                     )}
 
                     {locations.map((location) => (
-                        <div key={location.id} className="bg-white border border-[var(--color-sand)]/50 rounded-md p-3">
+                        <div key={location.id} className="bg-white border border-[var(--color-sand)]/50 rounded-md overflow-hidden">
                             <LocationItem
                                 location={location}
                                 onUpdate={onUpdateLocation}
@@ -135,7 +136,7 @@ export function CategoryRow({
                         </Button>
                     )}
                 </div>
-            )}
+            </Collapse>
         </div>
     );
 }

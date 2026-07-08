@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { ChevronDown } from 'lucide-react';
+import { ChevronDown, Save } from 'lucide-react';
 import { OrderableMediaGrid, type GridMedia } from './OrderableMediaGrid';
 import { MediaPickerModal } from '@/components/admin/media/MediaPickerModal';
 import { setCategoryMediaAction, updateCategoryAction } from '@/app/actions/guesty';
@@ -10,6 +10,7 @@ import { usePermission } from '@/contexts/PermissionContext';
 import type { AdminGuestyCategory } from '@/services/guestyContentService';
 import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
+import { Collapse } from '@/components/ui/Collapse';
 import { cn } from '@/lib/utils';
 
 interface CategoryCardProps {
@@ -19,28 +20,45 @@ interface CategoryCardProps {
     onRemove: (id: string) => void;
     onAdd: () => void;
     onField: (fn: (c: AdminGuestyCategory) => AdminGuestyCategory) => void;
-    onSaveDetails: () => void;
+    onSave: () => Promise<void>;
 }
 
-function CategoryCard({ cat, editable, onReorder, onRemove, onAdd, onField, onSaveDetails }: CategoryCardProps) {
+function CategoryCard({ cat, editable, onReorder, onRemove, onAdd, onField, onSave }: CategoryCardProps) {
     const [open, setOpen] = useState(false);
     const [tab, setTab] = useState<'images' | 'details'>('images');
+    const [saving, setSaving] = useState(false);
+
+    const handleSave = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        setSaving(true);
+        try {
+            await onSave();
+        } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <div className="border border-[var(--color-sand)] rounded-lg overflow-hidden bg-white">
-            <button
-                type="button"
+            <div
                 onClick={() => setOpen((o) => !o)}
-                className="w-full flex items-center justify-between px-4 py-3 hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between gap-3 px-4 py-3 hover:bg-gray-50 transition-colors cursor-pointer"
             >
-                <span className="font-semibold text-[var(--color-aegean-blue)] font-montserrat">{cat.title || cat.slug}</span>
-                <span className="flex items-center gap-3 text-xs text-gray-400">
+                <div className="flex items-center gap-3 min-w-0">
+                    <span className="font-semibold text-[var(--color-aegean-blue)] font-montserrat truncate">{cat.title || cat.slug}</span>
+                    {open && editable && (
+                        <Button type="button" size="sm" onClick={handleSave} isLoading={saving} className="shrink-0 gap-1.5">
+                            <Save className="w-4 h-4" /> Save
+                        </Button>
+                    )}
+                </div>
+                <span className="flex items-center gap-3 text-xs text-gray-400 shrink-0">
                     {cat.media.length} image{cat.media.length === 1 ? '' : 's'}
                     <ChevronDown className={cn('w-4 h-4 transition-transform', open && 'rotate-180')} />
                 </span>
-            </button>
+            </div>
 
-            {open && (
+            <Collapse open={open}>
                 <div className="border-t border-[var(--color-sand)] p-4">
                     <div className="flex gap-1 mb-4 border-b border-gray-200">
                         {(['images', 'details'] as const).map((t) => (
@@ -97,15 +115,10 @@ function CategoryCard({ cat, editable, onReorder, onRemove, onAdd, onField, onSa
                                     <option value="image-right">Image right</option>
                                 </select>
                             </div>
-                            {editable && (
-                                <div className="md:col-span-2">
-                                    <Button type="button" onClick={onSaveDetails}>Save details</Button>
-                                </div>
-                            )}
                         </div>
                     )}
                 </div>
-            )}
+            </Collapse>
         </div>
     );
 }
@@ -120,27 +133,23 @@ export function HomepageEditor({ initialCategories }: { initialCategories: Admin
     const updateLocal = (catId: string, fn: (c: AdminGuestyCategory) => AdminGuestyCategory) =>
         setCategories((prev) => prev.map((c) => (c.id === catId ? fn(c) : c)));
 
-    const persistMedia = async (catId: string, media: GridMedia[]) => {
+    // Gallery edits update local state only; nothing persists until the card's
+    // Save button, which writes both the image order and the details together.
+    const updateMediaLocal = (catId: string, media: GridMedia[]) =>
         updateLocal(catId, (c) => ({ ...c, media }));
-        try {
-            await setCategoryMediaAction(catId, media.map((m) => m.id));
-        } catch (e) {
-            showToast(e instanceof Error ? e.message : 'Failed to save images', 'error');
-        }
-    };
 
     const handleReorder = (catId: string, orderedIds: string[]) => {
         const cat = categories.find((c) => c.id === catId);
         if (!cat) return;
         const byId = new Map(cat.media.map((m) => [m.id, m]));
         const media = orderedIds.map((id) => byId.get(id)).filter((m): m is GridMedia => !!m);
-        persistMedia(catId, media);
+        updateMediaLocal(catId, media);
     };
 
     const handleRemove = (catId: string, id: string) => {
         const cat = categories.find((c) => c.id === catId);
         if (!cat) return;
-        persistMedia(catId, cat.media.filter((m) => m.id !== id));
+        updateMediaLocal(catId, cat.media.filter((m) => m.id !== id));
     };
 
     const handleAddSelected = (catId: string, asset: { id: string; url: string }) => {
@@ -150,21 +159,27 @@ export function HomepageEditor({ initialCategories }: { initialCategories: Admin
             showToast('That image is already in this category', 'error');
             return;
         }
-        persistMedia(catId, [...cat.media, { id: asset.id, url: asset.url }]);
+        updateMediaLocal(catId, [...cat.media, { id: asset.id, url: asset.url }]);
     };
 
-    const handleSaveDetails = async (cat: AdminGuestyCategory) => {
+    // Persist BOTH the gallery (image order) and the details in one save.
+    const handleSave = async (catId: string) => {
+        const cat = categories.find((c) => c.id === catId);
+        if (!cat) return;
         try {
-            await updateCategoryAction(cat.id, {
-                title: cat.title,
-                subtitle: cat.subtitle,
-                description: cat.description,
-                guestyUrl: cat.guestyUrl,
-                layout: cat.layout,
-            });
-            showToast('Details saved', 'success');
+            await Promise.all([
+                setCategoryMediaAction(cat.id, cat.media.map((m) => m.id)),
+                updateCategoryAction(cat.id, {
+                    title: cat.title,
+                    subtitle: cat.subtitle,
+                    description: cat.description,
+                    guestyUrl: cat.guestyUrl,
+                    layout: cat.layout,
+                }),
+            ]);
+            showToast('Saved', 'success');
         } catch (e) {
-            showToast(e instanceof Error ? e.message : 'Failed to save details', 'error');
+            showToast(e instanceof Error ? e.message : 'Failed to save', 'error');
         }
     };
 
@@ -179,7 +194,7 @@ export function HomepageEditor({ initialCategories }: { initialCategories: Admin
                     onRemove={(id) => handleRemove(cat.id, id)}
                     onAdd={() => setPickerCat(cat.id)}
                     onField={(fn) => updateLocal(cat.id, fn)}
-                    onSaveDetails={() => handleSaveDetails(cat)}
+                    onSave={() => handleSave(cat.id)}
                 />
             ))}
 
