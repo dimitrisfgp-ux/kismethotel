@@ -1,4 +1,5 @@
 import { AwsClient } from "aws4fetch";
+import https from "node:https";
 
 /**
  * Cloudflare R2 access (S3-compatible) via SigV4. The bucket is PRIVATE —
@@ -34,13 +35,35 @@ export function r2Configured(): boolean {
 const objectUrl = (key: string) => `${ENDPOINT()}/${BUCKET()}/${key}`;
 
 export async function r2Put(key: string, body: Uint8Array, contentType: string): Promise<void> {
-    const res = await client().fetch(objectUrl(key), {
+    // Sign with aws4fetch, but DON'T send via the global fetch: Next.js patches
+    // fetch and streams request bodies >64 KB with chunked transfer-encoding,
+    // dropping Content-Length — which R2 rejects with 411 MissingContentLength.
+    // Transport via node:https with an explicit Content-Length instead.
+    const buf = Buffer.from(body);
+    const signed = await client().sign(objectUrl(key), {
         method: "PUT",
-        body: body as BodyInit,
+        body: buf,
         headers: { "Content-Type": contentType },
     });
-    if (!res.ok) {
-        throw new Error(`R2 PUT failed (${res.status}): ${await res.text().catch(() => "")}`);
+    const headers: Record<string, string> = {};
+    signed.headers.forEach((v, k) => { headers[k] = v; });
+    headers["content-length"] = String(buf.byteLength);
+
+    const { status, text } = await new Promise<{ status: number; text: string }>((resolve, reject) => {
+        const u = new URL(signed.url);
+        const req = https.request(
+            { hostname: u.hostname, path: u.pathname + u.search, method: "PUT", headers },
+            (res) => {
+                const chunks: Buffer[] = [];
+                res.on("data", (c) => chunks.push(c as Buffer));
+                res.on("end", () => resolve({ status: res.statusCode ?? 0, text: Buffer.concat(chunks).toString() }));
+            }
+        );
+        req.on("error", reject);
+        req.end(buf);
+    });
+    if (status < 200 || status >= 300) {
+        throw new Error(`R2 PUT failed (${status}): ${text}`);
     }
 }
 
