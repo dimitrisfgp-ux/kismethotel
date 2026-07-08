@@ -82,8 +82,21 @@ export default async function RootLayout({
   let roomsForHeader: RoomsForHeader;
 
   if (mode === "guesty") {
-    settings = GUESTY_SETTINGS;
+    // Logo/name stay fixed from config. Contact + socials come from the DB (so
+    // they're editable in the CMS) with the config as a safe fallback — if the DB
+    // is unavailable or unseeded, the footer still renders the correct details.
     roomsForHeader = [];
+    try {
+      const db = await contentService.getSettings();
+      const hasContact = Boolean(db.contact?.address || db.contact?.phone || db.contact?.email);
+      settings = {
+        ...GUESTY_SETTINGS,
+        contact: hasContact ? db.contact : GUESTY_SETTINGS.contact,
+        socials: db.socials ?? GUESTY_SETTINGS.socials,
+      };
+    } catch {
+      settings = GUESTY_SETTINGS;
+    }
   } else {
     const [s, roomSummaries] = await Promise.all([
       contentService.getSettings(),
