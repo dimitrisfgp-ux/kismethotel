@@ -3,6 +3,7 @@ import { AdminMobileHeader } from "@/components/admin/layout/AdminMobileHeader";
 import { getCachedUserWithRole } from "@/lib/auth/guards";
 import { redirect } from "next/navigation";
 import { PermissionProvider } from "@/contexts/PermissionContext";
+import { FirstLoginGuard } from "@/components/admin/FirstLoginGuard";
 import { contentService } from "@/services/contentService";
 import { getMode } from "@/lib/mode";
 
@@ -25,6 +26,7 @@ export default async function AdminDashboardLayout({
 
     return (
         <PermissionProvider permissions={permissions} role={roleName}>
+            <FirstLoginGuard mustChange={Boolean(user.user_metadata?.must_change_password)} />
             <div className="flex flex-col md:flex-row min-h-screen bg-[var(--color-warm-white)]">
                 {/* Mobile Header */}
                 <AdminMobileHeader user={user} role={roleName} fullName={fullName} settings={settings} mode={mode} />

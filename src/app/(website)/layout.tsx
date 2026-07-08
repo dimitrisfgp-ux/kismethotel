@@ -74,8 +74,9 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  // In Guesty mode the Supabase-backed CMS may be paused.
-  // Skip the request-time fetch and feed Header/Footer/FloatingWidget hardcoded values.
+  // Header/Footer/FloatingWidget settings. In Guesty mode we merge editable DB
+  // contact/socials over the fixed bundled config (with the config as fallback);
+  // self_contained reads everything from the DB.
   const mode = await getMode();
 
   let settings: HotelSettings;

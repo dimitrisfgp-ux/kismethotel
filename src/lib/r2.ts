@@ -2,9 +2,10 @@ import { AwsClient } from "aws4fetch";
 import https from "node:https";
 
 /**
- * Cloudflare R2 access (S3-compatible) via SigV4. The bucket is PRIVATE —
- * objects are served to the browser through the /api/media proxy route, so no
- * public bucket URL or custom domain is required.
+ * Cloudflare R2 access (S3-compatible) via SigV4. Uploads and signing always use
+ * these credentials. Reads are served either through the same-origin /api/media
+ * proxy (private bucket) or, when NEXT_PUBLIC_R2_PUBLIC_URL is set, straight from
+ * the public bucket's Cloudflare CDN domain — see r2PublicPath().
  */
 
 const ENDPOINT = () => `https://${process.env.R2_ACCOUNT_ID}.r2.cloudflarestorage.com`;

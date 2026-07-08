@@ -188,8 +188,9 @@ const MAX_UPLOAD_BYTES = 2 * 1024 * 1024; // 2 MB
 
 /**
  * Upload a WebP image to R2 for the guesty homepage. WebP-only is enforced by
- * magic-byte check (not just the extension). Stored privately in R2 with
- * provider='r2'; the public URL is the /api/media proxy path.
+ * magic-byte check (not just the extension). Stored in R2 with provider='r2';
+ * the saved URL comes from r2PublicPath (the /api/media proxy, or the CDN domain
+ * when NEXT_PUBLIC_R2_PUBLIC_URL is set).
  */
 export async function uploadGuestyMediaAction(
     formData: FormData

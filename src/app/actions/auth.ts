@@ -28,10 +28,10 @@ export async function getUsersAction() {
 }
 
 /**
- * Invite (Create) a new user
- * Note: Supabase 'inviteUserByEmail' sends an email. 
- * 'createUser' creates it immediately (good for manual provisioning).
- * We'll use 'createUser' and auto-confirm for now as we don't have SMTP set up.
+ * Invite (Create) a new user.
+ * Uses admin 'createUser' + email_confirm so the account works immediately with
+ * the admin-set password (no verification email needed). The welcome email is
+ * sent only when requested (sendInvite) AND SMTP is configured.
  */
 export async function inviteUserAction(formData: FormData) {
     await requirePermission('users.manage');

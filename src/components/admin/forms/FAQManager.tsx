@@ -40,7 +40,10 @@ export function FAQManager({ initialFAQs }: FAQManagerProps) {
 
     // Add new blank FAQ
     const addFAQ = () => {
-        const newId = Math.max(0, ...faqs.map(f => f.id)) + 1;
+        // Temp NEGATIVE id marks an unsaved row; updateFAQs inserts these (letting the
+        // DB assign the real id) rather than upserting a client-chosen PK. Decrementing
+        // from the minimum keeps it unique within the session.
+        const newId = Math.min(0, ...faqs.map(f => f.id)) - 1;
         const newFAQ: FAQ = {
             id: newId,
             question: "",

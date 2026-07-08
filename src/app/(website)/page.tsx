@@ -12,8 +12,8 @@ import { guestyContentService } from "@/services/guestyContentService";
 
 
 export default async function Home() {
-  // Guesty mode renders a different homepage entirely:
-  // hardcoded categories that link directly to Guesty, no Supabase fetch.
+  // Guesty mode renders a different homepage whose categories link directly to
+  // Guesty. Content comes from the DB, falling back to the bundled config.
   if ((await getMode()) === "guesty") {
     const content = await guestyContentService.getHome();
     return <HomeGuesty content={content} />;
