@@ -22,14 +22,17 @@ export default async function SettingsPage() {
     const userRole = roleResult?.roleName ?? 'viewer';
     const permissions = roleResult?.permissions ?? [];
 
-    // In Guesty mode the app is content-only with a single admin, so the granular
-    // RBAC (user + role management) is hidden entirely — it's redundant and risky.
-    const showTeam = (await getMode()) !== 'guesty';
+    // In Guesty mode the granular ROLE/PERMISSION configuration is hidden (redundant
+    // and risky for a single content admin). User management — creating/inviting
+    // admins — stays available in both modes.
+    const showRoleManagement = (await getMode()) !== 'guesty';
 
-    // 2. Conditional Data Fetching based on permissions/role (skipped in Guesty)
-    const canManageRoles = showTeam && (permissions.includes('roles.manage') || userRole === 'admin');
-    const canViewRoles = showTeam && (permissions.includes('roles.view') || userRole === 'admin');
-    const canViewUsers = showTeam && (permissions.includes('users.view') || userRole === 'admin');
+    // 2. Conditional Data Fetching based on permissions/role.
+    // Users + roles are needed by User Management (both modes); roles also feed its
+    // role dropdown. The permissions matrix is only needed by the role manager.
+    const canViewUsers = permissions.includes('users.view') || userRole === 'admin';
+    const canViewRoles = permissions.includes('roles.view') || userRole === 'admin';
+    const canManageRoles = showRoleManagement && (permissions.includes('roles.manage') || userRole === 'admin');
 
     const [settings, usersResult, rolesResult, permissionsResult] = await Promise.all([
         contentService.getSettings(),
@@ -46,8 +49,8 @@ export default async function SettingsPage() {
                 <p className="text-[var(--color-charcoal)]/60 mt-1 md:mt-2 text-sm md:text-base">Manage hotel configuration, team members, and contact details.</p>
             </div>
 
-            {/* User Management (hidden in Guesty mode) */}
-            {showTeam && user && (
+            {/* User Management — available in both modes (create/invite admins) */}
+            {user && (
                 <div className="pb-8 border-b border-[var(--color-sand)]">
                     <UserManagementSection
                         currentUserRole={userRole}
@@ -60,7 +63,7 @@ export default async function SettingsPage() {
             )}
 
             {/* Role Management (hidden in Guesty mode) */}
-            {showTeam && (
+            {showRoleManagement && (
                 <div className="pb-8 border-b border-[var(--color-sand)]">
                     <RoleManagementSection
                         initialRoles={rolesResult}
