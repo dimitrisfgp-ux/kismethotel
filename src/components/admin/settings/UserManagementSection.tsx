@@ -24,9 +24,10 @@ interface UserManagementSectionProps {
     currentUserId: string;
     initialUsers?: UserProfile[];
     initialRoles?: Role[];
+    smtpConfigured?: boolean;
 }
 
-export function UserManagementSection({ currentUserRole, currentUserId, initialUsers = [], initialRoles = [] }: UserManagementSectionProps) {
+export function UserManagementSection({ currentUserRole, currentUserId, initialUsers = [], initialRoles = [], smtpConfigured = false }: UserManagementSectionProps) {
     const { showToast } = useToast();
     const { can } = usePermission();
 
@@ -46,7 +47,44 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
     });
 
     const [isSaving, setIsSaving] = useState(false);
-    const [showPassword, setShowPassword] = useState(false);
+    const [sendInvite, setSendInvite] = useState(false);
+    const [createdCredentials, setCreatedCredentials] = useState<{ email: string; password: string } | null>(null);
+    const [loginUrl, setLoginUrl] = useState('/login');
+
+    useEffect(() => {
+        setLoginUrl(`${window.location.origin}/login`);
+    }, []);
+
+    function generatePassword() {
+        // Strong, unambiguous random password (crypto, not Math.random).
+        const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789!@#$%&*';
+        const bytes = new Uint32Array(16);
+        crypto.getRandomValues(bytes);
+        const pw = Array.from(bytes, (n) => chars[n % chars.length]).join('');
+        setFormData((prev) => ({ ...prev, password: pw }));
+    }
+
+    async function copyCredentials() {
+        if (!createdCredentials) return;
+        const text = `Email: ${createdCredentials.email}\nPassword: ${createdCredentials.password}\nLogin: ${loginUrl}`;
+        try {
+            await navigator.clipboard.writeText(text);
+            showToast('Credentials copied to clipboard', 'success');
+        } catch {
+            showToast('Could not copy — copy them manually', 'error');
+        }
+    }
+
+    function closeModal() {
+        const created = !!createdCredentials;
+        setIsModalOpen(false);
+        setCreatedCredentials(null);
+        if (created) loadData(); // refresh the list to include the newly-created user
+    }
+
+    function finishInvite() {
+        closeModal();
+    }
 
     // Removed automatic useEffect loadData.
 
@@ -73,11 +111,14 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
     function openInviteModal() {
         setEditingUser(null);
         setFormData({ email: '', fullName: '', password: '', roleId: roles[0]?.id || '' });
+        setSendInvite(false);
+        setCreatedCredentials(null);
         setIsModalOpen(true);
     }
 
     function openEditModal(user: UserProfile) {
         setEditingUser(user);
+        setCreatedCredentials(null);
         setFormData({
             email: user.email,
             fullName: user.full_name,
@@ -107,13 +148,16 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
                     password: formData.password
                 });
                 showToast('User updated successfully', 'success');
+                setIsModalOpen(false);
+                loadData();
             } else {
-                // Invite
-                await inviteUserAction(payload);
-                showToast('User invited successfully', 'success');
+                // Invite — create the user, then show a credentials panel so the
+                // admin can copy/hand them over (and optionally email them).
+                payload.append('sendInvite', String(sendInvite && smtpConfigured));
+                const res = await inviteUserAction(payload);
+                setCreatedCredentials({ email: formData.email, password: formData.password });
+                showToast(res?.emailSent ? 'User created & invited by email' : 'User created', 'success');
             }
-            setIsModalOpen(false);
-            loadData();
         } catch (error: unknown) {
             const message = error instanceof Error ? error.message : 'An error occurred';
             showToast(message, 'error');
@@ -210,13 +254,43 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
                     <div className="bg-white rounded-xl w-full max-w-md shadow-2xl animate-in fade-in zoom-in-95 duration-200 overflow-hidden">
                         <div className="p-6 border-b border-gray-100 flex justify-between items-center bg-gray-50">
                             <h3 className="text-lg font-bold text-[var(--color-charcoal)]">
-                                {editingUser ? 'Edit User' : 'Invite New User'}
+                                {createdCredentials ? 'User Created' : editingUser ? 'Edit User' : 'Invite New User'}
                             </h3>
-                            <button onClick={() => setIsModalOpen(false)} className="text-gray-400 hover:text-gray-600">
+                            <button onClick={closeModal} className="text-gray-400 hover:text-gray-600">
                                 <X className="w-5 h-5" />
                             </button>
                         </div>
 
+                        {createdCredentials ? (
+                            <div className="p-6 space-y-4">
+                                <p className="text-sm text-[var(--color-charcoal)]/70">
+                                    {sendInvite && smtpConfigured
+                                        ? 'The account is ready and an invitation email was sent.'
+                                        : 'The account is ready. Send these credentials to the new user — they can sign in right away and will be prompted to set their own password on first login.'}
+                                </p>
+                                <div className="rounded-lg border border-gray-200 bg-gray-50 p-3 text-sm font-mono break-all space-y-1">
+                                    <div><span className="text-gray-500">Email:</span> {createdCredentials.email}</div>
+                                    <div><span className="text-gray-500">Password:</span> {createdCredentials.password}</div>
+                                    <div><span className="text-gray-500">Login:</span> {loginUrl}</div>
+                                </div>
+                                <div className="pt-2 flex gap-3">
+                                    <button
+                                        type="button"
+                                        onClick={copyCredentials}
+                                        className="flex-1 px-4 py-2 bg-[var(--color-aegean-blue)] text-white rounded-lg hover:bg-[var(--color-aegean-blue)]/90 transition-colors font-medium"
+                                    >
+                                        Copy credentials
+                                    </button>
+                                    <button
+                                        type="button"
+                                        onClick={finishInvite}
+                                        className="flex-1 px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
+                                    >
+                                        Done
+                                    </button>
+                                </div>
+                            </div>
+                        ) : (
                         <form onSubmit={handleSave} className="p-6 space-y-4">
                             {/* Name */}
                             <div className="space-y-1">
@@ -286,12 +360,42 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
                                         minLength={6}
                                     />
                                 </div>
+                                {!editingUser && (
+                                    <button
+                                        type="button"
+                                        onClick={generatePassword}
+                                        className="text-xs text-[var(--color-aegean-blue)] hover:underline mt-1"
+                                    >
+                                        Generate strong password
+                                    </button>
+                                )}
                             </div>
+
+                            {/* Optional invitation email — gated on SMTP being configured */}
+                            {!editingUser && (
+                                <label className={`flex items-start gap-2 text-sm rounded-lg border border-gray-200 p-3 ${smtpConfigured ? 'cursor-pointer' : 'opacity-70'}`}>
+                                    <input
+                                        type="checkbox"
+                                        disabled={!smtpConfigured}
+                                        checked={sendInvite && smtpConfigured}
+                                        onChange={e => setSendInvite(e.target.checked)}
+                                        className="mt-0.5 shrink-0"
+                                    />
+                                    <span className="text-[var(--color-charcoal)]/80">
+                                        Email an invitation with these credentials
+                                        {!smtpConfigured && (
+                                            <span className="block text-xs text-gray-400 mt-0.5">
+                                                Configure SMTP (Gmail) to enable sending invitations. For now, use “Copy credentials” and send them yourself.
+                                            </span>
+                                        )}
+                                    </span>
+                                </label>
+                            )}
 
                             <div className="pt-4 flex gap-3">
                                 <button
                                     type="button"
-                                    onClick={() => setIsModalOpen(false)}
+                                    onClick={closeModal}
                                     className="flex-1 px-4 py-2 text-gray-600 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors font-medium"
                                 >
                                     Cancel
@@ -302,10 +406,11 @@ export function UserManagementSection({ currentUserRole, currentUserId, initialU
                                     className="flex-1 px-4 py-2 bg-[var(--color-aegean-blue)] text-white rounded-lg hover:bg-[var(--color-aegean-blue)]/90 transition-colors font-medium flex justify-center items-center gap-2 disabled:opacity-50"
                                 >
                                     {isSaving && <Loader2 className="w-4 h-4 animate-spin" />}
-                                    {editingUser ? 'Save Changes' : 'Invite User'}
+                                    {editingUser ? 'Save Changes' : 'Create User'}
                                 </button>
                             </div>
                         </form>
+                        )}
                     </div>
                 </div>
             )}

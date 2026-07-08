@@ -4,7 +4,7 @@ import { createClient } from '@/lib/supabase/server';
 import { createAdminClient } from '@/lib/supabase/admin';
 import { revalidatePath } from 'next/cache';
 
-import { sendEmail } from '@/services/emailService';
+import { sendEmail, isEmailConfigured } from '@/services/emailService';
 import { welcomeEmail } from '@/services/emailTemplates';
 import { requirePermission } from '@/lib/auth/guards';
 
@@ -40,15 +40,18 @@ export async function inviteUserAction(formData: FormData) {
     const password = formData.get('password') as string;
     const fullName = formData.get('fullName') as string;
     const roleId = formData.get('roleId') as string; // Changed from 'role' to 'roleId'
+    const sendInvite = formData.get('sendInvite') === 'true';
 
     const supabaseAdmin = createAdminClient();
 
-    // 1. Create User in Auth
+    // 1. Create User in Auth. Auto-confirm the email so the user can sign in
+    // immediately with the credentials the admin sets — no verification email
+    // required. must_change_password nudges them to set their own on first login.
     const { data: { user }, error: createError } = await supabaseAdmin.auth.admin.createUser({
         email,
         password,
         email_confirm: true, // Auto-confirm
-        user_metadata: { full_name: fullName }
+        user_metadata: { full_name: fullName, must_change_password: true }
     });
 
     if (createError) {
@@ -71,24 +74,20 @@ export async function inviteUserAction(formData: FormData) {
         console.error('Profile update warning:', profileError);
     }
 
-    // 3. Send Welcome Email
-    try {
-        const { subject, html } = welcomeEmail(email, password, fullName);
-        const emailSent = await sendEmail({
-            to: email,
-            subject,
-            html
-        });
-
-        if (!emailSent) {
-            console.warn('⚠️ Welcome email could not be sent. Check SMTP credentials.');
+    // 3. Optionally send the welcome email (only when requested AND SMTP is set up).
+    let emailSent = false;
+    if (sendInvite && isEmailConfigured()) {
+        try {
+            const { subject, html } = welcomeEmail(email, password, fullName);
+            emailSent = await sendEmail({ to: email, subject, html });
+            if (!emailSent) console.warn('⚠️ Welcome email could not be sent. Check SMTP credentials.');
+        } catch (emailErr) {
+            console.error('Failed to send welcome email:', emailErr);
         }
-    } catch (emailErr) {
-        console.error('Failed to send welcome email:', emailErr);
     }
 
     revalidatePath('/admin/settings');
-    return { success: true };
+    return { success: true, emailSent };
 }
 
 /**
@@ -238,13 +237,16 @@ export async function updateProfileAction(data: {
         await supabaseAdmin.from('profiles').update({ email: data.email }).eq('id', userId);
     }
 
-    // 3. Prepare Auth Updates (Password & Metadata)
-    const authUpdates: { data: { full_name: string }; password?: string } = {
+    // 3. Prepare Auth Updates (Password & Metadata). `data` is merged into
+    // user_metadata, so setting must_change_password only happens on a real
+    // password change — which clears the first-login nudge.
+    const authUpdates: { data: { full_name: string; must_change_password?: boolean }; password?: string } = {
         data: { full_name: data.fullName }
     };
 
     if (data.password && data.password.trim() !== '') {
         authUpdates.password = data.password;
+        authUpdates.data.must_change_password = false;
     }
 
     const { error: authError } = await supabase.auth.updateUser(authUpdates);

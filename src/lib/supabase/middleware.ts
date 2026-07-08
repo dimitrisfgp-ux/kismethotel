@@ -48,5 +48,15 @@ export async function updateSession(request: NextRequest) {
         return NextResponse.redirect(new URL('/login', request.url))
     }
 
+    // Newly-invited users must set their own password before using the dashboard.
+    if (
+        user &&
+        user.user_metadata?.must_change_password &&
+        request.nextUrl.pathname.startsWith('/admin') &&
+        request.nextUrl.pathname !== '/admin/profile'
+    ) {
+        return NextResponse.redirect(new URL('/admin/profile', request.url))
+    }
+
     return supabaseResponse
 }

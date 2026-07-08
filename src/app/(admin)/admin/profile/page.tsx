@@ -20,6 +20,7 @@ export default function ProfilePage() {
     const { showToast } = useToast();
     const [isLoading, setIsLoading] = useState(true);
     const [isSaving, setIsSaving] = useState(false);
+    const [mustChange, setMustChange] = useState(false);
 
     // User State
     const [user, setUser] = useState<ProfileUser | null>(null);
@@ -39,6 +40,7 @@ export default function ProfilePage() {
         const { data: { user } } = await supabase.auth.getUser();
 
         if (user) {
+            setMustChange(Boolean(user.user_metadata?.must_change_password));
             // Fetch profile for full name
             const { data: profile } = await supabase
                 .from('profiles')
@@ -96,6 +98,7 @@ export default function ProfilePage() {
                 password: formData.password
             });
             showToast("Password updated successfully", "success");
+            setMustChange(false);
             setFormData(prev => ({ ...prev, password: '', confirmPassword: '' }));
         } catch (error: any) {
             showToast(error.message, "error");
@@ -112,6 +115,13 @@ export default function ProfilePage() {
                 <h1 className="text-2xl font-bold font-montserrat text-[var(--color-aegean-blue)]">My Profile</h1>
                 <p className="text-[var(--color-charcoal)]/60">Manage your personal account settings.</p>
             </div>
+
+            {mustChange && (
+                <div className="rounded-lg border border-amber-300 bg-amber-50 px-4 py-3 text-sm text-amber-900">
+                    <strong>Set a new password to continue.</strong> Your account was created with a temporary
+                    password. For security, please choose your own below before using the dashboard.
+                </div>
+            )}
 
             {/* Profile Information Section */}
             <div className="bg-white rounded-xl shadow-sm border border-black/5 p-4 md:p-8">

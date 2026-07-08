@@ -6,6 +6,7 @@ import { createClient } from "@/lib/supabase/server";
 import { getUsersAction } from "@/app/actions/auth";
 import { getRolesAction, getPermissionsAction } from "@/app/actions/roles";
 import { getUserRole } from '@/lib/auth/guards';
+import { isEmailConfigured } from "@/services/emailService";
 
 export default async function SettingsPage() {
     const supabase = await createClient();
@@ -48,6 +49,7 @@ export default async function SettingsPage() {
                         currentUserId={user.id}
                         initialUsers={usersResult}
                         initialRoles={rolesResult}
+                        smtpConfigured={isEmailConfigured()}
                     />
                 </div>
             )}

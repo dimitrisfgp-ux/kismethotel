@@ -50,6 +50,14 @@ export async function sendEmail(options: EmailOptions): Promise<boolean> {
 }
 
 /**
+ * Whether outbound email (Gmail SMTP) is configured. Server-only — surface it to
+ * the client as a plain boolean prop, never the credentials.
+ */
+export function isEmailConfigured(): boolean {
+    return Boolean(process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD);
+}
+
+/**
  * Get the configured admin email for notifications
  */
 export function getAdminEmail(): string {
