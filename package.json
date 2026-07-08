@@ -15,7 +15,8 @@
     "start": "next start",
     "lint": "eslint",
     "r2:cors": "node scripts/set-r2-cors.mjs",
-    "r2:cors:get": "node scripts/set-r2-cors.mjs --get"
+    "r2:cors:get": "node scripts/set-r2-cors.mjs --get",
+    "migrate:media-urls": "node scripts/migrate-media-urls.mjs"
   },
   "dependencies": {
     "@supabase/ssr": "^0.8.0",
