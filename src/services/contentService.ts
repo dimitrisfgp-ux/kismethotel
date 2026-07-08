@@ -135,9 +135,14 @@ export const contentService = {
             }
         }
 
-        // 3. Upsert incoming items
+        // 3. Insert new items / upsert existing ones.
+        // These are kept in SEPARATE batches: a mixed batch (some rows with `id`,
+        // some without) makes PostgREST union the columns and send `id: null` for
+        // the new rows, which violates the NOT NULL constraint. New rows must omit
+        // `id` entirely so the DB default/identity generates it.
         if (locations.length > 0) {
-            const upsertPayload = [];
+            const toInsert = [];
+            const toUpsert = [];
 
             for (const c of locations) {
                 const idStr = String(c.id);
@@ -151,8 +156,7 @@ export const contentService = {
                     continue; // Skip invalid items instead of crashing the whole batch
                 }
 
-                const newItem = {
-                    ...(isTempId ? {} : { id: Number(idStr) }),
+                const base = {
                     name: c.name,
                     category_id: catId,
                     type: c.type || 'Attraction', // Default if missing
@@ -163,12 +167,24 @@ export const contentService = {
                     popup_image: c.popupImage ?? null,
                     rating: c.rating ?? null
                 };
-                upsertPayload.push(newItem);
+
+                if (isTempId) {
+                    toInsert.push(base);
+                } else {
+                    toUpsert.push({ id: Number(idStr), ...base });
+                }
             }
 
-            if (upsertPayload.length > 0) {
-                const { error } = await supabase.from('conveniences').upsert(upsertPayload);
+            if (toInsert.length > 0) {
+                const { error } = await supabase.from('conveniences').insert(toInsert);
+                if (error) {
+                    console.error('Service: Convenience Insert Failed (Full Error):', JSON.stringify(error, null, 2));
+                    throw new Error(`Save locations failed: ${error.message}${error.code ? ` [${error.code}]` : ''}${error.details ? ` — ${error.details}` : ''}`);
+                }
+            }
 
+            if (toUpsert.length > 0) {
+                const { error } = await supabase.from('conveniences').upsert(toUpsert);
                 if (error) {
                     console.error('Service: Convenience Upsert Failed (Full Error):', JSON.stringify(error, null, 2));
                     throw new Error(`Save locations failed: ${error.message}${error.code ? ` [${error.code}]` : ''}${error.details ? ` — ${error.details}` : ''}`);
