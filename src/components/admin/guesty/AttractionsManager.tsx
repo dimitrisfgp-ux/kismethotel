@@ -6,7 +6,7 @@ import { Plus, Trash2, Image as ImageIcon, Save, ChevronDown } from 'lucide-reac
 import { Attraction, MediaAsset } from '@/types';
 import { OrderableUrlGrid } from './OrderableUrlGrid';
 import { MediaPickerModal } from '@/components/admin/media/MediaPickerModal';
-import { updateAttractionsAction } from '@/app/actions/content';
+import { updateAttractionsAction, deleteAttractionAction } from '@/app/actions/content';
 import { useToast } from '@/contexts/ToastContext';
 import { usePermission } from '@/contexts/PermissionContext';
 import { Button } from '@/components/ui/Button';
@@ -155,8 +155,19 @@ export function AttractionsManager({ initialAttractions }: { initialAttractions:
         ]);
     };
 
-    const removeAttraction = (id: number) => {
-        if (confirm('Remove this attraction?')) setItems((prev) => prev.filter((a) => a.id !== id));
+    const removeAttraction = async (id: number) => {
+        if (!confirm('Remove this attraction?')) return;
+        setItems((prev) => prev.filter((a) => a.id !== id));
+        // New, never-saved attractions (temp negative id) exist only in local state —
+        // nothing to delete on the server. Existing ones must persist immediately.
+        if (id > 0) {
+            try {
+                const res = await deleteAttractionAction(id);
+                showToast(res.ok ? 'Attraction removed' : res.error, res.ok ? 'success' : 'error');
+            } catch (e) {
+                showToast(e instanceof Error ? e.message : 'Failed to remove attraction', 'error');
+            }
+        }
     };
 
     const onPick = (asset: MediaAsset) => {

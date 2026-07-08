@@ -79,6 +79,18 @@ export async function updateAttractionsAction(attractions: Attraction[]) {
     return success;
 }
 
+export async function deleteAttractionAction(id: number): Promise<{ ok: true } | { ok: false; error: string }> {
+    try {
+        await requirePermission('content.pages');
+        const success = await contentService.deleteAttraction(id);
+        if (!success) return { ok: false, error: 'Failed to remove attraction' };
+        revalidateHomepageContent();
+        return { ok: true };
+    } catch (e) {
+        return { ok: false, error: e instanceof Error ? e.message : 'Failed to remove attraction' };
+    }
+}
+
 export async function getAmenitiesAction() {
     return contentService.getAmenities();
 }
