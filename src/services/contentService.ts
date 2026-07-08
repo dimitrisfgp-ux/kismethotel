@@ -131,7 +131,7 @@ export const contentService = {
             const { error: deleteError } = await supabase.from('conveniences').delete().in('id', toDelete.map(Number));
             if (deleteError) {
                 console.error('Service: Convenience Delete Failed:', deleteError);
-                return false;
+                throw new Error(`Delete locations failed: ${deleteError.message}${deleteError.code ? ` [${deleteError.code}]` : ''}`);
             }
         }
 
@@ -171,7 +171,7 @@ export const contentService = {
 
                 if (error) {
                     console.error('Service: Convenience Upsert Failed (Full Error):', JSON.stringify(error, null, 2));
-                    return false;
+                    throw new Error(`Save locations failed: ${error.message}${error.code ? ` [${error.code}]` : ''}${error.details ? ` — ${error.details}` : ''}`);
                 }
             }
         }
@@ -221,7 +221,7 @@ export const contentService = {
 
                 if (error || !data) {
                     console.error("Failed to insert category:", cat.label, error);
-                    return null;
+                    throw new Error(`Create category "${cat.label}" failed: ${error?.message ?? 'no row returned'}${error?.code ? ` [${error.code}]` : ''}${error?.details ? ` — ${error.details}` : ''}`);
                 }
 
                 idMap[cat.id] = String(data.id);
@@ -242,7 +242,7 @@ export const contentService = {
             const { error } = await supabase.from('location_categories').upsert(updates);
             if (error) {
                 console.error("Failed to update categories", error);
-                return null;
+                throw new Error(`Update categories failed: ${error.message}${error.code ? ` [${error.code}]` : ''}${error.details ? ` — ${error.details}` : ''}`);
             }
         }
 

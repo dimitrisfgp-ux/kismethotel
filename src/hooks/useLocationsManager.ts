@@ -106,11 +106,12 @@ export function useLocationsManager({ initialLocations, initialCategories, initi
 
             // 1. Save Categories First (Sequential)
             // This returns a mapping of TempID -> RealID for any newly created categories
-            const idMap = await updateCategoriesAction(categories);
+            const catResult = await updateCategoriesAction(categories);
 
-            if (!idMap) {
-                throw new Error("Failed to save categories");
+            if (!catResult.ok) {
+                throw new Error(catResult.error);
             }
+            const idMap = catResult.idMap;
 
             // 2. Update Locations with new Category IDs
             // If a location was assigned to a temp category "cat_123", and that category became ID "5",
@@ -121,9 +122,9 @@ export function useLocationsManager({ initialLocations, initialCategories, initi
             }));
 
             // 3. Save Locations (using valid FKs)
-            const locationsSuccess = await updateLocationsAction(updatedLocations);
-            if (!locationsSuccess) {
-                throw new Error("Failed to save locations");
+            const locationsResult = await updateLocationsAction(updatedLocations);
+            if (!locationsResult.ok) {
+                throw new Error(locationsResult.error);
             }
 
             // 4. Save Page Content
@@ -152,8 +153,8 @@ export function useLocationsManager({ initialLocations, initialCategories, initi
             return;
 
 
-        } catch (_error) {
-            showToast("An error occurred while saving", "error");
+        } catch (error) {
+            showToast(error instanceof Error ? error.message : "An error occurred while saving", "error");
         } finally {
             setIsLoading(false);
         }

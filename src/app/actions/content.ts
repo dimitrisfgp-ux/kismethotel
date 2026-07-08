@@ -44,18 +44,32 @@ export async function updateFAQsAction(faqs: FAQ[]) {
     return success;
 }
 
-export async function updateLocationsAction(locations: Convenience[]) {
-    await requirePermission('content.locations');
-    const success = await contentService.updateConveniences(locations);
-    if (success) revalidateHomepageContent();
-    return success;
+export async function updateLocationsAction(
+    locations: Convenience[]
+): Promise<{ ok: true } | { ok: false; error: string }> {
+    try {
+        await requirePermission('content.locations');
+        await contentService.updateConveniences(locations);
+        revalidateHomepageContent();
+        return { ok: true };
+    } catch (e) {
+        // Return (don't throw) so the real message reaches the client —
+        // Next redacts thrown Server Action errors in production.
+        return { ok: false, error: e instanceof Error ? e.message : 'Save locations failed' };
+    }
 }
 
-export async function updateCategoriesAction(categories: LocationCategory[]) {
-    await requirePermission('content.locations');
-    const result = await contentService.updateCategories(categories);
-    if (result) revalidateHomepageContent();
-    return result;
+export async function updateCategoriesAction(
+    categories: LocationCategory[]
+): Promise<{ ok: true; idMap: Record<string, string> } | { ok: false; error: string }> {
+    try {
+        await requirePermission('content.locations');
+        const idMap = await contentService.updateCategories(categories);
+        revalidateHomepageContent();
+        return { ok: true, idMap: idMap ?? {} };
+    } catch (e) {
+        return { ok: false, error: e instanceof Error ? e.message : 'Save categories failed' };
+    }
 }
 
 export async function updateAttractionsAction(attractions: Attraction[]) {
