@@ -66,13 +66,26 @@ export function Footer({ settings, rightPanel }: FooterProps) {
                     </div>
                 </div>
 
-                <div className="border-t border-white/10 pt-8 flex flex-col md:flex-row justify-between items-center text-xs text-white/70 font-inter">
-                    <p>© {new Date().getFullYear()} Kismet. All rights reserved.</p>
-                    <div className="flex space-x-6 mt-4 md:mt-0">
-                        <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
-                        <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
-                        <Link href="#" className="hover:text-white transition-colors">Cookie Policy</Link>
+                <div className="border-t border-white/10 pt-8 space-y-4 text-xs text-white/70 font-inter">
+                    <div className="flex flex-col md:flex-row justify-between items-center gap-4">
+                        <p>© {new Date().getFullYear()} Kismet. All rights reserved.</p>
+                        <div className="flex space-x-6">
+                            <Link href="#" className="hover:text-white transition-colors">Privacy Policy</Link>
+                            <Link href="#" className="hover:text-white transition-colors">Terms of Service</Link>
+                            <Link href="#" className="hover:text-white transition-colors">Cookie Policy</Link>
+                        </div>
                     </div>
+                    <p className="text-center">
+                        Developed by{" "}
+                        <a
+                            href="https://distarter.com"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="font-semibold text-[var(--color-accent-gold)] hover:underline"
+                        >
+                            Distarter
+                        </a>
+                    </p>
                 </div>
             </Container>
         </footer>

@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
+import { usePathname } from "next/navigation";
 import { cn } from "@/lib/utils";
 import { DesktopNav } from "./DesktopNav";
 import { MobileMenu } from "./MobileMenu";
@@ -35,6 +36,9 @@ const DEFAULT_LOGO_SETTINGS: Pick<HotelSettings, 'name' | 'logoMode' | 'logoIcon
 export function Header({ settings, rooms }: HeaderProps) {
     const { isScrolled } = useScroll({ threshold: 50 });
     const [isMobileOpen, setIsMobileOpen] = useState(false);
+    const pathname = usePathname();
+    // Homepage: no navigation — just the logo, centered.
+    const isHome = pathname === "/";
 
     // Logic: 
     // Top of page (Hero): Transparent bg, White logo/text. (dark prop = true)
@@ -55,7 +59,7 @@ export function Header({ settings, rooms }: HeaderProps) {
                     : "bg-gradient-to-b from-black/40 to-transparent"
             )}
         >
-            <Container className="h-full flex items-center justify-between relative">
+            <Container className={cn("h-full flex items-center relative", isHome ? "justify-center" : "justify-between")}>
                 {/* Logo */}
                 <Link href="/" className="z-50 relative">
                     <LogoBrand
@@ -65,20 +69,25 @@ export function Header({ settings, rooms }: HeaderProps) {
                     />
                 </Link>
 
-                {/* Desktop Nav */}
-                <DesktopNav dark={isDark} rooms={rooms} />
+                {/* Navigation — hidden entirely on the homepage */}
+                {!isHome && (
+                    <>
+                        {/* Desktop Nav */}
+                        <DesktopNav dark={isDark} rooms={rooms} />
 
-                {/* Mobile Trigger */}
-                <div className="lg:hidden z-50 h-full flex items-center">
-                    <BurgerIcon
-                        isOpen={isMobileOpen}
-                        onClick={() => setIsMobileOpen(!isMobileOpen)}
-                        dark={isDark || isMobileOpen} // White if top/dark mode OR if menu is open (dark bg)
-                    />
-                </div>
+                        {/* Mobile Trigger */}
+                        <div className="lg:hidden z-50 h-full flex items-center">
+                            <BurgerIcon
+                                isOpen={isMobileOpen}
+                                onClick={() => setIsMobileOpen(!isMobileOpen)}
+                                dark={isDark || isMobileOpen} // White if top/dark mode OR if menu is open (dark bg)
+                            />
+                        </div>
 
-                {/* Mobile Menu Panel */}
-                <MobileMenu isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} rooms={rooms} />
+                        {/* Mobile Menu Panel */}
+                        <MobileMenu isOpen={isMobileOpen} onClose={() => setIsMobileOpen(false)} rooms={rooms} />
+                    </>
+                )}
             </Container>
         </header>
     );
