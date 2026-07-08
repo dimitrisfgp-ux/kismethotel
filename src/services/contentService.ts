@@ -405,20 +405,32 @@ export const contentService = {
             await supabase.from('attractions').delete().in('id', toDelete);
         }
 
-        if (attractions.length > 0) {
-            const { error } = await supabase.from('attractions').upsert(
-                attractions.map(a => ({
-                    ...(a.id > 0 ? { id: a.id } : {}),
-                    name: a.name,
-                    description: a.description,
-                    image: a.image,
-                    distance: a.distance,
-                    external_url: a.externalUrl ?? null,
-                    gallery: a.gallery ?? []
-                }))
-            );
+        // Split new (no id) from existing (with id): a mixed batch makes PostgREST
+        // reject it ("All object keys must match") / null-fill the id, so new
+        // attractions never persisted. New rows omit id → DB generates it.
+        const row = (a: Attraction) => ({
+            name: a.name,
+            description: a.description,
+            image: a.image,
+            distance: a.distance,
+            external_url: a.externalUrl ?? null,
+            gallery: a.gallery ?? [],
+        });
+        const toInsert = attractions.filter((a) => !(a.id > 0)).map(row);
+        const toUpsert = attractions.filter((a) => a.id > 0).map((a) => ({ id: a.id, ...row(a) }));
+
+        if (toInsert.length > 0) {
+            const { error } = await supabase.from('attractions').insert(toInsert);
             if (error) {
-                console.error('Service: Attractions Update Failed:', error);
+                console.error('Service: Attractions Insert Failed:', error);
+                return false;
+            }
+        }
+
+        if (toUpsert.length > 0) {
+            const { error } = await supabase.from('attractions').upsert(toUpsert);
+            if (error) {
+                console.error('Service: Attractions Upsert Failed:', error);
                 return false;
             }
         }
