@@ -95,7 +95,18 @@ export async function r2PresignPut(key: string, contentType: string, expiresSeco
     return signed.url;
 }
 
-/** The same-origin path the browser uses to fetch an R2 object (via the proxy route). */
+/**
+ * URL the browser uses to fetch an R2 object.
+ *
+ * If NEXT_PUBLIC_R2_PUBLIC_URL is set (a public R2 bucket exposed via a Cloudflare
+ * custom domain, e.g. https://media.kismetrooms.gr), objects are served straight
+ * from Cloudflare's CDN — fast, edge-cached, Range-aware. Otherwise it falls back
+ * to the same-origin /api/media proxy route (private bucket).
+ *
+ * Only affects newly-registered media; URLs already stored in the DB keep whatever
+ * they were saved with (re-upload, or run a one-time URL migration, to move them).
+ */
 export function r2PublicPath(key: string): string {
-    return `/api/media/${key}`;
+    const base = process.env.NEXT_PUBLIC_R2_PUBLIC_URL?.replace(/\/$/, "");
+    return base ? `${base}/${key}` : `/api/media/${key}`;
 }
