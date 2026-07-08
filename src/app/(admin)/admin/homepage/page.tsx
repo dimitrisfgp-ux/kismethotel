@@ -1,4 +1,3 @@
-import { ChevronDown } from "lucide-react";
 import { requireGuestyAdmin } from "@/lib/auth/modeGuards";
 import { guestyContentService } from "@/services/guestyContentService";
 import { contentService } from "@/services/contentService";
@@ -7,34 +6,7 @@ import { LocationsManager } from "@/components/admin/forms/LocationsManager";
 import { FAQManager } from "@/components/admin/forms/FAQManager";
 import { AttractionsManager } from "@/components/admin/guesty/AttractionsManager";
 import { HeroEditor } from "@/components/admin/guesty/HeroEditor";
-
-function Section({
-    title,
-    subtitle,
-    defaultOpen = false,
-    children,
-}: {
-    title: string;
-    subtitle?: string;
-    defaultOpen?: boolean;
-    children: React.ReactNode;
-}) {
-    return (
-        <details
-            open={defaultOpen}
-            className="group rounded-lg border border-[var(--color-sand)] bg-[var(--color-warm-white)]/40 overflow-hidden"
-        >
-            <summary className="cursor-pointer select-none list-none px-5 py-4 flex items-center justify-between hover:bg-white/50 transition-colors">
-                <div>
-                    <h2 className="text-lg font-bold text-[var(--color-aegean-blue)] font-montserrat">{title}</h2>
-                    {subtitle && <p className="text-xs text-[var(--color-charcoal)]/50 mt-0.5">{subtitle}</p>}
-                </div>
-                <ChevronDown className="h-5 w-5 text-[var(--color-charcoal)]/40 transition-transform group-open:rotate-180 shrink-0" />
-            </summary>
-            <div className="p-4 pt-0">{children}</div>
-        </details>
-    );
-}
+import { AccordionSection } from "@/components/admin/AccordionSection";
 
 export default async function AdminHomepagePage() {
     // Guesty-only surface; self_contained admins are redirected to Rooms.
@@ -58,11 +30,11 @@ export default async function AdminHomepagePage() {
                 </p>
             </div>
 
-            <Section title="Hero" subtitle="The video banner at the top of the homepage." defaultOpen>
+            <AccordionSection title="Hero" subtitle="The video banner at the top of the homepage." defaultOpen>
                 <HeroEditor initialHero={pageContent.hero} />
-            </Section>
+            </AccordionSection>
 
-            <Section title="Room Categories" subtitle="Each category — manage its images and details in tabs.">
+            <AccordionSection title="Room Categories" subtitle="Each category — manage its images and details in tabs.">
                 {categories.length === 0 ? (
                     <div className="bg-white border border-[var(--color-sand)] rounded-lg p-8 text-center text-[var(--color-charcoal)]/50">
                         No room categories found yet.
@@ -70,23 +42,23 @@ export default async function AdminHomepagePage() {
                 ) : (
                     <HomepageEditor initialCategories={categories} />
                 )}
-            </Section>
+            </AccordionSection>
 
-            <Section title="Map Pins" subtitle="Nearby conveniences shown on the interactive map.">
+            <AccordionSection title="Map Pins" subtitle="Nearby conveniences shown on the interactive map.">
                 <LocationsManager
                     initialLocations={conveniences}
                     initialCategories={locationCategories}
                     initialPageContent={pageContent}
                 />
-            </Section>
+            </AccordionSection>
 
-            <Section title="FAQs" subtitle="Questions and answers in the FAQ accordion.">
+            <AccordionSection title="FAQs" subtitle="Questions and answers in the FAQ accordion.">
                 <FAQManager initialFAQs={faqs} />
-            </Section>
+            </AccordionSection>
 
-            <Section title="Attractions" subtitle="Cards + lightbox galleries in the attractions grid.">
+            <AccordionSection title="Attractions" subtitle="Cards + lightbox galleries in the attractions grid.">
                 <AttractionsManager initialAttractions={attractions} />
-            </Section>
+            </AccordionSection>
         </div>
     );
 }
